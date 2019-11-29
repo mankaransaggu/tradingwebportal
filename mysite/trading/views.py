@@ -14,8 +14,22 @@ def home(request):
     return render(request, 'trading/chart.html')
 
 
-def settings(request):
-    return render(request, 'trading/settings.html')
+class Setting(TemplateView):
+    template_name = 'trading/settings.html'
+    setting = None
+
+    def get_setting(self, **kwargs):
+        context = super(Setting, self).get_setting(**kwargs)
+        self.setting = self.kwargs['setting']
+        context['setting'] = self.request.GET.get('setting')
+        de = context['setting']
+        print(de)
+
+        if context['setting'] == 'download':
+            #get_nyse_data.save_nyse_tickers()
+            print(context['setting '])
+
+        return context
 
 
 class Graph(TemplateView):
@@ -26,8 +40,6 @@ class Graph(TemplateView):
         context = super(Graph, self).get_context_data(**kwargs)
         context['ticker'] = self.request.GET.get('ticker')
         ticker = self.request.GET.get('ticker')
-        print(ticker)
-        #df = db.create_stock_df(ticker)
 
         # Calls method to create market data dataframe from sql query
         df = db.create_df(ticker)
@@ -52,15 +64,4 @@ class Graph(TemplateView):
         return context
 
 
-class Settings(TemplateView):
-    template_name = 'trading/settings.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(Settings, self).get_context_data(**kwargs)
-
-        context['start'] = 'Getting data'
-        get_nyse_data.save_nyse_tickers()
-
-        context['finish'] = 'finished'
-
-        return context
