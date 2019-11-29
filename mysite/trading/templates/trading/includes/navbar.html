@@ -1,22 +1,25 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="/">JB Market</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-    </button>
+    <div class="container-fluid">
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="/">Home <span class="sr-only">Home</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/settings">Settings</a>
-      </li>
-    </ul>
-    <form class="form-inline my-2 my-lg-0" action="{% url 'market_search' %}" method="get">
-      <input class="form-control mr-sm-2"  name="ticker" class="" type="search" placeholder="Search Markets" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search Markets</button>
-    </form>
-  </div>
+        <button type="button" id="sidebarCollapse" class="btn btn-info">
+            <i class="fas fa-align-left"></i>
+            <span></span>
+        </button>
 
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home <span class="sr-only">Home</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">Settings</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0" action="{% url 'market_search' %}" method="get">
+                <input class="form-control mr-sm-2"  name="ticker" class="" type="search" placeholder="Ticker/Symbol" aria-label="Search">
+                <button class="btn btn-outline-primary" type="submit">Search Markets</button>
+            </form>
+        </div>
+    </div>
 </nav>

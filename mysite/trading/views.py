@@ -20,14 +20,12 @@ class Setting(TemplateView):
 
     def get_setting(self, **kwargs):
         context = super(Setting, self).get_setting(**kwargs)
-        self.setting = self.kwargs['setting']
         context['setting'] = self.request.GET.get('setting')
-        de = context['setting']
-        print(de)
-
-        if context['setting'] == 'download':
-            #get_nyse_data.save_nyse_tickers()
-            print(context['setting '])
+        setting = context['setting']
+        print(setting)
+        if setting == 'download':
+            get_nyse_data.save_nyse_tickers()
+            print(context['setting'])
 
         return context
 
