@@ -1,0 +1,14 @@
+{% extends "trading/includes/header.html"  %}
+
+{% block content %}
+
+    {% if graph %}
+    <h1>{{ticker}} Stock Price</h1>
+    <div style="width:600;height:500">
+    {{ graph|safe }}
+    </div>
+
+    {% endif %}
+
+{% endblock %}
+
