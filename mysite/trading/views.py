@@ -14,7 +14,7 @@ from .forms import SignUpForm
 from .tokens import account_activation_token
 
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 
@@ -135,10 +135,24 @@ def account_activation_sent(request):
 
 
 def login_request(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request=request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}")
+                return redirect('/')
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
     form = AuthenticationForm()
     return render(request,
                   'trading/login.html',
-                  context={'form': form})
+                  {'form': form})
 
 
 def logout_request(request):
@@ -146,3 +160,9 @@ def logout_request(request):
     messages.info(request, 'Logged Out')
 
     return redirect('home')
+
+
+def account(request):
+    return render(request,
+                  'trading/account.html',
+                  )
