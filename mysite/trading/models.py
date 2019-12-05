@@ -21,11 +21,11 @@ class Account(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
 
-@receiver(post_save, sender=User)
-def update_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Account.objects.create(user=instance)
-    instance.account.save()
+    @receiver(post_save, sender=User)
+    def update_user_profile(sender, instance, created, **kwargs):
+        if created:
+            Account.objects.create(user=instance)
+        instance.account.save()
 
 
 class Country (models.Model):

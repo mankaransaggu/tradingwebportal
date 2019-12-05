@@ -8,18 +8,21 @@ from .backend import get_nyse_data
 from .backend import database as db
 
 from django.contrib.sites.shortcuts import get_current_site
-from django.shortcuts import render, redirect
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode
+
 from django.template.loader import render_to_string
 from .forms import SignUpForm
 from .tokens import account_activation_token
 
-from django.contrib.auth import login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
+
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode
+from django.contrib import messages
 
 pd.core.common.is_list_like = pd.api.types.is_list_like
 
@@ -87,7 +90,7 @@ def signup(request):
 
             current_site = get_current_site(request)
             subject = 'Activate Your Trading Account'
-            message = render_to_string('account_activation_email.html', {
+            message = render_to_string('trading/account_activation_email.html', {
                 'user': user,
                 'domain': current_site.domain,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
@@ -95,6 +98,14 @@ def signup(request):
             })
             user.email_user(subject, message)
             return redirect('account_activation_sent')
+
+        else:
+            for msg in form.error_messages:
+                messages.error(request, f"{msg}: {form.error_messages[msg]}")
+
+                return render(request,
+                              "trading/signup.html",
+                              {"form": form})
 
     else:
         form = SignUpForm()
@@ -110,13 +121,28 @@ def activate(request, uidb64, token):
 
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
-        user.profile.email_confirmed = True
+        user.account.email_confirmed = True
         user.save()
         login(request, user)
+        messages.success(request, f"New account activated: {user.email}")
         return redirect('home')
     else:
         return render(request, 'trading/account_activation_invalid.html')
 
 
 def account_activation_sent(request):
-    return render(request, 'account_activation_sent')
+    return render(request, 'trading/account_activation_sent.html')
+
+
+def login_request(request):
+    form = AuthenticationForm()
+    return render(request,
+                  'trading/login.html',
+                  context={'form': form})
+
+
+def logout_request(request):
+    logout(request)
+    messages.info(request, 'Logged Out')
+
+    return redirect('home')
