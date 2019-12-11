@@ -96,3 +96,16 @@ class Position(models.Model):
 
     class Meta:
         db_table = 'positions'
+
+
+class Favourites(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+
+    def __str__(self):
+        string = self.stock.ticker + ' ' + self.account.email
+        return string
+
+    class Meta:
+        db_table = 'favourites'
+        unique_together = (('account', 'stock'),)
