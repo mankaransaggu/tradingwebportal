@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render
 from django.views.generic import TemplateView
 import matplotlib.dates as mdates
@@ -67,14 +69,12 @@ class Search(TemplateView):
             self.template_name = 'trading/chart.html'
 
             if context['found'] is True:
-
                 return context
 
         return context
 
 
 def get_stock_graph(self, context):
-
     context['ticker'] = self.request.GET.get('search')
     symbol = context['ticker']
     request = self.request
@@ -92,11 +92,11 @@ def get_stock_graph(self, context):
         df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
 
         fig = go.Figure(data=[go.Candlestick(x=df.index,
-                                                open=df['open'],
-                                                high=df['high'],
-                                                low=df['low'],
-                                                close=df['close']
-                                                )])
+                                             open=df['open'],
+                                             high=df['high'],
+                                             low=df['low'],
+                                             close=df['close']
+                                             )])
         div = opy.plot(fig, auto_open=False, output_type='div')
 
         context['graph'] = div
@@ -116,8 +116,21 @@ def get_exchange_stocks(self, context):
     try:
         exchange = Exchange.objects.get(code=symbol)
         context['exchange'] = exchange.code
-        context['stocks'] = Stock.objects.filter(exchange__code=exchange.code).order_by('ticker')
+        stock_list = Stock.objects.filter(exchange__code=exchange.code).order_by('ticker')
+
         context['found'] = True
+
+        paginator = Paginator(stock_list, 50)
+        page = self.request.GET.get('page')
+
+        try:
+            stocks = paginator.page(page)
+        except PageNotAnInteger:
+            stocks = paginator.page(1)
+        except EmptyPage:
+            stocks = paginator.page(paginator.num_pages)
+
+        context['stocks'] = stocks
 
         return context
 
@@ -128,6 +141,67 @@ def get_exchange_stocks(self, context):
 
     return context
 
+
+def stock_list(request):
+    stock_list = Stock.objects.all().order_by('ticker')
+    paginator = Paginator(stock_list, 100)
+    page = request.GET.get('page')
+
+    try:
+        stocks = paginator.page(page)
+    except PageNotAnInteger:
+        stocks = paginator.page(1)
+    except EmptyPage:
+        stocks = paginator.page(paginator.num_pages)
+
+    return render(request,
+                  'trading/stocks.html',
+                  {'stocks': stocks})
+
+
+def exchange_list(request):
+    exchange_list = Exchange.objects.all()
+    paginator = Paginator(exchange_list, 100)
+    page = request.GET.get('page')
+
+    try:
+        exchanges = paginator.page(page)
+    except PageNotAnInteger:
+        exchanges = paginator.page(1)
+    except EmptyPage:
+        exchanges = paginator.page(paginator.num_pages)
+
+    return render(request,
+                  'trading/exchanges.html',
+                  {'exchanges': exchanges})
+
+
+def exchange_stocks(request):
+    exchange = request.GET.get('exchange')
+    try:
+
+        stock_list = Stock.objects.filter(exchange__code=exchange).order_by('ticker')
+
+        paginator = Paginator(stock_list, 50)
+        page = request.GET.get('page')
+
+        try:
+            stocks = paginator.page(page)
+        except PageNotAnInteger:
+            stocks = paginator.page(1)
+        except EmptyPage:
+            stocks = paginator.page(paginator.num_pages)
+
+        return render(request,
+                      'trading/exchange_stocks.html',
+                      {'stocks': stocks})
+
+    except:
+        message = exchange + ' Is Not A Listed Exchange Or Stock'
+
+        return render(request,
+                      'trading/exchange_stocks.html',
+                      {'message': message})
 
 def signup(request):
     if request.method == 'POST':
@@ -225,4 +299,3 @@ def account(request):
     return render(request,
                   'trading/account.html',
                   {'favourites': sidebar(request)})
-

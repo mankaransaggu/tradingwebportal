@@ -1,0 +1,41 @@
+{% extends "trading/includes/header.html"  %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<table class="table">
+        <tr>
+            <th scope="col">Symbol</th>
+            <th scope="col">Name</th>
+            <th scope="col">Country</th>
+        </tr>
+        <tbody>
+        {% for exchange in exchanges %}
+        <tr>
+            <th scope="row"><a href="/exchange/?exchange={{exchange.code}}">{{exchange.code}}</a></th>
+            <td>{{exchange.name}}</td>
+            <td>{{exchange.country}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+    <span class="step-links">
+        {% if exchanges.has_previous %}
+            <a href="?page={{ exchanges.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ exchanges.number }} of {{ exchanges.paginator.num_pages }}.
+        </span>
+
+        {% if exchanges.has_next %}
+            <a href="?page={{ exchanges.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+    </div>
+</div>
+
+{% endblock %}l>

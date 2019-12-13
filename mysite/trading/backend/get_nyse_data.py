@@ -49,6 +49,7 @@ def save_nyse_tickers():
 
     tickers = []
     engine = get_engine()
+    message = ''
 
     for link in links:
         resp = requests.get(link)
@@ -69,35 +70,35 @@ def save_nyse_tickers():
                 tickers.append(ticker)
                 print('Added ', ticker)
             except (sqlalchemy.exc.IntegrityError, MySQLdb._exceptions.IntegrityError):
-                print('Ticker {} already exsists in stock table'.format(ticker))
+                message = 'Ticker {} already exsists in stock table'.format(ticker)
 
                 try:
                     get_nyse_data_yahoo(ticker)
                     tickers.append(ticker)
                     print('Added {} data '.format(ticker))
                 except RemoteDataError:
-                    print('No data found for {}'.format(ticker))
+                    message = 'No data found for {}'.format(ticker)
                     stock = Stock.objects.get(ticker=ticker)
                     delete_stock(stock.pk)
                 except (MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError):
-                    print('Market data for this date and {} exists'.format(ticker))
+                    message = 'Market data for this date and {} exists'.format(ticker)
                 except KeyError:
-                    print('Stock {} doesnt exist'.format(ticker))
+                    message = 'Stock {} doesnt exist'.format(ticker)
                     delete_stock(ticker)
 
             except RemoteDataError:
-                print("No {} data on yahoo".format(ticker))
+                message = "No {} data on yahoo".format(ticker)
             except KeyError:
-                print('Stock {} doesnt exist'.format(ticker))
+                message = 'Stock {} doesnt exist'.format(ticker)
                 delete_stock(ticker)
             except:
-                print('Unkown error with {}'.format(ticker))
+                message = 'Unkown error with {}'.format(ticker)
 
     return tickers
 
 
 def get_nyse_data_yahoo(ticker, reload_nyse=False):
-    start = dt.datetime(2019, 1, 1)
+    start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
     end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
     stock = Stock.objects.get(ticker=ticker)

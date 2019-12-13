@@ -2,21 +2,20 @@
 
 {% block content %}
 
-{% if stocks %}
-
 <div class="container-fluid">
 
-    <h1>{{exchange}} Listed Stocks</h1>
-    <table class="table">
+<table class="table">
         <tr>
             <th scope="col">Ticker</th>
             <th scope="col">Name</th>
+            <th scope="col">Exchange</th>
         </tr>
         <tbody>
         {% for stock in stocks %}
         <tr>
             <th scope="row"><a href="/search/?search={{stock.ticker}}">{{stock.ticker}}</a></th>
             <td>{{stock.name}}</td>
+            <td>{{stock.exchange}}</td>
         </tr>
         {% endfor %}
         </tbody>
@@ -25,7 +24,7 @@
     <div class="pagination">
     <span class="step-links">
         {% if stocks.has_previous %}
-            <a href="?page={{ exchange.previous_page_number }}">previous</a>
+            <a href="?page={{ stocks.previous_page_number }}">previous</a>
         {% endif %}
 
         <span class="current">
@@ -33,16 +32,10 @@
         </span>
 
         {% if stocks.has_next %}
-            <a href="?page={{ exchange.next_page_number }}">next</a>
+            <a href="?page={{ stocks.next_page_number }}">next</a>
         {% endif %}
     </span>
     </div>
-
-
-    {% elif message %}
-    <h4>{{message}}</h4>
-    {% endif %}
 </div>
 
 {% endblock %}
-

@@ -11,6 +11,9 @@ urlpatterns = [
     path('logout/', views.logout_request, name='logout'),
     path('account/', views.account, name='account'),
     path('settings/', Setting.as_view(), name='settings'),
+    path('stocks/', views.stock_list, name='stocks'),
+    path('exchanges/', views.exchange_list, name='exchanges'),
+    path('exchange/', views.exchange_stocks, name='exchange'),
 
 
     re_path(r'^account_activation_sent/$', views.account_activation_sent, name='account_activation_sent'),
