@@ -76,13 +76,13 @@ class Search(TemplateView):
 def get_stock_graph(self, context):
 
     context['ticker'] = self.request.GET.get('search')
-    ticker = context['ticker']
+    symbol = context['ticker']
     request = self.request
     context['favourites'] = sidebar(request)
 
     # Calls method to create market data dataframe from sql query
     try:
-        df = db.create_df(ticker)
+        df = db.create_df(symbol)
 
         # Create the two
         df_ohlc = df['adj_close'].resample('10D').ohlc()
@@ -104,7 +104,7 @@ def get_stock_graph(self, context):
 
     except:
         context['found'] = False
-        context['message'] = ticker
+        context['message'] = symbol + ' Is Not A Listed Exchange Or Stock'
         return context
 
     return context
@@ -116,14 +116,14 @@ def get_exchange_stocks(self, context):
     try:
         exchange = Exchange.objects.get(code=symbol)
         context['exchange'] = exchange.code
-        context['stocks'] = Stock.objects.filter(exchange__code=exchange.code)
+        context['stocks'] = Stock.objects.filter(exchange__code=exchange.code).order_by('ticker')
         context['found'] = True
 
         return context
 
     except:
         context['found'] = False
-        context['ex_message'] = 'Not found'
+        context['message'] = symbol + ' Is Not A Listed Exchange Or Stock'
         return context
 
     return context

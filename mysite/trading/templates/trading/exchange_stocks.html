@@ -2,20 +2,30 @@
 
 {% block content %}
 
-    {% if stocks %}
+{% if stocks %}
+<div class="container-fluid">
+
     <h1>{{exchange}} Listed Stocks</h1>
+    <table class="table">
+        <tr>
+            <th scope="col">Ticker</th>
+            <th scope="col">Name</th>
+        </tr>
+        <tbody>
+        {% for stock in stocks %}
+        <tr>
+            <th scope="row"><a href="/search/?search={{stock.ticker}}">{{stock.ticker}}</a></th>
+            <td>{{stock.name}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
-    {% for stock in stocks %}
-
-     <li class="">
-         <a href="/search/?search={{stock.ticker}}">{{stock.ticker}}</a>
-     </li>
-
-    {% endfor %}
 
     {% elif message %}
     <h4>{{message}}</h4>
     {% endif %}
+</div>
 
 {% endblock %}
 
