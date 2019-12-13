@@ -49,8 +49,6 @@ def save_nyse_tickers():
 
     tickers = []
     engine = get_engine()
-    start = dt.datetime(2019, 1, 1)
-    end = dt.datetime(2019, 11, 27)
 
     for link in links:
         resp = requests.get(link)
@@ -100,7 +98,7 @@ def save_nyse_tickers():
 
 def get_nyse_data_yahoo(ticker, reload_nyse=False):
     start = dt.datetime(2019, 1, 1)
-    end = dt.datetime(2019, 11, 25)
+    end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
     stock = Stock.objects.get(ticker=ticker)
     df = web.DataReader(ticker, 'yahoo', start, end)

@@ -1,0 +1,21 @@
+{% extends "trading/includes/header.html"  %}
+
+{% block content %}
+
+    {% if stocks %}
+    <h1>{{exchange}} Listed Stocks</h1>
+
+    {% for stock in stocks %}
+
+     <li class="">
+         <a href="/search/?search={{stock.ticker}}">{{stock.ticker}}</a>
+     </li>
+
+    {% endfor %}
+
+    {% elif message %}
+    <h4>{{message}}</h4>
+    {% endif %}
+
+{% endblock %}
+

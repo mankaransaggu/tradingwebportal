@@ -24,22 +24,28 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode
 from django.contrib import messages
 
+from .models import Favourites, Exchange, Stock, MarketData
+
 pd.core.common.is_list_like = pd.api.types.is_list_like
 
 
 def home(request):
-    return render(request, 'trading/chart.html')
+    return render(request, 'trading/chart.html', {'favourites': sidebar(request)})
 
 
 class Setting(TemplateView):
     template_name = 'trading/settings.html'
     setting = None
 
-    def get_setting(self, **kwargs):
-        context = super(Setting, self).get_setting(**kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(Setting, self).get_context_data(**kwargs)
         context['setting'] = self.request.GET.get('setting')
+        request = self.request
+        context['favourites'] = sidebar(request)
+
         setting = context['setting']
         print(setting)
+
         if setting == 'download':
             get_nyse_data.save_nyse_tickers()
             print(context['setting'])
@@ -47,16 +53,35 @@ class Setting(TemplateView):
         return context
 
 
-class Graph(TemplateView):
-    template_name = 'trading/chart.html'
-    ticker = None
+class Search(TemplateView):
+    template_name = 'trading/exchange_stocks.html'
 
     def get_context_data(self, **kwargs):
-        context = super(Graph, self).get_context_data(**kwargs)
-        context['ticker'] = self.request.GET.get('ticker')
-        ticker = self.request.GET.get('ticker')
+        context = super(Search, self).get_context_data(**kwargs)
 
-        # Calls method to create market data dataframe from sql query
+        context = get_exchange_stocks(self, context)
+
+        if context['found'] is False:
+            context = super(Search, self).get_context_data(**kwargs)
+            context = get_stock_graph(self, context)
+            self.template_name = 'trading/chart.html'
+
+            if context['found'] is True:
+
+                return context
+
+        return context
+
+
+def get_stock_graph(self, context):
+
+    context['ticker'] = self.request.GET.get('search')
+    ticker = context['ticker']
+    request = self.request
+    context['favourites'] = sidebar(request)
+
+    # Calls method to create market data dataframe from sql query
+    try:
         df = db.create_df(ticker)
 
         # Create the two
@@ -67,16 +92,41 @@ class Graph(TemplateView):
         df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
 
         fig = go.Figure(data=[go.Candlestick(x=df.index,
-                                             open=df['open'],
-                                             high=df['high'],
-                                             low=df['low'],
-                                             close=df['close']
-                                             )])
+                                                open=df['open'],
+                                                high=df['high'],
+                                                low=df['low'],
+                                                close=df['close']
+                                                )])
         div = opy.plot(fig, auto_open=False, output_type='div')
 
         context['graph'] = div
+        context['found'] = True
+
+    except:
+        context['found'] = False
+        context['message'] = ticker
+        return context
+
+    return context
+
+
+def get_exchange_stocks(self, context):
+    symbol = self.request.GET.get('search')
+
+    try:
+        exchange = Exchange.objects.get(code=symbol)
+        context['exchange'] = exchange.code
+        context['stocks'] = Stock.objects.filter(exchange__code=exchange.code)
+        context['found'] = True
 
         return context
+
+    except:
+        context['found'] = False
+        context['ex_message'] = 'Not found'
+        return context
+
+    return context
 
 
 def signup(request):
@@ -110,6 +160,15 @@ def signup(request):
     else:
         form = SignUpForm()
     return render(request, 'trading/signup.html', {'form': form})
+
+
+def sidebar(request):
+    if request.user.is_authenticated:
+        favourites = Favourites.objects.filter(account=request.user)
+        return favourites
+
+    else:
+        return 'None'
 
 
 def activate(request, uidb64, token):
@@ -165,4 +224,5 @@ def logout_request(request):
 def account(request):
     return render(request,
                   'trading/account.html',
-                  )
+                  {'favourites': sidebar(request)})
+

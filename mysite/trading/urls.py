@@ -1,11 +1,11 @@
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
-from .views import Graph, Setting
+from .views import Setting, Search
 from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('search/', Graph.as_view(), name='market_search'),
+    path('search/', Search.as_view(), name='market_search'),
     path('signup/', views.signup, name='signup'),
     path('login/', views.login_request, name='login'),
     path('logout/', views.logout_request, name='logout'),

@@ -4,10 +4,13 @@
 
     {% if graph %}
     <h1>{{ticker}} Stock Price</h1>
+
     <div style="width:600;height:500">
     {{ graph|safe }}
     </div>
 
+    {% elif message %}
+    <h4>{{message}}</h4>
     {% endif %}
 
 {% endblock %}

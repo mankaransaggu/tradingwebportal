@@ -96,16 +96,19 @@ def get_stock_data(ticker):
 
 
 def create_df(ticker):
-    stock = Stock.objects.get(ticker=ticker)
-    # SQL to read all the market data for specified stock and put into dataframe
-    sql = 'SELECT date, high, low, open, close, volume, adj_close FROM market_data WHERE ticker = %s'
-    df = pd.read_sql(sql, get_engine(), params={stock.pk})
+    try:
+        stock = Stock.objects.get(ticker=ticker)
+        # SQL to read all the market data for specified stock and put into dataframe
+        sql = 'SELECT date, high, low, open, close, volume, adj_close FROM market_data WHERE ticker = %s'
+        df = pd.read_sql(sql, get_engine(), params={stock.pk})
 
-    # Set the index of the dataframe as the date and make it datetime data so it can be used for resample
-    df.set_index('date', inplace=True)
-    df.index = pd.to_datetime(df.index)
-    print(df.head())
-    return df
+        # Set the index of the dataframe as the date and make it datetime data so it can be used for resample
+        df.set_index('date', inplace=True)
+        df.index = pd.to_datetime(df.index)
+        print(df.head())
+        return df
+    except:
+        return 'No stock with provided ticker'
 
 
 def get_stock_pk(ticker):

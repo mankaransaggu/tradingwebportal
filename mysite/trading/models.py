@@ -99,7 +99,7 @@ class Position(models.Model):
 
 
 class Favourites(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
     def __str__(self):

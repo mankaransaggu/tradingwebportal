@@ -3,8 +3,13 @@
 {% block content %}
 
 <h2>Hello {{user.first_name}}</h2>
+<h5>Account details</h5>
 
-<p>Email: {{user.email}}</p>
+<span>Email: {{user.email}}</span>
+<br>
+<span>First Name: {{user.first_name}}</span>
+<br>
+<span>Last Name: {{user.last_name}}</span>
 
 {% endblock %}
 
