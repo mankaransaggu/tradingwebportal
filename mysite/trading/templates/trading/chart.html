@@ -4,7 +4,7 @@
 <div class="container-fluid">
 
     {% if graph %}
-    <h1>{{ticker}} Stock Price</h1>
+    <h2 class="display-2 text-center">{{ stock.ticker }} / {{ stock.name }} Data</h2>
 
     <div style="width:600;height:500">
         {{ graph|safe }}
@@ -28,34 +28,62 @@
                 </div>
 
                 <div class="card-body">
-                    <h4 class="card-title">Latest Data</h4>
-                    <h6>{{latest.date}}</h6>
+                    <h3 class="card-title">Market Data</h3>
+                    <h5>Most Recent Data: {{latest.date}}</h5>
 
                     <div class="tab-content mt-3">
+
                         <div class="tab-pane active" id="latest" role="tabpanel">
                             <div class="card-text">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">Open: {{latest.open}}</li>
-                                    <li class="list-group-item">Close: {{latest.close}}</li>
-                                    <li class="list-group-item">High: {{latest.high}}</li>
-                                    <li class="list-group-item">Low: {{latest.low}}</li>
-                                    <li class="list-group-item">Volume: {{latest.volume}}</li>
+                                <ul class="list-group list-group-horizontal">
+
+                                    <div class="list-group-item flex-fill">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="list-group-item flex-fill">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item flex-fill"><h6>Daily Change:</h6> <span>0.0</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Daily Change %:</h6> <span>00.00</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume %:</h6> <span>00.00</span></li>
+                                        </ul>
+                                    </div>
+
                                 </ul>
                             </div>
                         </div>
 
                         <div class="tab-pane" id="ytd" role="tabpanel" aria-labelledby="ytd-tab">
                             <div class="card-text">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">Open: {{ytd.open}}</li>
-                                    <li class="list-group-item">Close: {{ytd.close}}</li>
-                                    <li class="list-group-item">High: {{ytd.high}}</li>
-                                    <li class="list-group-item">Low: {{ytd.low}}</li>
-                                    <li class="list-group-item">Volume: {{ytd.volume}}</li>
+                                <ul class="list-group list-group-horizontal">
+
+                                    <div class="list-group-item flex-fill">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{ytd.open}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{ytd.close}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{ytd.high}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{ytd.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{ytd.volume}}</span></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="list-group-item flex-fill">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item flex-fill"><h6>Yearly Change:</h6> <span>{{ ytd_diff }}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Yearly Change %:</h6> <span>{{ ytd_diff_perc }}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume %:</h6> <span>00.00</span></li>
+                                        </ul>
+                                    </div>
+
                                 </ul>
                             </div>
                         </div>
-
 
                     </div>
                 </div>

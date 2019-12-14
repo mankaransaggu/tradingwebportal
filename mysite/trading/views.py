@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 import plotly.offline as opy
 from .backend import get_nyse_data
 from .backend import database as db
+from .backend import stock_data as data
 import datetime as dt
 
 from django.contrib.sites.shortcuts import get_current_site
@@ -103,19 +104,15 @@ def get_stock_graph(self, context):
         context['graph'] = div
         context['found'] = True
 
-        yesterday = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
-        res = get_nyse_data.get_closest_to_dt(yesterday)
-        nearest_yesterday = res.date
+        # Get yesterdays and YTD data
+        context['latest'] = data.get_yesterday(symbol)
+        context['ytd'] = data.get_ytd(symbol)
 
-        latest = MarketData.objects.get(ticker__ticker=symbol, date=nearest_yesterday)
-        context['latest'] = latest
+        stock = Stock.objects.get(ticker=symbol)
+        context['stock'] = stock
 
-        year = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(365), '%Y-%m-%d')
-        res = get_nyse_data.get_closest_to_dt(year)
-        ytd = res.date
-
-        ytd = MarketData.objects.get(ticker__ticker=symbol, date=ytd)
-        context['ytd'] = ytd
+        context['ytd_diff_perc'] = data.get_change_percent(context['latest'].close, context['ytd'].close)
+        context['ytd_diff'] = data.get_change(context['latest'].close, context['ytd'].close)
 
         return context
 

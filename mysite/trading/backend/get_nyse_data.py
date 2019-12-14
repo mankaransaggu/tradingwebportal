@@ -174,11 +174,4 @@ def visualize_nyse_data():
     plt.show()
 
 
-def get_closest_to_dt(date):
-    greater = MarketData.objects.filter(date__gte=date).order_by("date").first()
-    less = MarketData.objects.filter(date__lte=date).order_by("-date").first()
 
-    if greater and less:
-        return greater if abs(greater.date - date) < abs(less.date - date) else less
-    else:
-        return greater or less
