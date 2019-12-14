@@ -34,6 +34,14 @@ def get_ytd(symbol):
     return ytd
 
 
+def get_earliest(symbol):
+    res = get_earliest_date(symbol)
+    earliest = res.date
+    earliest = MarketData.objects.get(ticker__ticker=symbol, date=earliest)
+
+    return earliest
+
+
 def get_day_before(symbol):
     day = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days=2), '%Y-%m-%d')
     res = get_date_before(day, symbol)
@@ -56,7 +64,10 @@ def get_closest_to_dt(date, symbol):
 
 def get_date_before(date, symbol):
     less = MarketData.objects.filter(date__lte=date, ticker__ticker=symbol).order_by("-date").first()
-    print(less)
     return less
 
+
+def get_earliest_date(symbol):
+    earliest = MarketData.objects.filter(ticker__ticker=symbol).order_by("date").first()
+    return earliest
 

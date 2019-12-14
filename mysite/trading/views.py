@@ -110,6 +110,7 @@ def get_stock_graph(self, context):
     context['latest'] = data.get_yesterday(symbol)
     context['ytd'] = data.get_ytd(symbol)
     context['day_bef'] = data.get_day_before(symbol)
+    context['earliest'] = data.get_earliest(symbol)
 
     context['yest_diff'] = data.get_change(context['latest'].close, context['day_bef'].close)
     context['yest_diff_perc'] = data.get_change_percent(context['latest'].close, context['day_bef'].close)
@@ -118,6 +119,10 @@ def get_stock_graph(self, context):
     context['ytd_diff_perc'] = data.get_change_percent(context['latest'].close, context['ytd'].close)
     context['ytd_diff'] = data.get_change(context['latest'].close, context['ytd'].close)
     context['ytd_vol_diff'] = data.get_change_percent(context['latest'].volume, context['ytd'].volume)
+
+    context['early_diff'] = data.get_change(context['latest'].close, context['earliest'].close)
+    context['early_diff_perc'] = data.get_change_percent(context['latest'].close, context['earliest'].close)
+    context['early_vol_diff'] = data.get_change_percent(context['latest'].volume, context['earliest'].volume)
 
     return context
 
