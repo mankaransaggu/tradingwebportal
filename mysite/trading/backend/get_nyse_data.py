@@ -12,7 +12,7 @@ import sqlalchemy
 from matplotlib import style
 from pandas_datareader._utils import RemoteDataError
 from .database import delete_stock, insert_stock, get_engine, create_df
-from ..models import Stock
+from ..models import Stock, MarketData
 
 
 style.use('ggplot')
@@ -63,6 +63,7 @@ def save_nyse_tickers():
             ticker = ticker.translate(mapping)
             name = row.findAll('td')[0].text
             exchange = 'NYSE'
+            print(ticker)
 
             try:
                 insert_stock(name, ticker, exchange)
@@ -81,20 +82,21 @@ def save_nyse_tickers():
                     stock = Stock.objects.get(ticker=ticker)
                     delete_stock(stock.pk)
                 except (MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError):
-                    message = 'Market data for this date and {} exists'.format(ticker)
+                    message = 'Market data for {} already up to date'.format(ticker)
                 except KeyError:
                     message = 'Stock {} doesnt exist'.format(ticker)
-                    delete_stock(ticker)
+                    delete_stock(stock.pk)
 
             except RemoteDataError:
                 message = "No {} data on yahoo".format(ticker)
+                delete_stock(stock.pk)
             except KeyError:
                 message = 'Stock {} doesnt exist'.format(ticker)
-                delete_stock(ticker)
+                delete_stock(stock.pk)
             except:
                 message = 'Unkown error with {}'.format(ticker)
 
-    return tickers
+    return tickers, message
 
 
 def get_nyse_data_yahoo(ticker, reload_nyse=False):
@@ -170,3 +172,13 @@ def visualize_nyse_data():
     heatmap.set_clim(-1, 1)
     plt.tight_layout()
     plt.show()
+
+
+def get_closest_to_dt(date):
+    greater = MarketData.objects.filter(date__gte=date).order_by("date").first()
+    less = MarketData.objects.filter(date__lte=date).order_by("-date").first()
+
+    if greater and less:
+        return greater if abs(greater.date - date) < abs(less.date - date) else less
+    else:
+        return greater or less

@@ -11,7 +11,7 @@ urlpatterns = [
     path('logout/', views.logout_request, name='logout'),
     path('account/', views.account, name='account'),
     path('settings/', Setting.as_view(), name='settings'),
-    path('stocks/', views.stock_list, name='stocks'),
+    path('equities/', views.stock_list, name='equities'),
     path('exchanges/', views.exchange_list, name='exchanges'),
     path('exchange/', views.exchange_stocks, name='exchange'),
 

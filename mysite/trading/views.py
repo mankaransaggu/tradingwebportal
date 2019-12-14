@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
 from django.shortcuts import render
 from django.views.generic import TemplateView
 import matplotlib.dates as mdates
@@ -8,6 +9,7 @@ import plotly.graph_objects as go
 import plotly.offline as opy
 from .backend import get_nyse_data
 from .backend import database as db
+import datetime as dt
 
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -46,11 +48,10 @@ class Setting(TemplateView):
         context['favourites'] = sidebar(request)
 
         setting = context['setting']
-        print(setting)
 
         if setting == 'download':
-            get_nyse_data.save_nyse_tickers()
-            print(context['setting'])
+            results = get_nyse_data.save_nyse_tickers()
+            context['messages'] = results[1]
 
         return context
 
@@ -102,12 +103,26 @@ def get_stock_graph(self, context):
         context['graph'] = div
         context['found'] = True
 
+        yesterday = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+        res = get_nyse_data.get_closest_to_dt(yesterday)
+        nearest_yesterday = res.date
+
+        latest = MarketData.objects.get(ticker__ticker=symbol, date=nearest_yesterday)
+        context['latest'] = latest
+
+        year = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(365), '%Y-%m-%d')
+        res = get_nyse_data.get_closest_to_dt(year)
+        ytd = res.date
+
+        ytd = MarketData.objects.get(ticker__ticker=symbol, date=ytd)
+        context['ytd'] = ytd
+
+        return context
+
     except:
         context['found'] = False
         context['message'] = symbol + ' Is Not A Listed Exchange Or Stock'
         return context
-
-    return context
 
 
 def get_exchange_stocks(self, context):
@@ -202,6 +217,7 @@ def exchange_stocks(request):
         return render(request,
                       'trading/exchange_stocks.html',
                       {'message': message})
+
 
 def signup(request):
     if request.method == 'POST':

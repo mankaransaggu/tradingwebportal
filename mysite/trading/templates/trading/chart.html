@@ -1,17 +1,72 @@
 {% extends "trading/includes/header.html"  %}
 
 {% block content %}
+<div class="container-fluid">
 
     {% if graph %}
     <h1>{{ticker}} Stock Price</h1>
 
     <div style="width:600;height:500">
-    {{ graph|safe }}
+        {{ graph|safe }}
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="bologna-list" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#latest" role="tab" aria-controls="latest" aria-selected="true">Latest Data</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#ytd" role="tab" aria-controls="ytd" aria-selected="false">YTD</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#alltime" role="tab" aria-controls="alltime" aria-selected="false">All Time</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body">
+                    <h4 class="card-title">Latest Data</h4>
+                    <h6>{{latest.date}}</h6>
+
+                    <div class="tab-content mt-3">
+                        <div class="tab-pane active" id="latest" role="tabpanel">
+                            <div class="card-text">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Open: {{latest.open}}</li>
+                                    <li class="list-group-item">Close: {{latest.close}}</li>
+                                    <li class="list-group-item">High: {{latest.high}}</li>
+                                    <li class="list-group-item">Low: {{latest.low}}</li>
+                                    <li class="list-group-item">Volume: {{latest.volume}}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="ytd" role="tabpanel" aria-labelledby="ytd-tab">
+                            <div class="card-text">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Open: {{ytd.open}}</li>
+                                    <li class="list-group-item">Close: {{ytd.close}}</li>
+                                    <li class="list-group-item">High: {{ytd.high}}</li>
+                                    <li class="list-group-item">Low: {{ytd.low}}</li>
+                                    <li class="list-group-item">Volume: {{ytd.volume}}</li>
+                                </ul>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     {% elif message %}
     <h4>{{message}}</h4>
     {% endif %}
+</div>
 
 {% endblock %}
 
