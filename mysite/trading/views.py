@@ -103,16 +103,20 @@ def get_stock_graph(self, context):
 
         context['graph'] = div
         context['found'] = True
+        stock = Stock.objects.get(ticker=symbol)
+        context['stock'] = stock
 
         # Get yesterdays and YTD data
         context['latest'] = data.get_yesterday(symbol)
         context['ytd'] = data.get_ytd(symbol)
 
-        stock = Stock.objects.get(ticker=symbol)
-        context['stock'] = stock
+        # Need to fix this functionality
+        # context['daybef'] = data.get_day_before(symbol)
+        #context['yest_diff'] = data.get_change(context['latest'].close, context['day_bef'].close)
 
         context['ytd_diff_perc'] = data.get_change_percent(context['latest'].close, context['ytd'].close)
         context['ytd_diff'] = data.get_change(context['latest'].close, context['ytd'].close)
+        context['ytd_vol_diff'] = data.get_change_percent(context['latest'].volume, context['ytd'].volume)
 
         return context
 
