@@ -1,4 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 DIRECTION_CHOICES = [
@@ -10,6 +13,19 @@ POSITION_STATES = [
     ('Open', 'Open'),
     ('Closed', 'Closed'),
 ]
+
+
+class Account(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    email_confirmed = models.BooleanField(default=False)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+
+    @receiver(post_save, sender=User)
+    def update_user_profile(sender, instance, created, **kwargs):
+        if created:
+            Account.objects.create(user=instance)
+        instance.account.save()
 
 
 class Country (models.Model):
@@ -80,3 +96,16 @@ class Position(models.Model):
 
     class Meta:
         db_table = 'positions'
+
+
+class Favourites(models.Model):
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+
+    def __str__(self):
+        string = self.stock.ticker + ' ' + self.account.email
+        return string
+
+    class Meta:
+        db_table = 'favourites'
+        unique_together = (('account', 'stock'),)

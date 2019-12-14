@@ -12,7 +12,7 @@ import sqlalchemy
 from matplotlib import style
 from pandas_datareader._utils import RemoteDataError
 from .database import delete_stock, insert_stock, get_engine, create_df
-from ..models import Stock
+from ..models import Stock, MarketData
 
 
 style.use('ggplot')
@@ -49,8 +49,7 @@ def save_nyse_tickers():
 
     tickers = []
     engine = get_engine()
-    start = dt.datetime(2019, 1, 1)
-    end = dt.datetime(2019, 11, 27)
+    message = ''
 
     for link in links:
         resp = requests.get(link)
@@ -67,40 +66,42 @@ def save_nyse_tickers():
 
             try:
                 insert_stock(name, ticker, exchange)
+                stock = Stock.objects.get(ticker=ticker)
                 get_nyse_data_yahoo(ticker)
                 tickers.append(ticker)
                 print('Added ', ticker)
             except (sqlalchemy.exc.IntegrityError, MySQLdb._exceptions.IntegrityError):
-                print('Ticker {} already exsists in stock table'.format(ticker))
+                message = 'Ticker {} already exsists in stock table'.format(ticker)
 
                 try:
                     get_nyse_data_yahoo(ticker)
                     tickers.append(ticker)
                     print('Added {} data '.format(ticker))
                 except RemoteDataError:
-                    print('No data found for {}'.format(ticker))
-                    stock = Stock.objects.get(ticker=ticker)
+                    message = 'No data found for {}'.format(ticker)
                     delete_stock(stock.pk)
                 except (MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError):
-                    print('Market data for this date and {} exists'.format(ticker))
+                    message = 'Market data for {} already up to date'.format(ticker)
                 except KeyError:
-                    print('Stock {} doesnt exist'.format(ticker))
-                    delete_stock(ticker)
+                    message = 'Stock {} doesnt exist'.format(ticker)
+                    delete_stock(stock.pk)
 
             except RemoteDataError:
-                print("No {} data on yahoo".format(ticker))
+                message = "No {} data on yahoo".format(ticker)
+                delete_stock(stock.pk)
             except KeyError:
-                print('Stock {} doesnt exist'.format(ticker))
-                delete_stock(ticker)
+                message = 'Stock {} doesnt exist'.format(ticker)
+                delete_stock(stock.pk)
             except:
-                print('Unkown error with {}'.format(ticker))
+                message = 'Unkown error with {}'.format(ticker)
+                delete_stock(stock.pk)
 
-    return tickers
+    return tickers, message
 
 
 def get_nyse_data_yahoo(ticker, reload_nyse=False):
-    start = dt.datetime(2019, 1, 1)
-    end = dt.datetime(2019, 11, 25)
+    start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+    end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
     stock = Stock.objects.get(ticker=ticker)
     df = web.DataReader(ticker, 'yahoo', start, end)
@@ -171,3 +172,6 @@ def visualize_nyse_data():
     heatmap.set_clim(-1, 1)
     plt.tight_layout()
     plt.show()
+
+
+

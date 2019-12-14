@@ -1,0 +1,15 @@
+{% extends "trading/includes/header.html"  %}
+
+{% block content %}
+
+<h2>Hello {{user.first_name}}</h2>
+<h5>Account details</h5>
+
+<span>Email: {{user.email}}</span>
+<br>
+<span>First Name: {{user.first_name}}</span>
+<br>
+<span>Last Name: {{user.last_name}}</span>
+
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends "trading/includes/header.html"  %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<table class="table">
+        <tr>
+            <th scope="col">Ticker</th>
+            <th scope="col">Name</th>
+            <th scope="col">Exchange</th>
+        </tr>
+        <tbody>
+        {% for stock in stocks %}
+        <tr>
+            <th scope="row"><a href="/search/?search={{stock.ticker}}">{{stock.ticker}}</a></th>
+            <td>{{stock.name}}</td>
+            <td>{{stock.exchange}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+    <span class="step-links">
+        {% if stocks.has_previous %}
+            <a href="?page={{ stocks.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ stocks.number }} of {{ stocks.paginator.num_pages }}.
+        </span>
+
+        {% if stocks.has_next %}
+            <a href="?page={{ stocks.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+    </div>
+</div>
+
+{% endblock %}
