@@ -63,10 +63,10 @@ def save_nyse_tickers():
             ticker = ticker.translate(mapping)
             name = row.findAll('td')[0].text
             exchange = 'NYSE'
-            print(ticker)
 
             try:
                 insert_stock(name, ticker, exchange)
+                stock = Stock.objects.get(ticker=ticker)
                 get_nyse_data_yahoo(ticker)
                 tickers.append(ticker)
                 print('Added ', ticker)
@@ -79,7 +79,6 @@ def save_nyse_tickers():
                     print('Added {} data '.format(ticker))
                 except RemoteDataError:
                     message = 'No data found for {}'.format(ticker)
-                    stock = Stock.objects.get(ticker=ticker)
                     delete_stock(stock.pk)
                 except (MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError):
                     message = 'Market data for {} already up to date'.format(ticker)
@@ -95,6 +94,7 @@ def save_nyse_tickers():
                 delete_stock(stock.pk)
             except:
                 message = 'Unkown error with {}'.format(ticker)
+                delete_stock(stock.pk)
 
     return tickers, message
 

@@ -38,6 +38,7 @@
                                 <ul class="list-group list-group-horizontal">
 
                                     <div class="list-group-item flex-fill">
+                                        <h6>Recent Data</h6>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
@@ -48,10 +49,22 @@
                                     </div>
 
                                     <div class="list-group-item flex-fill">
+                                        <h6>Change</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Daily Change:</h6> <span>0</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Daily Change %:</h6> <span>00.00</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Volume Change %:</h6> <span>00.00</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Daily Change:</h6> <span>{{ yest_diff }}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Daily Change %:</h6> <span>{{ yest_diff_perc }}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume Change %:</h6> <span>{{ yest_vol_diff }}</span></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="list-group-item flex-fill">
+                                        <h6>Previous Data</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{day_bef.open}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{day_bef.close}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{day_bef.high}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{day_bef.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{day_bef.volume}}</span></li>
                                         </ul>
                                     </div>
 
@@ -64,20 +77,33 @@
                                 <ul class="list-group list-group-horizontal">
 
                                     <div class="list-group-item flex-fill">
+                                        <h6>Recent Data</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                        </ul>
+                                    </div>
+
+                                     <div class="list-group-item flex-fill">
+                                         <h6>Change</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item flex-fill"><h6>Yearly Change:</h6> <span>{{ ytd_diff }}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Yearly Change %:</h6> <span>{{ ytd_diff_perc }}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume Change %:</h6> <span>{{ ytd_vol_diff }}</span></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="list-group-item flex-fill">
+                                        <h6>YTD Data</h6>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{ytd.open}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{ytd.close}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{ytd.high}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{ytd.low}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{ytd.volume}}</span></li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="list-group-item flex-fill">
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Yearly Change:</h6> <span>{{ ytd_diff }}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Yearly Change %:</h6> <span>{{ ytd_diff_perc }}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Volume Change %:</h6> <span>{{ ytd_vol_diff }}</span></li>
                                         </ul>
                                     </div>
 
