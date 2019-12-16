@@ -74,6 +74,7 @@ def save_nyse_tickers():
                 message = 'Ticker {} already exsists in stock table'.format(ticker)
 
                 try:
+                    stock = Stock.objects.get(ticker=ticker)
                     get_nyse_data_yahoo(ticker)
                     tickers.append(ticker)
                     print('Added {} data '.format(ticker))

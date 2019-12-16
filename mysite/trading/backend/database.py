@@ -1,11 +1,8 @@
-from datetime import datetime, date
-import sqlalchemy
 import pandas as pd
 from sqlalchemy import create_engine, insert, MetaData, Table, select, and_, delete, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists
-from sqlalchemy.ext.declarative import declarative_base
-from ..models import Stock
+from ..models import Stock, MarketData
 
 
 def createmysqldb():
@@ -20,33 +17,6 @@ def createmysqldb():
 def get_engine():
     engine = create_engine('mysql://stocks:Password10!@localhost/trading')
     return engine
-
-
-# Creates the database tables, the classes are the tables that will be created
-def create_tables():
-    base = declarative_base()
-
-    class Stock(base):
-        __tablename__ = 'stock'
-        id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-        ticker = sqlalchemy.Column(sqlalchemy.String(length=10), unique=True)
-        name = sqlalchemy.Column(sqlalchemy.String(length=255))
-        exchange = sqlalchemy.Column(sqlalchemy.String(length=15))
-
-    class MarketData(base):
-        __tablename__ = 'market_data'
-        date = sqlalchemy.Column(sqlalchemy.DATE, index=True, primary_key=True)
-        ticker = sqlalchemy.Column(sqlalchemy.ForeignKey(Stock.ticker), index=True, primary_key=True)
-        high = sqlalchemy.Column(sqlalchemy.Float)
-        low = sqlalchemy.Column(sqlalchemy.Float)
-        open = sqlalchemy.Column(sqlalchemy.Float)
-        close = sqlalchemy.Column(sqlalchemy.Float)
-        volume = sqlalchemy.Column(sqlalchemy.Integer)
-        adj_close = sqlalchemy.Column(sqlalchemy.Float)
-
-    # Index('stock_day', market_data.c.date, market_data.c.ticker)
-
-    base.metadata.create_all(get_engine())
 
 
 # Deletes stock from stock table of database

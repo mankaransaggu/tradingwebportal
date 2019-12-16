@@ -83,53 +83,38 @@ def get_stock_graph(self, context):
     context['favourites'] = sidebar(request)
 
     # Calls method to create market data dataframe from sql query
-    # try:
-    df = db.create_df(symbol)
+    try:
+        context['graph'] = data.create_stock_chart(100, symbol)
 
-    # Create the two
-    df_ohlc = df['adj_close'].resample('10D').ohlc()
-    df_volume = df['volume'].resample('10D').sum()
+        context['found'] = True
 
-    df_ohlc.reset_index(inplace=True)
-    df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
+        stock = Stock.objects.get(ticker=symbol)
+        context['stock'] = stock
 
-    fig = go.Figure(data=[go.Candlestick(x=df.index,
-                                         open=df['open'],
-                                         high=df['high'],
-                                         low=df['low'],
-                                         close=df['close']
-                                         )])
-    div = opy.plot(fig, auto_open=False, output_type='div')
+        # Get yesterdays and YTD data
+        context['latest'] = data.get_yesterday(symbol)
+        context['ytd'] = data.get_ytd(symbol)
+        context['day_bef'] = data.get_day_before(symbol)
+        context['earliest'] = data.get_earliest(symbol)
 
-    context['graph'] = div
-    context['found'] = True
-    stock = Stock.objects.get(ticker=symbol)
-    context['stock'] = stock
+        context['yest_diff'] = data.get_change(context['latest'].close, context['day_bef'].close)
+        context['yest_diff_perc'] = data.get_change_percent(context['latest'].close, context['day_bef'].close)
+        context['yest_vol_diff'] = data.get_change_percent(context['latest'].volume, context['day_bef'].volume)
 
-    # Get yesterdays and YTD data
-    context['latest'] = data.get_yesterday(symbol)
-    context['ytd'] = data.get_ytd(symbol)
-    context['day_bef'] = data.get_day_before(symbol)
-    context['earliest'] = data.get_earliest(symbol)
+        context['ytd_diff_perc'] = data.get_change_percent(context['latest'].close, context['ytd'].close)
+        context['ytd_diff'] = data.get_change(context['latest'].close, context['ytd'].close)
+        context['ytd_vol_diff'] = data.get_change_percent(context['latest'].volume, context['ytd'].volume)
 
-    context['yest_diff'] = data.get_change(context['latest'].close, context['day_bef'].close)
-    context['yest_diff_perc'] = data.get_change_percent(context['latest'].close, context['day_bef'].close)
-    context['yest_vol_diff'] = data.get_change_percent(context['latest'].volume, context['day_bef'].volume)
+        context['early_diff'] = data.get_change(context['latest'].close, context['earliest'].close)
+        context['early_diff_perc'] = data.get_change_percent(context['latest'].close, context['earliest'].close)
+        context['early_vol_diff'] = data.get_change_percent(context['latest'].volume, context['earliest'].volume)
 
-    context['ytd_diff_perc'] = data.get_change_percent(context['latest'].close, context['ytd'].close)
-    context['ytd_diff'] = data.get_change(context['latest'].close, context['ytd'].close)
-    context['ytd_vol_diff'] = data.get_change_percent(context['latest'].volume, context['ytd'].volume)
+        return context
 
-    context['early_diff'] = data.get_change(context['latest'].close, context['earliest'].close)
-    context['early_diff_perc'] = data.get_change_percent(context['latest'].close, context['earliest'].close)
-    context['early_vol_diff'] = data.get_change_percent(context['latest'].volume, context['earliest'].volume)
-
-    return context
-
-# except:
-#     context['found'] = False
-#     context['message'] = symbol + ' Is Not A Listed Exchange Or Stock'
-#     return context
+    except:
+        context['found'] = False
+        context['message'] = symbol + ' Is Not A Listed Exchange Or Stock'
+        return context
 
 
 def get_exchange_stocks(self, context):
@@ -203,7 +188,6 @@ def exchange_stocks(request):
     try:
 
         stock_list = Stock.objects.filter(exchange__code=exchange).order_by('ticker')
-
         paginator = Paginator(stock_list, 50)
         page = request.GET.get('page')
 
