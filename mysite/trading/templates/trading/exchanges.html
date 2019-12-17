@@ -13,7 +13,7 @@
         <tbody>
         {% for exchange in exchanges %}
         <tr>
-            <th scope="row"><a href="/exchange/?exchange={{exchange.code}}">{{exchange.code}}</a></th>
+            <th scope="row"><a href="{% url 'exchange' exchange.id %}">{{exchange.code}}</a></th>
             <td>{{exchange.name}}</td>
             <td>{{exchange.country}}</td>
         </tr>

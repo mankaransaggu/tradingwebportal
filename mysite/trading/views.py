@@ -22,6 +22,7 @@ from .backend import stock_data as data
 from .forms import SignUpForm
 from .tokens import account_activation_token
 from .models import Favourites, Exchange, Stock, MarketData
+from .backend import database as db
 
 import threading
 pd.core.common.is_list_like = pd.api.types.is_list_like
@@ -33,6 +34,46 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         return MarketData.objects.order_by('-date')[:5]
+
+
+class ExchangesView(generic.ListView):
+    template_name = 'trading/exchanges.html'
+    context_object_name = 'exchanges'
+
+    def get_queryset(self):
+        return Exchange.objects.all()
+
+
+class ExchangeStocksView(generic.ListView):
+    template_name = 'trading/exchange_stocks.html'
+    context_object_name = 'stocks'
+
+    def get_queryset(self):
+        return Stock.objects.order_by('ticker')
+
+
+class StocksView(generic.ListView):
+    template_name = 'trading/stocks.html'
+    context_object_name = 'stocks'
+
+    def get_queryset(self):
+        return Stock.objects.order_by('-ticker')
+
+
+class StockView(generic.DetailView):
+    model = Stock
+    template_name = 'trading/detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(StockView, self).get_context_data(**kwargs)
+        pk = self.kwargs['pk']
+        stock = Stock.objects.get(id=pk)
+
+        context['graph'] = data.create_stock_chart(100, stock)
+        # Get yesterdays and YTD data
+        data.get_view_context(context, stock.ticker)
+
+        return context
 
 
 class Setting(TemplateView):
@@ -52,138 +93,6 @@ class Setting(TemplateView):
             context['messages'] = 'Data saving'
 
         return context
-
-
-class Search(TemplateView):
-    template_name = 'trading/exchange_stocks.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(Search, self).get_context_data(**kwargs)
-
-        context = get_exchange_stocks(self, context)
-
-        if context['found'] is False:
-            context = super(Search, self).get_context_data(**kwargs)
-            context = get_stock_graph(self, context)
-            self.template_name = 'trading/chart.html'
-
-            if context['found'] is True:
-                return context
-
-        return context
-
-def get_stock_graph(self, context):
-    context['ticker'] = self.request.GET.get('search')
-    symbol = context['ticker']
-    request = self.request
-    context['favourites'] = sidebar(request)
-
-    # Calls method to create market data dataframe from sql query
-    try:
-        context['graph'] = data.create_stock_chart(100, symbol)
-        stock = Stock.objects.get(ticker=symbol)
-        context['stock'] = stock
-        # Get yesterdays and YTD data
-        data.get_view_context(context, symbol)
-
-        context['found'] = True
-        return context
-
-    except:
-        context['found'] = False
-        context['message'] = symbol + ' Is Not A Listed Exchange Or Stock'
-        return context
-
-
-def get_exchange_stocks(self, context):
-    symbol = self.request.GET.get('search')
-
-    try:
-        exchange = Exchange.objects.get(code=symbol)
-        context['exchange'] = exchange.code
-        stock_list = Stock.objects.filter(exchange__code=exchange.code).order_by('ticker')
-        context['found'] = True
-        paginator = Paginator(stock_list, 50)
-        page = self.request.GET.get('page')
-
-        try:
-            stocks = paginator.page(page)
-        except PageNotAnInteger:
-            stocks = paginator.page(1)
-        except EmptyPage:
-            stocks = paginator.page(paginator.num_pages)
-
-        context['stocks'] = stocks
-
-        return context
-
-    except:
-        context['found'] = False
-        context['message'] = symbol + ' Is Not A Listed Exchange Or Stock'
-        return context
-
-    return context
-
-
-def stock_list(request):
-    stock_list = Stock.objects.all().order_by('ticker')
-    paginator = Paginator(stock_list, 100)
-    page = request.GET.get('page')
-
-    try:
-        stocks = paginator.page(page)
-    except PageNotAnInteger:
-        stocks = paginator.page(1)
-    except EmptyPage:
-        stocks = paginator.page(paginator.num_pages)
-
-    return render(request,
-                  'trading/stocks.html',
-                  {'stocks': stocks})
-
-
-def exchange_list(request):
-    exchange_list = Exchange.objects.all()
-    paginator = Paginator(exchange_list, 100)
-    page = request.GET.get('page')
-
-    try:
-        exchanges = paginator.page(page)
-    except PageNotAnInteger:
-        exchanges = paginator.page(1)
-    except EmptyPage:
-        exchanges = paginator.page(paginator.num_pages)
-
-    return render(request,
-                  'trading/exchanges.html',
-                  {'exchanges': exchanges})
-
-
-def exchange_stocks(request):
-    exchange = request.GET.get('exchange')
-    try:
-
-        stock_list = Stock.objects.filter(exchange__code=exchange).order_by('ticker')
-        paginator = Paginator(stock_list, 50)
-        page = request.GET.get('page')
-
-        try:
-            stocks = paginator.page(page)
-        except PageNotAnInteger:
-            stocks = paginator.page(1)
-        except EmptyPage:
-            stocks = paginator.page(paginator.num_pages)
-
-        return render(request,
-                      'trading/exchange_stocks.html',
-                      {'stocks': stocks})
-
-    except:
-        message = exchange + ' Is Not A Listed Exchange Or Stock'
-
-        return render(request,
-                      'trading/exchange_stocks.html',
-                      {'message': message})
 
 
 def signup(request):
@@ -217,15 +126,6 @@ def signup(request):
     else:
         form = SignUpForm()
     return render(request, 'trading/signup.html', {'form': form})
-
-
-def sidebar(request):
-    if request.user.is_authenticated:
-        favourites = Favourites.objects.filter(account=request.user)
-        return favourites
-
-    else:
-        return 'None'
 
 
 def activate(request, uidb64, token):
@@ -284,3 +184,12 @@ def account(request):
                   'trading/account.html',
                   {'favourites': sidebar(request),
                    'positions': positions})
+
+
+def sidebar(request):
+    if request.user.is_authenticated:
+        favourites = Favourites.objects.filter(account=request.user)
+        return favourites
+
+    else:
+        return 'None'

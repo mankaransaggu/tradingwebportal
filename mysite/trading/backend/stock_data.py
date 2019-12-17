@@ -75,12 +75,11 @@ def get_earliest_date(symbol):
     return earliest
 
 
-def create_stock_chart(days,  symbol):
-    df = stock_df(days, symbol)
-
+def create_stock_chart(days, instr):
+    df = stock_df(days, instr.ticker)
+    print(df.head)
     # Create the two
     df_ohlc = df['adj_close'].resample('10D').ohlc()
-
     df_ohlc.reset_index(inplace=True)
     df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
 
@@ -91,7 +90,7 @@ def create_stock_chart(days,  symbol):
                                          close=df['close']
                                          )])
     fig.update_layout(
-        title=symbol + ' Market Chart',
+        title= instr.ticker + ' Market Chart',
         yaxis_title='Price $',
         width=2500,
         height=1000,

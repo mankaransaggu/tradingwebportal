@@ -20,15 +20,8 @@ def get_engine():
 
 
 # Deletes stock from stock table of database
-def delete_stock(ticker):
-    engine = get_engine()
-    metadata = MetaData(bind=engine)
-    session = sessionmaker(bind=engine)()
-    stock_table = Table('stock', metadata, autoload=True)
-
-    stock = stock_table.delete().where(stock_table.c.ticker == ticker)
-    session.execute(stock)
-    session.commit()
+def delete_stock(stock):
+    Stock.objects.filter(id=stock).delete()
 
 
 # Inserts stock record into stock table of database

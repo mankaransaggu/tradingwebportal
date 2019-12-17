@@ -29,7 +29,7 @@ class Account(models.Model):
 
 
 class Country (models.Model):
-    code = models.CharField(max_length=10, primary_key=True)
+    code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -40,7 +40,7 @@ class Country (models.Model):
 
 
 class Exchange(models.Model):
-    code = models.CharField(max_length=25, primary_key=True)
+    code = models.CharField(max_length=25, unique=True)
     name = models.CharField(max_length=250, unique=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
@@ -84,7 +84,7 @@ class MarketData(models.Model):
 
 class Position(models.Model):
     position_number = models.AutoField(primary_key=True)
-    #ticker = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    ticker = models.ForeignKey(Stock, on_delete=models.CASCADE)
     date = models.DateField()
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
     buy_price = models.FloatField()

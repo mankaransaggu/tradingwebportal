@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exchange, Country, Position, Stock, MarketData, Favourites
+from .models import Exchange, Country, Stock, MarketData, Favourites
 
 
 class CountryAdmin(admin.ModelAdmin):

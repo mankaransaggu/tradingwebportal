@@ -15,7 +15,7 @@
         <tbody>
         {% for stock in stocks %}
         <tr>
-            <th scope="row"><a href="/search/?search={{stock.ticker}}">{{stock.ticker}}</a></th>
+            <th scope="row"><a href="{% url 'equity' stock.id %}">{{stock.ticker}}</a></th>
             <td>{{stock.name}}</td>
         </tr>
         {% endfor %}
