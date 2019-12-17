@@ -47,6 +47,7 @@ class ExchangesView(generic.ListView):
 class ExchangeStocksView(generic.ListView):
     template_name = 'trading/exchange_stocks.html'
     context_object_name = 'stocks'
+    paginate_by = 50
 
     def get_queryset(self):
         return Stock.objects.order_by('ticker')
@@ -55,9 +56,10 @@ class ExchangeStocksView(generic.ListView):
 class StocksView(generic.ListView):
     template_name = 'trading/stocks.html'
     context_object_name = 'stocks'
+    paginate_by = 50
 
     def get_queryset(self):
-        return Stock.objects.order_by('-ticker')
+        return Stock.objects.order_by('ticker')
 
 
 class StockView(generic.DetailView):

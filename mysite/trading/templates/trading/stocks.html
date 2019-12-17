@@ -4,7 +4,23 @@
 
 <div class="container-fluid">
 
-<table class="table">
+    {% if is_paginated %}
+    <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="/equities?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="/equities?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+    </div>
+    {% endif %}
+
+    <table class="table">
         <tr>
             <th scope="col">Ticker</th>
             <th scope="col">Name</th>
@@ -21,21 +37,24 @@
         </tbody>
     </table>
 
+    {% if is_paginated %}
     <div class="pagination">
-    <span class="step-links">
-        {% if stocks.has_previous %}
-            <a href="?page={{ stocks.previous_page_number }}">previous</a>
-        {% endif %}
-
-        <span class="current">
-            Page {{ stocks.number }} of {{ stocks.paginator.num_pages }}.
-        </span>
-
-        {% if stocks.has_next %}
-            <a href="?page={{ stocks.next_page_number }}">next</a>
-        {% endif %}
-    </span>
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="/equities?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="/equities?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
     </div>
+    {% endif %}
+
+    </span>
+</div>
 </div>
 
 {% endblock %}
