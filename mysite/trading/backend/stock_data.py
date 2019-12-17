@@ -80,7 +80,6 @@ def create_stock_chart(days,  symbol):
 
     # Create the two
     df_ohlc = df['adj_close'].resample('10D').ohlc()
-    df_volume = df['volume'].resample('10D').sum()
 
     df_ohlc.reset_index(inplace=True)
     df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
@@ -91,10 +90,12 @@ def create_stock_chart(days,  symbol):
                                          low=df['low'],
                                          close=df['close']
                                          )])
-
     fig.update_layout(
         title=symbol + ' Market Chart',
         yaxis_title='Price $',
+        width=2500,
+        height=1000,
+        autosize=True
     )
 
     div = opy.plot(fig, auto_open=False, output_type='div')
@@ -107,13 +108,32 @@ def stock_df(days, ticker):
         date = end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days), '%Y-%m-%d')
         qs = MarketData.objects.filter(ticker__ticker=ticker, date__gte=date)
         df = read_frame(qs)
-        print(df.head())
         del df['id']
         df.set_index('date', inplace=True)
         df.index = pd.to_datetime(df.index)
-        print(df.head())
 
         return df
 
     except:
         return 'No stock with provided ticker'
+
+
+def get_view_context(context, symbol):
+    context['latest'] = get_yesterday(symbol)
+    context['ytd'] = get_ytd(symbol)
+    context['day_bef'] = get_day_before(symbol)
+    context['earliest'] = get_earliest(symbol)
+
+    context['yest_diff'] = get_change(context['latest'].close, context['day_bef'].close)
+    context['yest_diff_perc'] = get_change_percent(context['latest'].close, context['day_bef'].close)
+    context['yest_vol_diff'] = get_change_percent(context['latest'].volume, context['day_bef'].volume)
+
+    context['ytd_diff_perc'] = get_change_percent(context['latest'].close, context['ytd'].close)
+    context['ytd_diff'] = get_change(context['latest'].close, context['ytd'].close)
+    context['ytd_vol_diff'] = get_change_percent(context['latest'].volume, context['ytd'].volume)
+
+    context['early_diff'] = get_change(context['latest'].close, context['earliest'].close)
+    context['early_diff_perc'] = get_change_percent(context['latest'].close, context['earliest'].close)
+    context['early_vol_diff'] = get_change_percent(context['latest'].volume, context['earliest'].volume)
+
+    return context

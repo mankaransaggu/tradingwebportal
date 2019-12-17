@@ -70,6 +70,7 @@ def save_nyse_tickers():
                 get_nyse_data_yahoo(ticker)
                 tickers.append(ticker)
                 print('Added ', ticker)
+
             except (sqlalchemy.exc.IntegrityError, MySQLdb._exceptions.IntegrityError):
                 message = 'Ticker {} already exsists in stock table'.format(ticker)
 

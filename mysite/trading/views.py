@@ -1,41 +1,38 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.db.models import Q
-from django.shortcuts import render
-from django.views.generic import TemplateView
-import matplotlib.dates as mdates
-import pandas as pd
-import plotly.graph_objects as go
-import plotly.offline as opy
-from .backend import get_nyse_data
-from .backend import database as db
-from .backend import stock_data as data
-import datetime as dt
-
 from django.contrib.sites.shortcuts import get_current_site
-
-from django.template.loader import render_to_string
-from .forms import SignUpForm
-from .tokens import account_activation_token
-
+from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 
-from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode
-from django.contrib import messages
 
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.views import generic
+
+from django.views.generic import TemplateView
+from django.template.loader import render_to_string
+
+import pandas as pd
+
+from .backend import get_nyse_data
+from .backend import stock_data as data
+from .forms import SignUpForm
+from .tokens import account_activation_token
 from .models import Favourites, Exchange, Stock, MarketData
 
+import threading
 pd.core.common.is_list_like = pd.api.types.is_list_like
 
 
-def home(request):
-    return render(request, 'trading/chart.html', {'favourites': sidebar(request)})
+class IndexView(generic.ListView):
+    template_name = 'trading/index.html'
+    context_object_name = 'latest_stock_list'
+
+    def get_queryset(self):
+        return MarketData.objects.order_by('-date')[:5]
 
 
 class Setting(TemplateView):
@@ -51,8 +48,8 @@ class Setting(TemplateView):
         setting = context['setting']
 
         if setting == 'download':
-            results = get_nyse_data.save_nyse_tickers()
-            context['messages'] = results[1]
+            get_nyse_data.save_nyse_tickers()
+            context['messages'] = 'Data saving'
 
         return context
 
@@ -75,7 +72,6 @@ class Search(TemplateView):
 
         return context
 
-
 def get_stock_graph(self, context):
     context['ticker'] = self.request.GET.get('search')
     symbol = context['ticker']
@@ -85,30 +81,12 @@ def get_stock_graph(self, context):
     # Calls method to create market data dataframe from sql query
     try:
         context['graph'] = data.create_stock_chart(100, symbol)
-
-        context['found'] = True
-
         stock = Stock.objects.get(ticker=symbol)
         context['stock'] = stock
-
         # Get yesterdays and YTD data
-        context['latest'] = data.get_yesterday(symbol)
-        context['ytd'] = data.get_ytd(symbol)
-        context['day_bef'] = data.get_day_before(symbol)
-        context['earliest'] = data.get_earliest(symbol)
+        data.get_view_context(context, symbol)
 
-        context['yest_diff'] = data.get_change(context['latest'].close, context['day_bef'].close)
-        context['yest_diff_perc'] = data.get_change_percent(context['latest'].close, context['day_bef'].close)
-        context['yest_vol_diff'] = data.get_change_percent(context['latest'].volume, context['day_bef'].volume)
-
-        context['ytd_diff_perc'] = data.get_change_percent(context['latest'].close, context['ytd'].close)
-        context['ytd_diff'] = data.get_change(context['latest'].close, context['ytd'].close)
-        context['ytd_vol_diff'] = data.get_change_percent(context['latest'].volume, context['ytd'].volume)
-
-        context['early_diff'] = data.get_change(context['latest'].close, context['earliest'].close)
-        context['early_diff_perc'] = data.get_change_percent(context['latest'].close, context['earliest'].close)
-        context['early_vol_diff'] = data.get_change_percent(context['latest'].volume, context['earliest'].volume)
-
+        context['found'] = True
         return context
 
     except:
@@ -124,9 +102,7 @@ def get_exchange_stocks(self, context):
         exchange = Exchange.objects.get(code=symbol)
         context['exchange'] = exchange.code
         stock_list = Stock.objects.filter(exchange__code=exchange.code).order_by('ticker')
-
         context['found'] = True
-
         paginator = Paginator(stock_list, 50)
         page = self.request.GET.get('page')
 
@@ -303,6 +279,8 @@ def logout_request(request):
 
 
 def account(request):
+    positions = ''
     return render(request,
                   'trading/account.html',
-                  {'favourites': sidebar(request)})
+                  {'favourites': sidebar(request),
+                   'positions': positions})

@@ -1,10 +1,10 @@
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
-from .views import Setting, Search
+from .views import Setting, Search, IndexView
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', IndexView.as_view(), name='home'),
     path('search/', Search.as_view(), name='market_search'),
     path('signup/', views.signup, name='signup'),
     path('login/', views.login_request, name='login'),
