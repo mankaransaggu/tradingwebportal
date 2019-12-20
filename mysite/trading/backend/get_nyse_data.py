@@ -12,7 +12,7 @@ import sqlalchemy
 from matplotlib import style
 from pandas_datareader._utils import RemoteDataError
 from .database import delete_stock, insert_stock, get_engine, create_df
-from ..models import Stock, MarketData
+from ..models import Stock, MarketData, Exchange
 
 
 style.use('ggplot')
@@ -62,18 +62,20 @@ def save_nyse_tickers():
             mapping = str.maketrans(".", "-")
             ticker = ticker.translate(mapping)
             name = row.findAll('td')[0].text
-            exchange = 'NYSE'
+            exchange = Exchange.objects.get(code='NYSE')
 
             try:
-                insert_stock(name, ticker, exchange)
+                insert_stock(name, ticker, exchange.pk)
                 stock = Stock.objects.get(ticker=ticker)
                 get_nyse_data_yahoo(ticker)
                 tickers.append(ticker)
                 print('Added ', ticker)
+
             except (sqlalchemy.exc.IntegrityError, MySQLdb._exceptions.IntegrityError):
                 message = 'Ticker {} already exsists in stock table'.format(ticker)
 
                 try:
+                    stock = Stock.objects.get(ticker=ticker)
                     get_nyse_data_yahoo(ticker)
                     tickers.append(ticker)
                     print('Added {} data '.format(ticker))
@@ -100,7 +102,7 @@ def save_nyse_tickers():
 
 
 def get_nyse_data_yahoo(ticker, reload_nyse=False):
-    start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+    start = dt.datetime(2005, 1, 1)
     end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
     stock = Stock.objects.get(ticker=ticker)

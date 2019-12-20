@@ -29,7 +29,7 @@ class Account(models.Model):
 
 
 class Country (models.Model):
-    code = models.CharField(max_length=10, primary_key=True)
+    code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -40,7 +40,7 @@ class Country (models.Model):
 
 
 class Exchange(models.Model):
-    code = models.CharField(max_length=25, primary_key=True)
+    code = models.CharField(max_length=25, unique=True)
     name = models.CharField(max_length=250, unique=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
 
@@ -84,15 +84,19 @@ class MarketData(models.Model):
 
 class Position(models.Model):
     position_number = models.AutoField(primary_key=True)
-    #ticker = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    date = models.DateField()
+    ticker = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    open_date = models.DateField(default=None, blank=True, null=True)
+    close_date = models.DateField(default=None, blank=True, null=True)
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
-    buy_price = models.FloatField()
-    sell_price = models.FloatField()
+    quantity = models.FloatField()
+    open_price = models.FloatField()
+    close_price = models.FloatField(default=None, blank=True, null=True)
+    result = models.FloatField(default=None, blank=True, null=True)
     position_state = models.CharField(max_length=10, choices=POSITION_STATES)
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.position_number
+        return str(self.position_number)
 
     class Meta:
         db_table = 'positions'

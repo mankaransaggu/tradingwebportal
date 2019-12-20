@@ -7,6 +7,23 @@
 <div class="container-fluid">
 
     <h1>{{exchange}} Listed Stocks</h1>
+
+    {% if is_paginated %}
+    <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="{{exchange.pk}}?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="{{exchange.pk}}?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+    </div>
+    {% endif %}
+
     <table class="table">
         <tr>
             <th scope="col">Ticker</th>
@@ -15,7 +32,7 @@
         <tbody>
         {% for stock in stocks %}
         <tr>
-            <th scope="row"><a href="/search/?search={{stock.ticker}}">{{stock.ticker}}</a></th>
+            <th scope="row"><a href="{% url 'equity' stock.id %}">{{stock.ticker}}</a></th>
             <td>{{stock.name}}</td>
         </tr>
         {% endfor %}
@@ -31,10 +48,6 @@
         <span class="current">
             Page {{ stocks.number }} of {{ stocks.paginator.num_pages }}.
         </span>
-
-        {% if stocks.has_next %}
-            <a href="?page={{ exchange.next_page_number }}">next</a>
-        {% endif %}
     </span>
     </div>
 
@@ -42,6 +55,23 @@
     {% elif message %}
     <h4>{{message}}</h4>
     {% endif %}
+
+    {% if is_paginated %}
+    <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="{{exchange.pk}}?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="{{exchange.pk}}?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+    </div>
+    {% endif %}
+
 </div>
 
 {% endblock %}

@@ -1,19 +1,21 @@
 from django.urls import path, include, re_path
-from django.views.generic import TemplateView
-from .views import Setting, Search
 from . import views
 
+
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('search/', Search.as_view(), name='market_search'),
+    path('', views.IndexView.as_view(), name='index'),
+    path('equities/', views.StocksView.as_view(), name='equites'),
+    path('equity/<int:pk>/', views.StockView.as_view(), name='equity'),
+    path('exchanges/', views.ExchangesView.as_view(), name='exchanges'),
+    path('exchange/<int:pk>/', views.ExchangeStocksView.as_view(), name='exchange'),
+
+
     path('signup/', views.signup, name='signup'),
     path('login/', views.login_request, name='login'),
     path('logout/', views.logout_request, name='logout'),
     path('account/', views.account, name='account'),
-    path('settings/', Setting.as_view(), name='settings'),
-    path('equities/', views.stock_list, name='equities'),
-    path('exchanges/', views.exchange_list, name='exchanges'),
-    path('exchange/', views.exchange_stocks, name='exchange'),
+    path('settings/', views.Setting.as_view(), name='settings'),
+
 
 
     re_path(r'^account_activation_sent/$', views.account_activation_sent, name='account_activation_sent'),
