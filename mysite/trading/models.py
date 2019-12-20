@@ -85,14 +85,17 @@ class MarketData(models.Model):
 class Position(models.Model):
     position_number = models.AutoField(primary_key=True)
     ticker = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    date = models.DateField()
+    open_date = models.DateField(default=None, blank=True, null=True)
+    close_date = models.DateField(default=None, blank=True, null=True)
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
-    buy_price = models.FloatField()
-    sell_price = models.FloatField()
+    open_price = models.FloatField()
+    close_price = models.FloatField(default=None, blank=True, null=True)
+    result = models.FloatField(default=None, blank=True, null=True)
     position_state = models.CharField(max_length=10, choices=POSITION_STATES)
+    account = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.position_number
+        return str(self.position_number)
 
     class Meta:
         db_table = 'positions'

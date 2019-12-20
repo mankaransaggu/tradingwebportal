@@ -75,10 +75,8 @@ def get_earliest_date(symbol):
     return earliest
 
 
-def create_stock_chart(days, instr):
+def create_stock_chart(days, instr, positions):
     df = stock_df(days, instr.ticker)
-    print(df.head)
-    # Create the two
     df_ohlc = df['adj_close'].resample('10D').ohlc()
     df_ohlc.reset_index(inplace=True)
     df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
@@ -90,12 +88,23 @@ def create_stock_chart(days, instr):
                                          close=df['close']
                                          )])
     fig.update_layout(
-        title= instr.ticker + ' Market Chart',
+        title=instr.ticker + ' Market Chart',
         yaxis_title='Price $',
         width=2500,
         height=1000,
         autosize=True
     )
+
+    for position in positions:
+        print(position)
+        fig.update_layout(
+            shapes=[dict(
+                x0=position.open_date, x1=position.open_date, y0=0, y1=1, xref='x', yref='paper',
+                line_width=2)],
+            annotations=[dict(
+                x=position.open_date, y=0.05, xref='x', yref='paper',
+                showarrow=False, xanchor='left', text='Position')]
+        )
 
     div = opy.plot(fig, auto_open=False, output_type='div')
 

@@ -48,10 +48,6 @@
         <span class="current">
             Page {{ stocks.number }} of {{ stocks.paginator.num_pages }}.
         </span>
-
-        {% if stocks.has_next %}
-            <a href="?page={{ exchange.next_page_number }}">next</a>
-        {% endif %}
     </span>
     </div>
 

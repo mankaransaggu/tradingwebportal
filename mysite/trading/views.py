@@ -21,7 +21,7 @@ from .backend import get_nyse_data
 from .backend import stock_data as data
 from .forms import SignUpForm
 from .tokens import account_activation_token
-from .models import Favourites, Exchange, Stock, MarketData
+from .models import Favourites, Exchange, Stock, MarketData, Position
 from .backend import database as db
 
 import threading
@@ -70,8 +70,13 @@ class StockView(generic.DetailView):
         context = super(StockView, self).get_context_data(**kwargs)
         pk = self.kwargs['pk']
         stock = Stock.objects.get(id=pk)
+        open_positions = Position.objects.filter(account_id=self.request.user.pk, ticker__id=pk, position_state='open')
+        close_positions = Position.objects.filter(account_id=self.request.user.pk, ticker__id=pk, position_state='closed')
+        print(close_positions)
 
-        context['graph'] = data.create_stock_chart(100, stock)
+        context['graph'] = data.create_stock_chart(100, stock, open_positions)
+        context['open_positions'] = open_positions
+        context['close_positions'] = close_positions
         # Get yesterdays and YTD data
         data.get_view_context(context, stock.ticker)
 
@@ -143,7 +148,7 @@ def activate(request, uidb64, token):
         user.save()
         login(request, user)
         messages.success(request, f"New account activated: {user.email}")
-        return redirect('home')
+        return redirect('index')
     else:
         return render(request, 'trading/account_activation_invalid.html')
 
@@ -177,11 +182,11 @@ def logout_request(request):
     logout(request)
     messages.info(request, 'Logged Out')
 
-    return redirect('home')
+    return redirect('index')
 
 
 def account(request):
-    positions = ''
+    positions = Position.objects.filter(account_id=request.user.pk)
     return render(request,
                   'trading/account.html',
                   {'favourites': sidebar(request),

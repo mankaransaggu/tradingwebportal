@@ -1,14 +1,12 @@
 {% extends "trading/includes/header.html"  %}
 
 {% block content %}
-
 <div class="container-fluid">
 
     <h2 class="display-2 text-center">{{user.first_name}} Account</h2>
 
     <div class="row">
-
-        <div class="col-s12">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
 
@@ -23,11 +21,10 @@
                             <a class="nav-link" href="#favourites" role="tab" aria-controls="favourites" aria-selected="false">Favourites</a>
                         </li>
                     </ul>
-
                 </div>
 
                 <div class="card-body">
-                    <h3 class="card-title">{{user.first_name}} Account</h3>
+                    <h3 class="card-title">Your Account</h3>
 
                     <div class="tab-content mt-3">
 
@@ -49,15 +46,48 @@
                             </div>
                         </div>
 
-                        <div class="tab-pane active" id="positions" role="tabpanel">
+                        <div class="tab-pane" id="positions" role="tabpanel">
                             <div class="card-text">
                                 <ul class="list-group list-group-horizontal">
 
                                     <div class="list-group-item flex-fill">
-                                        <h6>Account Details</h6>
+                                        <h6>Positions</h6>
                                         <ul class="list-group list-group-flush">
                                             {% if positions %}
-                                            <h1>OS</h1>
+
+                                            <table class="table">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">Open Date</th>
+                                                    <th scope="col">Close Date</th>
+                                                    <th scope="col">Instrument</th>
+                                                    <th scope="col">Direction</th>
+                                                    <th scope="col">Open Price</th>
+                                                    <th scope="col">Close Price</th>
+                                                    <th scope="col">State</th>
+                                                    <th scope="col">Result</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for position in positions %}
+
+                                                <tr>
+                                                    <th scope="row">{{position.position_number}}</th>
+                                                    <td>{{position.open_date}}</td>
+                                                    <td>{{position.close_date}}</td>
+                                                    <td> <a href="{% url 'equity' position.ticker_id %}">{{position.ticker}}</a></td>
+                                                    <td>{{position.direction}}</td>
+                                                    <td>{{position.open_price}}</td>
+                                                    <td>{{position.close_price}}</td>
+                                                    <td>{{position.position_state}}</td>
+                                                    <td>{{position.result}}</td>
+                                                </tr>
+
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+
                                             {% else %}
                                             <span>No positions have been created on this account</span>
                                             {% endif %}
