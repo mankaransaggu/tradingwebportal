@@ -88,6 +88,7 @@ class Position(models.Model):
     open_date = models.DateField(default=None, blank=True, null=True)
     close_date = models.DateField(default=None, blank=True, null=True)
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
+    quantity = models.FloatField()
     open_price = models.FloatField()
     close_price = models.FloatField(default=None, blank=True, null=True)
     result = models.FloatField(default=None, blank=True, null=True)
