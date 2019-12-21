@@ -99,6 +99,10 @@ class Setting(TemplateView):
             get_nyse_data.save_nyse_tickers()
             context['messages'] = 'Data saving'
 
+        if setting == 'update':
+            get_nyse_data.update_market_data()
+            context['messages'] = 'Data saving'
+
         return context
 
 
@@ -197,6 +201,5 @@ def sidebar(request):
     if request.user.is_authenticated:
         favourites = Favourites.objects.filter(account=request.user)
         return favourites
-
     else:
         return 'None'

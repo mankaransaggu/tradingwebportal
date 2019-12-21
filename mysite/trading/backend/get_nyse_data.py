@@ -71,31 +71,8 @@ def save_nyse_tickers():
                 tickers.append(ticker)
                 print('Added ', ticker)
 
-            except (sqlalchemy.exc.IntegrityError, MySQLdb._exceptions.IntegrityError):
-                message = 'Ticker {} already exsists in stock table'.format(ticker)
-
-                try:
-                    stock = Stock.objects.get(ticker=ticker)
-                    get_nyse_data_yahoo(ticker)
-                    tickers.append(ticker)
-                    print('Added {} data '.format(ticker))
-                except RemoteDataError:
-                    message = 'No data found for {}'.format(ticker)
-                    delete_stock(stock.pk)
-                except (MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError):
-                    message = 'Market data for {} already up to date'.format(ticker)
-                except KeyError:
-                    message = 'Stock {} doesnt exist'.format(ticker)
-                    delete_stock(stock.pk)
-
-            except RemoteDataError:
-                message = "No {} data on yahoo".format(ticker)
-                delete_stock(stock.pk)
-            except KeyError:
-                message = 'Stock {} doesnt exist'.format(ticker)
-                delete_stock(stock.pk)
             except:
-                message = 'Unkown error with {}'.format(ticker)
+                print('Error with {}'.format(ticker))
                 delete_stock(stock.pk)
 
     return tickers, message
@@ -111,6 +88,21 @@ def get_nyse_data_yahoo(ticker, reload_nyse=False):
     df['ticker'] = stock.pk
     df.index.names = ['date']
     df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+
+
+def update_market_data():
+    start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+    end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+
+    for stock in Stock.objects.all():
+        ticker = stock.ticker
+        stock = Stock.objects.get(ticker=ticker)
+        df = web.DataReader(ticker, 'yahoo', start, end)
+        df = df.rename(columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close', 'Volume': 'volume',
+                                'Adj Close': 'adj_close'})
+        df['ticker'] = stock.pk
+        df.index.names = ['date']
+        df.to_sql('market_data', get_engine(), if_exists='append', index=True)
 
 
 def compile_nyse_data():

@@ -181,7 +181,7 @@
 
                                 <div class="list-group-item flex-fill">
                                     <h6>Open Positions</h6>
-
+                                    {% if user.is_authenticated %}
                                     {% if open_positions %}
                                     <table class="table">
                                         <thead>
@@ -219,8 +219,13 @@
                                     </table>
 
                                     {% else %}
-                                    <span>No positions have been created on this account</span>
+                                    <span>No positions have been created with this instrument</span>
                                     {% endif %}
+
+                                    {% else %}
+                                    <span>Please <a href="/login">Login</a> to you account</span>
+                                    {% endif %}
+
                                 </div>
                             </div>
                         </div>
@@ -230,7 +235,7 @@
 
                                 <div class="list-group-item flex-fill">
                                     <h6>Closed Positions</h6>
-
+                                    {% if user.is_authenticated %}
                                     {% if close_positions %}
                                     <table class="table">
                                         <thead>
@@ -266,8 +271,14 @@
                                         </tbody>
                                     </table>
 
+
+
                                     {% else %}
-                                    <span>No positions have been created on this account</span>
+                                    <span>No positions have been created with this instrument</span>
+                                    {% endif %}
+
+                                    {% else %}
+                                    <span>Please <a href="/login">Login</a> to you account</span>
                                     {% endif %}
                                 </div>
                             </div>

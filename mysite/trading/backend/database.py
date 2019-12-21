@@ -22,6 +22,7 @@ def get_engine():
 # Deletes stock from stock table of database
 def delete_stock(stock):
     Stock.objects.filter(id=stock).delete()
+    print('Deleted Stock {}'.format(stock))
 
 
 # Inserts stock record into stock table of database
