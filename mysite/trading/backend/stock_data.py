@@ -173,7 +173,7 @@ def create_stock_change(instr):
         title={
             "text": "<span style='font-size:0.8em;color:gray'>1D Change</span>"},
         value=yesterday.close,
-        domain={'x': [0, 0.5], 'y': [0.6, 1]},
+        domain={'x': [0, 0.25], 'y': [0, 0]},
         delta={'reference': day_before.close, 'relative': True}))
 
     fig.add_trace(go.Indicator(
@@ -181,7 +181,7 @@ def create_stock_change(instr):
         title={
             "text": "<span style='font-size:0.8em;color:gray'>7D Change</span>"},
         value=week.close,
-        domain={'x': [0.6, 1], 'y': [0.6, 1]},
+        domain={'x': [0.25, 0.5], 'y': [0, 0]},
         delta={'reference': yesterday.close, 'relative': True}))
 
     fig.add_trace(go.Indicator(
@@ -189,7 +189,7 @@ def create_stock_change(instr):
         title={
             "text": "<span style='font-size:0.8em;color:gray'>30D Change</span>"},
         value=month.close,
-        domain={'x': [0, 0.5], 'y': [0, 0.4]},
+        domain={'x': [0.5, 0.75], 'y': [0, 0]},
         delta={'reference': yesterday.close, 'relative': True}))
 
     fig.add_trace(go.Indicator(
@@ -197,7 +197,7 @@ def create_stock_change(instr):
         title={
             "text": "<span style='font-size:0.8em;color:gray'>YTD Change</span>"},
         value=year.close,
-        domain={'x': [0.6, 1], 'y': [0, 0.4]},
+        domain={'x': [0.75, 1], 'y': [0, 0]},
         delta={'reference': yesterday.close, 'relative': True}))
 
     summary = opy.plot(fig, auto_open=False, output_type='div')

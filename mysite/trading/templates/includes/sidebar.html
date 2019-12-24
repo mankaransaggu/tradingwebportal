@@ -1,19 +1,17 @@
 <nav id="sidebar" class="active">
 
-        <div class="sidebar-header">
-            <h3>Baker Financial</h3>
-            <span>Favourites</span>
+    <div class="sidebar-header">
+        <h3>Baker Financial</h3>
+        <span>Favourites</span>
+    </div>
+
+    <ul class="list-unstyled components">
+
+        {% for fav in favourites %}
+        <div class="row justify-content-center" style="width:100%">
+            <a href="{% url 'equity' fav.stock.id %}"><button class="btn btn-primary text-center" style="width:90%">{{ fav.stock }}</button></a>
         </div>
+        {% endfor %}
 
-        <ul class="list-unstyled components">
-
-            {% for fav in favourites %}
-
-            <li class="">
-                <a href="/search/?ticker={{fav.stock}}">{{fav.stock}}</a>
-            </li>
-
-            {% endfor %}
-
-        </ul>
-    </nav>
+    </ul>
+</nav>

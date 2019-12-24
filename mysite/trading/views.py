@@ -42,6 +42,11 @@ class IndexView(generic.ListView):
     def get_queryset(self):
         return MarketData.objects.order_by('-date')[:5]
 
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context['favourites'] = sidebar(self.request)
+        return context
+
 
 class ExchangesView(generic.ListView):
     template_name = 'trading/exchanges.html'
@@ -49,6 +54,11 @@ class ExchangesView(generic.ListView):
 
     def get_queryset(self):
         return Exchange.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(ExchangesView, self).get_context_data(**kwargs)
+        context['favourites'] = sidebar(self.request)
+        return context
 
 
 class ExchangeStocksView(generic.ListView):
@@ -58,6 +68,11 @@ class ExchangeStocksView(generic.ListView):
 
     def get_queryset(self):
         return Stock.objects.order_by('ticker')
+
+    def get_context_data(self, **kwargs):
+        context = super(ExchangeStocksView, self).get_context_data(**kwargs)
+        context['favourites'] = sidebar(self.request)
+        return context
 
 
 class StocksView(generic.ListView):
@@ -71,7 +86,7 @@ class StocksView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(StocksView, self).get_context_data(**kwargs)
         context['stock_count'] = Exchange.objects.annotate(num_stocks=Count('stock'))
-
+        context['favourites'] = sidebar(self.request)
         return context
 
 
@@ -81,6 +96,9 @@ class StockView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(StockView, self).get_context_data(**kwargs)
+
+        context['favourites'] = sidebar(self.request)
+
         pk = self.kwargs['pk']
         stock = Stock.objects.get(id=pk)
         open_positions = Position.objects.filter(account_id=self.request.user.pk, ticker__id=pk, position_state='open')
@@ -110,6 +128,29 @@ class OpenPositionForm(FormView):
         post.save()
         return redirect('account')
 
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context['favourites'] = sidebar(self.request)
+        return context
+
+
+class AccountView(TemplateView):
+    model = User
+    template_name = 'account/account.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AccountView, self).get_context_data(**kwargs)
+        request = self.request
+        if request.user.is_authenticated:
+            context['favourites'] = sidebar(self.request)
+            positions = Position.objects.filter(account_id=request.user.pk)
+            context['positions'] = positions
+
+            return context
+
+        else:
+            return redirect('login')
+
 
 class Setting(TemplateView):
     template_name = 'trading/settings.html'
@@ -136,6 +177,14 @@ class Setting(TemplateView):
             return context
         else:
             return context
+
+
+def sidebar(request):
+    if request.user.is_authenticated:
+        favourites = Favourites.objects.filter(account=request.user)
+        return favourites
+    else:
+        return 'None'
 
 
 def signup(request):
@@ -271,20 +320,4 @@ def change_password(request):
         return redirect('login')
 
 
-def account(request):
-    if request.user.is_authenticated:
-        positions = Position.objects.filter(account_id=request.user.pk)
-        return render(request,
-                      'account/account.html',
-                      {'favourites': sidebar(request),
-                       'positions': positions})
-    else:
-        return redirect('login')
 
-
-def sidebar(request):
-    if request.user.is_authenticated:
-        favourites = Favourites.objects.filter(account=request.user)
-        return favourites
-    else:
-        return 'None'

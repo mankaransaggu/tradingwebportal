@@ -25,6 +25,7 @@
             <th scope="col">Ticker</th>
             <th scope="col">Name</th>
             <th scope="col">Exchange</th>
+            <th scope="col" class="text-center">Bookmark</i></th>
         </tr>
         <tbody>
         {% for stock in stocks %}
@@ -32,6 +33,7 @@
             <th scope="row"><a href="{% url 'equity' stock.id %}">{{stock.ticker}}</a></th>
             <td>{{stock.name}}</td>
             <td>{{stock.exchange}}</td>
+            <td class="text-center"><button class="btn btn-primary"><i class="fas fa-bookmark"></i></button></td>
         </tr>
         {% endfor %}
         </tbody>
