@@ -1,4 +1,4 @@
-{% extends "trading/includes/header.html"  %}
+{% extends "includes/header.html"  %}
 
 {% block content %}
 
@@ -9,6 +9,7 @@
             <th scope="col">Symbol</th>
             <th scope="col">Name</th>
             <th scope="col">Country</th>
+            <th scope="col"># Stocks</th>
         </tr>
         <tbody>
         {% for exchange in exchanges %}
@@ -16,6 +17,7 @@
             <th scope="row"><a href="{% url 'exchange' exchange.id %}">{{exchange.code}}</a></th>
             <td>{{exchange.name}}</td>
             <td>{{exchange.country}}</td>
+            <td>{{exchange.num_stocks}}</td>
         </tr>
         {% endfor %}
         </tbody>

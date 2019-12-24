@@ -1,4 +1,4 @@
-{% extends "trading/includes/header.html"  %}
+{% extends "includes/header.html"  %}
 
 {% block content %}
 <div class="container-fluid">
@@ -26,6 +26,9 @@
                 <div class="card-body">
                     <h3 class="card-title">Your Account</h3>
 
+                    <a href="{% url 'edit_account' %}"><button class="btn btn-primary">Edit Account</button><i class="fas fa-user-cog fa-3x"></i> </a>
+                    <a href="{% url 'change_password' %}"><button class="btn btn-primary">Change Password</button></a>
+
                     <div class="tab-content mt-3">
 
                         <div class="tab-pane active" id="account" role="tabpanel">
@@ -51,10 +54,10 @@
                                 <ul class="list-group list-group-horizontal">
 
                                     <div class="list-group-item flex-fill">
-                                        <h6>Closed Positions</h6>
+                                        <h6>Account Positions</h6>
                                             {% if positions %}
 
-                                            <table class="table">
+                                            <table class="table scroll">
                                                 <thead>
                                                 <tr>
                                                     <th scope="col">Position #</th>
@@ -67,6 +70,7 @@
                                                     <th scope="col">Close Price</th>
                                                     <th scope="col">State</th>
                                                     <th scope="col">Result</th>
+                                                    <th scope="col">Close</th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
@@ -83,6 +87,7 @@
                                                     <td>{{position.close_price}}</td>
                                                     <td>{{position.position_state}}</td>
                                                     <td>{{position.result}}</td>
+                                                    <td><i class="far fa-times-circle"></i></td>
                                                 </tr>
                                                 {% endfor %}
                                                 </tbody>
@@ -91,6 +96,42 @@
 
                                             {% else %}
                                             <span>No positions have been created on this account</span>
+                                            {% endif %}
+                                    </div>
+
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="favourites" role="tabpanel">
+                            <div class="card-text">
+                                <ul class="list-group list-group-horizontal">
+
+                                    <div class="list-group-item flex-fill">
+                                        <h6>Favourites</h6>
+                                            {% if favourites %}
+
+                                            <table class="table scroll">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">Instrument</th>
+                                                    <th scope="col">Name</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                {% for favourite in favourites %}
+                                                <tr>
+                                                    <th>{{favourite.ticker}}</th>
+                                                    <th>{{favourite.name}}</th>
+                                                </tr>
+                                                {% endfor %}
+                                                </tbody>
+
+                                            </table>
+
+                                            {% else %}
+                                            <span>You dont have any favourite instruments</span>
                                             {% endif %}
                                     </div>
 

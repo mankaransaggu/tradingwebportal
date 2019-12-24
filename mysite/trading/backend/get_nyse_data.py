@@ -95,14 +95,18 @@ def update_market_data():
     end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
     for stock in Stock.objects.all():
-        ticker = stock.ticker
-        stock = Stock.objects.get(ticker=ticker)
-        df = web.DataReader(ticker, 'yahoo', start, end)
-        df = df.rename(columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close', 'Volume': 'volume',
-                                'Adj Close': 'adj_close'})
-        df['ticker'] = stock.pk
-        df.index.names = ['date']
-        df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+        try:
+            ticker = stock.ticker
+            stock = Stock.objects.get(ticker=ticker)
+            df = web.DataReader(ticker, 'yahoo', start, end)
+            df = df.rename(columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close', 'Volume': 'volume',
+                                    'Adj Close': 'adj_close'})
+            df['ticker'] = stock.pk
+            df.index.names = ['date']
+            df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+            print('Recent data for {} added'.format(ticker))
+        except:
+            print('Cant update {}'.format(ticker))
 
 
 def compile_nyse_data():

@@ -1,3 +1,5 @@
+from plotly.subplots import make_subplots
+
 from ..models import MarketData
 import matplotlib.dates as mdates
 import pandas as pd
@@ -32,9 +34,31 @@ def get_yesterday(symbol):
     return latest
 
 
+def get_week(symbol):
+    latest = get_yesterday(symbol)
+    week = dt.datetime.strftime(latest.date - dt.timedelta(days=7), '%Y-%m-%d')
+    res = get_closest_to_dt(week, symbol)
+    week = res.date
+    week = MarketData.objects.get(ticker__ticker=symbol, date=week)
+
+    return week
+
+
+# Gets the date closest to 365 days ago
+def get_month(symbol):
+    latest = get_yesterday(symbol)
+    year = dt.datetime.strftime(latest.date - dt.timedelta(days=30), '%Y-%m-%d')
+    res = get_closest_to_dt(year, symbol)
+    month = res.date
+    month = MarketData.objects.get(ticker__ticker=symbol, date=month)
+
+    return month
+
+
 # Gets the date closest to 365 days ago
 def get_ytd(symbol):
-    year = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days=365), '%Y-%m-%d')
+    latest = get_yesterday(symbol)
+    year = dt.datetime.strftime(latest.date - dt.timedelta(days=365), '%Y-%m-%d')
     res = get_closest_to_dt(year, symbol)
     ytd = res.date
     ytd = MarketData.objects.get(ticker__ticker=symbol, date=ytd)
@@ -43,9 +67,7 @@ def get_ytd(symbol):
 
 
 def get_earliest(symbol):
-    res = get_earliest_date(symbol)
-    earliest = res.date
-    earliest = MarketData.objects.get(ticker__ticker=symbol, date=earliest)
+    earliest = MarketData.objects.filter(ticker__ticker=symbol).order_by("date").first()
 
     return earliest
 
@@ -69,12 +91,6 @@ def get_closest_to_dt(date, symbol):
         return greater or less
 
 
-# Gets the earliest date avaliable
-def get_earliest_date(symbol):
-    earliest = MarketData.objects.filter(ticker__ticker=symbol).order_by("date").first()
-    return earliest
-
-
 def create_stock_chart(days, instr, positions):
     df = stock_df(days, instr.ticker)
     df_ohlc = df['adj_close'].resample('10D').ohlc()
@@ -87,8 +103,39 @@ def create_stock_chart(days, instr, positions):
                                          low=df['low'],
                                          close=df['close']
                                          )])
+
     fig.update_layout(
-        title=instr.ticker + ' Market Chart',
+        xaxis=go.layout.XAxis(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1,
+                         label="1m",
+                         step="month",
+                         stepmode="backward"),
+                    dict(count=6,
+                         label="6m",
+                         step="month",
+                         stepmode="backward"),
+                    dict(count=1,
+                         label="YTD",
+                         step="year",
+                         stepmode="todate"),
+                    dict(count=1,
+                         label="1y",
+                         step="year",
+                         stepmode="backward"),
+                    dict(step="all")
+
+                ])
+            ),
+            rangeslider=dict(
+                visible=True
+            ),
+            type="date"
+        )
+    )
+
+    fig.update_layout(
         yaxis_title='Price $',
         width=2500,
         height=1000,
@@ -99,16 +146,62 @@ def create_stock_chart(days, instr, positions):
         print(position)
         fig.update_layout(
             shapes=[dict(
-                x0=position.open_date, x1=position.open_date, y0=0, y1=1, xref='x', yref='paper',
-                line_width=2)],
+                y0=position.open_price, y1=position.open_price, x0=0, x1=1, yref='y', xref='paper',
+                line_width=1)],
             annotations=[dict(
-                x=position.open_date, y=0.05, xref='x', yref='paper',
-                showarrow=False, xanchor='left', text='Position')]
+                y=position.open_price - 1, x=0.05, yref='y', xref='paper',
+                showarrow=False, xanchor='left', text='Position Open')]
         )
 
-    div = opy.plot(fig, auto_open=False, output_type='div')
+    chart = opy.plot(fig, auto_open=False, output_type='div')
 
-    return div
+    return chart
+
+
+def create_stock_change(instr):
+    day_before = get_day_before(instr)
+    yesterday = get_yesterday(instr)
+    week = get_week(instr)
+    month = get_month(instr)
+    year = get_ytd(instr)
+    all = get_earliest(instr)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Indicator(
+        mode="number+delta",
+        title={
+            "text": "<span style='font-size:0.8em;color:gray'>1D Change</span>"},
+        value=yesterday.close,
+        domain={'x': [0, 0.5], 'y': [0.6, 1]},
+        delta={'reference': day_before.close, 'relative': True}))
+
+    fig.add_trace(go.Indicator(
+        mode="number+delta",
+        title={
+            "text": "<span style='font-size:0.8em;color:gray'>7D Change</span>"},
+        value=week.close,
+        domain={'x': [0.6, 1], 'y': [0.6, 1]},
+        delta={'reference': yesterday.close, 'relative': True}))
+
+    fig.add_trace(go.Indicator(
+        mode="number+delta",
+        title={
+            "text": "<span style='font-size:0.8em;color:gray'>30D Change</span>"},
+        value=month.close,
+        domain={'x': [0, 0.5], 'y': [0, 0.4]},
+        delta={'reference': yesterday.close, 'relative': True}))
+
+    fig.add_trace(go.Indicator(
+        mode="number+delta",
+        title={
+            "text": "<span style='font-size:0.8em;color:gray'>YTD Change</span>"},
+        value=year.close,
+        domain={'x': [0.6, 1], 'y': [0, 0.4]},
+        delta={'reference': yesterday.close, 'relative': True}))
+
+    summary = opy.plot(fig, auto_open=False, output_type='div')
+    return summary
 
 
 def stock_df(days, ticker):
@@ -128,13 +221,23 @@ def stock_df(days, ticker):
 
 def get_view_context(context, symbol):
     context['latest'] = get_yesterday(symbol)
-    context['ytd'] = get_ytd(symbol)
     context['day_bef'] = get_day_before(symbol)
+    context['week'] = get_week(symbol)
+    context['month'] = get_month(symbol)
+    context['ytd'] = get_ytd(symbol)
     context['earliest'] = get_earliest(symbol)
 
     context['yest_diff'] = get_change(context['latest'].close, context['day_bef'].close)
     context['yest_diff_perc'] = get_change_percent(context['latest'].close, context['day_bef'].close)
     context['yest_vol_diff'] = get_change_percent(context['latest'].volume, context['day_bef'].volume)
+
+    context['week_diff'] = get_change(context['latest'].close, context['week'].close)
+    context['week_diff_perc'] = get_change_percent(context['latest'].close, context['week'].close)
+    context['week_vol_diff'] = get_change_percent(context['latest'].volume, context['week'].volume)
+
+    context['month_diff'] = get_change(context['latest'].close, context['month'].close)
+    context['month_diff_perc'] = get_change_percent(context['latest'].close, context['month'].close)
+    context['month_vol_diff'] = get_change_percent(context['latest'].volume, context['month'].volume)
 
     context['ytd_diff_perc'] = get_change_percent(context['latest'].close, context['ytd'].close)
     context['ytd_diff'] = get_change(context['latest'].close, context['ytd'].close)

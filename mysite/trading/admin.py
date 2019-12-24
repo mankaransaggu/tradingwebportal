@@ -36,7 +36,7 @@ class FavouriteAdmin(admin.ModelAdmin):
 class PositionAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Account Positions', {'fields': ['open_date', 'close_date', 'ticker', 'position_state', 'account']}),
-        ('Position Details', {'fields': ['open_price', 'close_price', 'direction']}),
+        ('Position Details', {'fields': ['open_price', 'close_price', 'direction', 'quantity', 'result']}),
     ]
 
 

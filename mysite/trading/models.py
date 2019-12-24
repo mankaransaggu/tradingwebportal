@@ -95,6 +95,13 @@ class Position(models.Model):
     position_state = models.CharField(max_length=10, choices=POSITION_STATES)
     account = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    @property
+    def get_result_number(self):
+        if self.open_price > 0:
+            return self.open_price / self.close_price * self.quantity
+        else:
+            return 0
+
     def __str__(self):
         return str(self.position_number)
 
