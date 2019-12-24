@@ -87,7 +87,13 @@
                                                 <td>{{position.close_price}}</td>
                                                 <td>{{position.position_state}}</td>
                                                 <td>{{position.result}}</td>
-                                                <td class="text-center"><button class="btn btn-danger"><i class="fas fa-times-circle"></i></button></td>
+                                                <td class="text-center">
+                                                    <a href="{% url 'close_position' position.position_number %}">
+                                                        <button class="btn btn-danger">
+                                                            <i class="fas fa-times-circle"></i>
+                                                        </button>
+                                                    </a>
+                                                </td>
                                             </tr>
                                             {% endfor %}
                                             </tbody>

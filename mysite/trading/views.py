@@ -140,9 +140,29 @@ class OpenPositionForm(FormView):
         return redirect('account')
 
     def get_context_data(self, **kwargs):
-        context = super(IndexView, self).get_context_data(**kwargs)
+        context = super(OpenPositionForm, self).get_context_data(**kwargs)
         context['favourites'] = sidebar(self.request)
         return context
+
+
+def close_position(request, id):
+    position = Position.objects.get(position_number=id)
+
+    stock = Stock.objects.get(ticker=position.ticker)
+    close_date = data.get_yesterday(stock.ticker)
+
+    position.close_price = close_date.close
+    position.close_date = close_date.date
+    position.position_state = 'Closed'
+
+    if position.direction == 'BUY':
+        position.result = position.open_price - close_date.close * position.quantity
+    else:
+        position.result = close_date.close - position.open_price * position.quantity
+
+    position.save()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 class AccountView(TemplateView):
@@ -156,7 +176,7 @@ class AccountView(TemplateView):
 
         if request.user.is_authenticated:
             favourites = user.favourite.all().order_by('ticker')
-            positions = Position.objects.filter(account_id=request.user.pk)
+            positions = Position.objects.filter(account_id=request.user.pk).order_by('-open_date')
             context['positions'] = positions
 
             for fav in favourites.iterator():
@@ -211,10 +231,12 @@ def sidebar(request):
 
 def favourite_equity(request, id):
     stock = get_object_or_404(Stock, id=id)
+
     if stock.favourite.filter(id=request.user.id).exists():
         stock.favourite.remove(request.user)
     else:
         stock.favourite.add(request.user)
+
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
