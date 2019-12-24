@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exchange, Country, Stock, MarketData, Favourites, Position
+from .models import Exchange, Country, Stock, MarketData, Position
 
 
 class CountryAdmin(admin.ModelAdmin):
@@ -27,12 +27,6 @@ class MarketDataAdmin(admin.ModelAdmin):
     ]
 
 
-class FavouriteAdmin(admin.ModelAdmin):
-    fieldsets = [
-        ('Users Favourite', {'fields': ['account', 'stock']}),
-    ]
-
-
 class PositionAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Account Positions', {'fields': ['open_date', 'close_date', 'ticker', 'position_state', 'account']}),
@@ -44,5 +38,4 @@ admin.site.register(Country, CountryAdmin)
 admin.site.register(Exchange, ExchangeAdmin)
 admin.site.register(Stock, StockAdmin)
 admin.site.register(MarketData, MarketDataAdmin)
-admin.site.register(Favourites, FavouriteAdmin)
 admin.site.register(Position, PositionAdmin)

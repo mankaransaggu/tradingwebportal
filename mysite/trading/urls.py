@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
     path('equities/', views.StocksView.as_view(), name='equites'),
     path('equity/<int:pk>/', views.StockView.as_view(), name='equity'),
+    path('<int:id>/favourite_equity/', views.favourite_equity, name='favourite_equity'),
     path('exchanges/', views.ExchangesView.as_view(), name='exchanges'),
     path('exchange/<int:pk>/', views.ExchangeStocksView.as_view(), name='exchange'),
 

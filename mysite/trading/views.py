@@ -8,14 +8,14 @@ from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, Passwo
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.db.models import Count
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy, reverse
 
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode
 
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.views import generic
 
 from django.views.generic import TemplateView, FormView
@@ -27,7 +27,7 @@ from .backend import get_nyse_data
 from .backend import stock_data as data
 from .forms import SignUpForm, EditAccountForm, CreatePositionForm
 from .tokens import account_activation_token
-from .models import Favourites, Exchange, Stock, MarketData, Position
+from .models import Exchange, Stock, MarketData, Position
 from .backend import database as db
 
 import threading
@@ -76,17 +76,22 @@ class ExchangeStocksView(generic.ListView):
 
 
 class StocksView(generic.ListView):
+    model = Stock
     template_name = 'trading/stocks.html'
     context_object_name = 'stocks'
     paginate_by = 50
 
     def get_queryset(self):
-        return Stock.objects.order_by('ticker')
+        return Stock.objects.all().order_by('ticker')
 
     def get_context_data(self, **kwargs):
         context = super(StocksView, self).get_context_data(**kwargs)
+        request = self.request
+        user = request.user
+        equities = Stock.objects.all()
         context['stock_count'] = Exchange.objects.annotate(num_stocks=Count('stock'))
-        context['favourites'] = sidebar(self.request)
+        context['favourites'] = Stock.objects.filter(
+            favourite__pk=user.pk).only('id', 'ticker')
         return context
 
 
@@ -96,20 +101,26 @@ class StockView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(StockView, self).get_context_data(**kwargs)
-
-        context['favourites'] = sidebar(self.request)
+        request = self.request
+        user = request.user
 
         pk = self.kwargs['pk']
-        stock = Stock.objects.get(id=pk)
-        open_positions = Position.objects.filter(account_id=self.request.user.pk, ticker__id=pk, position_state='open')
-        close_positions = Position.objects.filter(account_id=self.request.user.pk, ticker__id=pk,
+        stock = get_object_or_404(Stock, pk=pk)
+
+        is_favourite = False
+        if stock.favourite.filter(id=user.id).exists():
+            is_favourite = True
+
+        open_positions = Position.objects.filter(account_id=user.pk, ticker__id=pk, position_state='open')
+        close_positions = Position.objects.filter(account_id=user.pk, ticker__id=pk,
                                                   position_state='closed')
 
-        context['graph'] = data.create_stock_chart(730, stock, open_positions)
+        context['graph'] = data.create_stock_chart(365, stock, open_positions)
         context['summary'] = data.create_stock_change(stock)
         context['open_positions'] = open_positions
         context['close_positions'] = close_positions
-        # Get yesterdays and YTD data
+        context['favourites'] = sidebar(request)
+        context['is_favourite'] = is_favourite
         data.get_view_context(context, stock.ticker)
 
         return context
@@ -141,11 +152,21 @@ class AccountView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
         request = self.request
+        user = request.user
+
         if request.user.is_authenticated:
-            context['favourites'] = sidebar(self.request)
+            favourites = user.favourite.all().order_by('ticker')
             positions = Position.objects.filter(account_id=request.user.pk)
             context['positions'] = positions
 
+            for fav in favourites.iterator():
+                is_favourite = False
+                stock = get_object_or_404(Stock, id=fav.id)
+                if stock.favourite.filter(id=user.id).exists():
+                    is_favourite = True
+
+            context['is_favourite'] = is_favourite
+            context['favourites'] = favourites
             return context
 
         else:
@@ -181,10 +202,20 @@ class Setting(TemplateView):
 
 def sidebar(request):
     if request.user.is_authenticated:
-        favourites = Favourites.objects.filter(account=request.user)
+        user = request.user
+        favourites = user.favourite.all()
         return favourites
     else:
         return 'None'
+
+
+def favourite_equity(request, id):
+    stock = get_object_or_404(Stock, id=id)
+    if stock.favourite.filter(id=request.user.id).exists():
+        stock.favourite.remove(request.user)
+    else:
+        stock.favourite.add(request.user)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 def signup(request):

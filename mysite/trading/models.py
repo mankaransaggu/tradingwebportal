@@ -4,17 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-DIRECTION_CHOICES = [
-    ('BUY', 'BUY'),
-    ('SELL', 'SELL'),
-]
-
-POSITION_STATES = [
-    ('Open', 'Open'),
-    ('Closed', 'Closed'),
-]
-
-
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_confirmed = models.BooleanField(default=False)
@@ -55,6 +44,7 @@ class Stock(models.Model):
     ticker = models.CharField(unique=True, max_length=10)
     name = models.CharField(max_length=255, blank=True, null=True)
     exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, default=1)
+    favourite = models.ManyToManyField(User, related_name='favourite', blank=True)
 
     def __str__(self):
         return self.ticker
@@ -83,6 +73,17 @@ class MarketData(models.Model):
 
 
 class Position(models.Model):
+
+    POSITION_STATES = [
+        ('Open', 'Open'),
+        ('Closed', 'Closed'),
+    ]
+
+    DIRECTION_CHOICES = [
+        ('BUY', 'BUY'),
+        ('SELL', 'SELL'),
+    ]
+
     position_number = models.AutoField(primary_key=True)
     ticker = models.ForeignKey(Stock, on_delete=models.CASCADE)
     open_date = models.DateField(default=None, blank=True, null=True)
@@ -107,16 +108,3 @@ class Position(models.Model):
 
     class Meta:
         db_table = 'positions'
-
-
-class Favourites(models.Model):
-    account = models.ForeignKey(User, on_delete=models.CASCADE)
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-
-    def __str__(self):
-        string = self.stock.ticker + ' ' + self.account.email
-        return string
-
-    class Meta:
-        db_table = 'favourites'
-        unique_together = (('account', 'stock'),)
