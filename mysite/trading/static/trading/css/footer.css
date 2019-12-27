@@ -1,0 +1,52 @@
+#accordion {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #343a40;
+}
+
+#accordion h5{
+    color: #ffffff;
+    display: inline-block;
+
+}
+
+.panel-default > .panel-heading{
+    background: #343a40;
+}
+
+.panel-heading {
+    padding: 0;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.panel-group .panel {
+    border-radius: 0;
+}
+
+.panel-title a {
+    color: #FFFFFF;
+    text-align: center;
+    width: 100%;
+    display: block;
+    padding: 10px 15px;
+    font-size: 24px;
+    font-family: Helvetica,Arial,sans-serif;
+    outline: none;
+}
+
+.panel-title a:hover, .panel-title a:focus, .panel-title a:active {
+    text-decoration: none;
+    outline: none;
+}
+
+.footer-scrollbar {
+position: relative;
+height: 200px;
+overflow: auto;
+}
+
+.table-wrapper-scroll-y {
+display: block;
+}

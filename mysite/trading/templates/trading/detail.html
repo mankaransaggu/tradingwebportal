@@ -5,12 +5,12 @@
 
     <h4 class="display-4 text-center">{{ stock.ticker }} / {{ stock.name }} Data</h4>
 
-    <a href="{% url 'open_position' %}"><button class="btn btn-primary">Open Position</button></a>
+    <a href="{% url 'open_position' stock.id %}"><button class="btn btn-primary">Open Position</button></a>
 
     {% if is_favourite %}
-    <a href="{% url 'favourite_equity' id=stock.id %}"><i class="fas fa-bookmark"></i></a>
+    <a href="{% url 'favourite_stock' id=stock.id %}"><i class="fas fa-bookmark"></i></a>
     {% else %}
-    <a href="{% url 'favourite_equity' id=stock.id %}"><i class="far fa-bookmark"></i></a>
+    <a href="{% url 'favourite_stock' id=stock.id %}"><i class="far fa-bookmark"></i></a>
     {% endif %}
 
     {% if graph %}
@@ -63,11 +63,11 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ latest.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume_price}}</span></li>
                                         </ul>
                                     </div>
 
@@ -83,10 +83,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ day_bef.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{day_bef.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{day_bef.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{day_bef.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{day_bef.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{day_bef.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{day_bef.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{day_bef.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{day_bef.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{day_bef.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -102,10 +102,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ latest.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -122,10 +122,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ week.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{week.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{week.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{week.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{week.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{week.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{week.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{week.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{week.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{week.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -141,11 +141,11 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ latest.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume_price}}</span></li>
                                         </ul>
                                     </div>
 
@@ -161,10 +161,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ month.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{month.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{month.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{month.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{month.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{month.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{month.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{month.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{month.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{month.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -180,10 +180,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ latest.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -200,10 +200,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ ytd.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{ytd.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{ytd.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{ytd.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{ytd.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{ytd.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{ytd.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{ytd.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{ytd.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{ytd.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -219,10 +219,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ latest.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -239,10 +239,10 @@
                                     <div class="list-group-item flex-fill">
                                         <h6>{{ earliest.date }} Data</h6>
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{earliest.open}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{earliest.close}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{earliest.high}}</span></li>
-                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{earliest.low}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{earliest.open_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{earliest.close_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{earliest.high_price}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{earliest.low_price}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{earliest.volume}}</span></li>
                                         </ul>
                                     </div>
@@ -305,15 +305,15 @@
                                         <tbody>
                                         {% for position in open_positions %}
                                         <tr>
-                                            <th scope="row">{{position.position_number}}</th>
+                                            <th scope="row">{{position.id}}</th>
                                             <td>{{position.open_date}}</td>
                                             <td>{{position.close_date}}</td>
-                                            <td> <a href="{% url 'equity' position.ticker_id %}">{{position.ticker}}</a></td>
+                                            <td> <a href="{% url 'equity' position.instrument.id %}">{{position.instrument}}</a></td>
                                             <td>{{position.direction}}</td>
                                             <td>{{position.quantity}}</td>
                                             <td>{{position.open_price}}</td>
                                             <td>{{position.close_price}}</td>
-                                            <td>{{position.position_state}}</td>
+                                            <td>{{position.open}}</td>
                                             <td>{{position.result}}</td>
                                         </tr>
                                         {% endfor %}
@@ -362,7 +362,7 @@
                                             <th scope="row">{{position.position_number}}</th>
                                             <td>{{position.open_date}}</td>
                                             <td>{{position.close_date}}</td>
-                                            <td> <a href="{% url 'equity' position.ticker_id %}">{{position.ticker}}</a></td>
+                                            <td> <a href="{% url 'equity' position.instrument.id %}">{{position.ticker}}</a></td>
                                             <td>{{position.direction}}</td>
                                             <td>{{position.quantity}}</td>
                                             <td>{{position.open_price}}</td>

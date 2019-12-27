@@ -3,8 +3,6 @@
 {% block content %}
 <div class="container-fluid">
 
-    <h2 class="display-2 text-center">{{user.first_name}} Account</h2>
-
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -42,6 +40,7 @@
                                             <li class="list-group-item flex-fill"><h6>Last Name:</h6> <span>{{user.last_name}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Email:</h6> <span>{{user.email}}</span></li>
                                             <li class="list-group-item flex-fill"><h6>Account Opened:</h6> <span>{{user.date_joined}}</span></li>
+                                            <li class="list-group-item flex-fill"><h6>Account Value:</h6> <span>£{{user.account.value}}</span></li>
                                         </ul>
                                     </div>
 
@@ -77,23 +76,37 @@
 
                                             {% for position in positions %}
                                             <tr>
-                                                <th scope="row">{{position.position_number}}</th>
+                                                <th scope="row">{{position.id}}</th>
                                                 <td>{{position.open_date}}</td>
                                                 <td>{{position.close_date}}</td>
-                                                <td> <a href="{% url 'equity' position.ticker_id %}">{{position.ticker}}</a></td>
+                                                <td> <a href="{% url 'equity' position.instrument.id %}">{{position.instrument}}</a></td>
                                                 <td>{{position.direction}}</td>
                                                 <td>{{position.quantity}}</td>
                                                 <td>{{position.open_price}}</td>
                                                 <td>{{position.close_price}}</td>
-                                                <td>{{position.position_state}}</td>
+                                                <td>
+                                                    {% if position.open == True %}
+                                                    Open
+                                                    {% else %}
+                                                    Closed
+                                                    {% endif %}
+                                                </td>
                                                 <td>{{position.result}}</td>
+
                                                 <td class="text-center">
-                                                    <a href="{% url 'close_position' position.position_number %}">
+                                                    {% if position.open == True %}
+                                                    <a href="{% url 'close_position' position.id %}">
                                                         <button class="btn btn-danger">
                                                             <i class="fas fa-times-circle"></i>
                                                         </button>
                                                     </a>
+                                                    {% else %}
+                                                        <button class="btn btn-light">
+                                                            <i class="fas fa-times-circle"></i>
+                                                        </button>
+                                                    {% endif %}
                                                 </td>
+
                                             </tr>
                                             {% endfor %}
                                             </tbody>
@@ -134,9 +147,9 @@
 
                                                 <td class="text-center">
                                                     {% if is_favourite %}
-                                                    <a href="{% url 'favourite_equity' favourite.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
+                                                    <a href="{% url 'favourite_stock' favourite.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
                                                     {% else %}
-                                                    <a href="{% url 'favourite_equity' favourite.id %}"><i class="far fa-bookmark fa-2x"></i></a>
+                                                    <a href="{% url 'favourite_stock' favourite.id %}"><i class="far fa-bookmark fa-2x"></i></a>
                                                     {% endif %}
                                                 </td>
 

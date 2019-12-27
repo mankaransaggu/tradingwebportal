@@ -1,14 +1,7 @@
-.wrapper {
-    display: flex;
-    width: 100%;
-    align-items: stretch;
-}
-
 #sidebar {
     min-width: 250px;
     max-width: 250px;
     background: #343a40;
-    color: #666666;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
     transform-origin: bottom left;
 }
@@ -20,85 +13,23 @@
 
 #sidebar .sidebar-header {
     padding: 5px;
-    background: #343a40;
+    color: #FFFFFF;
 }
 
 #sidebar ul.components {
-    padding: 10px 0;
-    border-bottom: 1px solid #47748b;
-}
-
-#sidebar ul p {
-    color: #666666;
     padding: 10px;
 }
 
-#sidebar ul li a {
-    padding: 10px;
+#sidebar ul a {
+    margin: 10px;
     font-size: 1.1em;
     display: block;
-}
-#sidebar ul li a:hover {
-    color: #7386D5;
-    background: #666666;
-}
-#sidebar ul li.active > a, a[aria-expanded="true"] {
-    color: #666666;
-    background: #343a40;
+    width: 100% !important;
 }
 
-a[data-toggle="collapse"] {
-    position: relative;
-}
-
-.dropdown-toggle::after {
-    display: block;
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-}
-
-ul ul a {
-    font-size: 0.9em !important;
-    padding-left: 30px !important;
-    background: #343a40;
-}
-
-ul.CTAs {
-    padding: 20px;
-}
-
-ul.CTAs a {
-    text-align: center;
-    font-size: 0.9em !important;
-    display: block;
-    border-radius: 5px;
-    margin-bottom: 5px;
-}
-
-a.download {
-    background: #666666;
-    color: #7386D5;
-}
-
-a.article, a.article:hover {
-    background: #6d7fcc !important;
-    color: #666666 !important;
-}
-
-
-
-/* ---------------------------------------------------
-    CONTENT STYLE
------------------------------------------------------ */
-#content {
-    width: 100%;
-    padding: 0px;
-    min-height: 100vh;
-    transition: all 0.3s;
-}
-
+/*----------------------------------
+    SIDEBAR BUTTON
+----------------------------------*/
 #sidebarCollapse {
     width: 40px;
     height: 40px;
@@ -119,51 +50,17 @@ a.article, a.article:hover {
 #sidebarCollapse span:first-of-type {
     transform: rotate(90deg) translate(2px, 2px);
 }
+
 #sidebarCollapse span:nth-of-type(2) {
     opacity: 0;
 }
+
 #sidebarCollapse span:last-of-type {
     transform: rotate(-90deg) translate(1px, -1px);
 }
-
 
 #sidebarCollapse.active span {
     transform: none;
     opacity: 1;
     margin: 5px auto;
-}
-
-/* ---------------------------------------------------
-    MEDIAQUERIES
------------------------------------------------------ */
-@media (max-width: 768px) {
-    #sidebar {
-        margin-left: -250px;
-
-    }
-    #sidebar.active {
-        margin-left: 0;
-        transform: none;
-
-    }
-    #sidebarCollapse span:first-of-type,
-    #sidebarCollapse span:nth-of-type(2),
-    #sidebarCollapse span:last-of-type {
-        transform: none;
-        opacity: 1;
-        margin: 5px auto;
-    }
-    #sidebarCollapse.active span {
-        margin: 0 auto;
-    }
-    #sidebarCollapse.active span:first-of-type {
-        transform: rotate(45deg) translate(2px, 2px);
-    }
-    #sidebarCollapse.active span:nth-of-type(2) {
-        opacity: 0;
-    }
-    #sidebarCollapse.active span:last-of-type {
-        transform: rotate(-45deg) translate(1px, -1px);
-    }
-
 }

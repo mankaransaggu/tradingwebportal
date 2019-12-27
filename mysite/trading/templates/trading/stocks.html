@@ -22,9 +22,9 @@
 
             <td class="text-center">
                 {% if stock in favourites %}
-                <a href="{% url 'favourite_equity' stock.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
+                <a href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
                 {% else %}
-                <a href="{% url 'favourite_equity' stock.id %}"><i class="far fa-bookmark fa-2x"></i></a>
+                <a href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x"></i></a>
                 {% endif %}
             </td>
 
@@ -36,7 +36,6 @@
     {% include "includes/paginator_nav.html" %}
 
     </span>
-</div>
 </div>
 
 {% endblock %}

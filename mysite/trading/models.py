@@ -1,5 +1,7 @@
+from decimal import Decimal
+
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -9,6 +11,7 @@ class Account(models.Model):
     email_confirmed = models.BooleanField(default=False)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
 
     @receiver(post_save, sender=User)
     def update_user_profile(sender, instance, created, **kwargs):
@@ -55,56 +58,43 @@ class Stock(models.Model):
 
 class MarketData(models.Model):
     date = models.DateField()
-    ticker = models.ForeignKey(Stock, on_delete=models.CASCADE, db_column='ticker')
-    high = models.FloatField(blank=True, null=True)
-    low = models.FloatField(blank=True, null=True)
-    open = models.FloatField(blank=True, null=True)
-    close = models.FloatField(blank=True, null=True)
+    instrument = models.ForeignKey(Stock, on_delete=models.CASCADE, db_column='ticker')
+
+    high_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    low_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    open_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    close_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     volume = models.IntegerField(blank=True, null=True)
-    adj_close = models.FloatField(blank=True, null=True)
+    adj_close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
 
     def __str__(self):
-        string = self.ticker.ticker + ' ' + self.date.strftime('%Y-%m-%d')
+        string = self.instrument.ticker + ' ' + self.date.strftime('%Y-%m-%d')
         return string
 
     class Meta:
         db_table = 'market_data'
-        unique_together = (('date', 'ticker'),)
+        unique_together = (('date', 'instrument'),)
 
 
 class Position(models.Model):
-
-    POSITION_STATES = [
-        ('Open', 'Open'),
-        ('Closed', 'Closed'),
-    ]
 
     DIRECTION_CHOICES = [
         ('BUY', 'BUY'),
         ('SELL', 'SELL'),
     ]
 
-    position_number = models.AutoField(primary_key=True)
-    ticker = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    instrument = models.ForeignKey(Stock, on_delete=models.CASCADE)
     open_date = models.DateField(default=None, blank=True, null=True)
     close_date = models.DateField(default=None, blank=True, null=True)
+
+    quantity = models.IntegerField(default=1)
+    open_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    close_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    result = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
-    quantity = models.FloatField()
-    open_price = models.FloatField()
-    close_price = models.FloatField(default=None, blank=True, null=True)
-    result = models.FloatField(default=None, blank=True, null=True)
-    position_state = models.CharField(max_length=10, choices=POSITION_STATES)
+    open = models.BooleanField(default=True)
     account = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    @property
-    def get_result_number(self):
-        if self.open_price > 0:
-            return self.open_price / self.close_price * self.quantity
-        else:
-            return 0
-
-    def __str__(self):
-        return str(self.position_number)
 
     class Meta:
         db_table = 'positions'

@@ -7,11 +7,17 @@
     {% load static %}
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
-    <link rel="stylesheet" href="{% static 'trading/css/sidebar.css' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{% static 'trading/css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/footer.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/body.css' %}">
+
     <!-- jQuery CDN - Slim version (=without AJAX) -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="{% static 'trading/js/sidebar.js' %}"></script>
+    <script src="{% static 'trading/js/footer.js' %}"></script>
 
 </head>
 <body>
@@ -20,13 +26,16 @@
 
     {% include "includes/sidebar.html" %}
     {% include "includes/messaging.html" %}
+
     <div id="content">
 
-        {% include "includes/navbar.html"  %}
+        {% include "includes/navbar.html" %}
 
         {% block content %}
 
         {% endblock %}
+
+        {% include "includes/footer.html" %}
 
     </div>
 </div>

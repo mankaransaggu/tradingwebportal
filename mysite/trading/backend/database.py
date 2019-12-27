@@ -50,7 +50,7 @@ def get_stock_data(ticker):
     table = Table('market_data', metadata, autoload=True, autoload_with=engine)
     stmt = select([table]).where(and_(table.columns.ticker == stock.pk))
 
-    fields = ['date', 'ticker', 'high', 'low', 'open', 'close', 'volume', 'adj_close']
+    fields = ['date', 'ticker', 'high_price', 'low_price', 'open_price', 'close_price', 'volume', 'adj_close']
     stocks = session.query()
 
     connection = engine.connect()
@@ -63,7 +63,8 @@ def create_df(ticker):
     try:
         stock = Stock.objects.get(ticker=ticker)
         # SQL to read all the market data for specified stock and put into dataframe
-        sql = 'SELECT date, high, low, open, close, volume, adj_close FROM market_data WHERE ticker = %s'
+        sql = 'SELECT date, high_price, low_price, open_price, close_price, volume, adj_close ' \
+              'FROM market_data WHERE ticker = %s'
         df = pd.read_sql(sql, get_engine(), params={stock.pk})
 
         # Set the index of the dataframe as the date and make it datetime data so it can be used for resample

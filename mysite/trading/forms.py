@@ -25,15 +25,17 @@ class EditAccountForm(UserChangeForm):
             'email',
             'first_name',
             'last_name',
-            'password'
-        )
+            'password',
+            )
 
 
 class CreatePositionForm(forms.ModelForm):
+
     class Meta:
         model = models.Position
         fields = ('open_date',
                   'direction',
                   'quantity',
                   'open_price',
-                  'ticker')
+                  'instrument')
+

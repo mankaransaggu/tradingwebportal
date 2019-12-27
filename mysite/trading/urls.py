@@ -21,9 +21,10 @@ urlpatterns = [
 
     path('settings/', views.Setting.as_view(), name='settings'),
 
-    path('<int:id>/favourite_equity/', views.favourite_equity, name='favourite_equity'),
+    path('<int:id>/favourite_stock/', views.favourite_stock, name='favourite_stock'),
 
     path('open-position/', views.OpenPositionForm.as_view(), name='open_position'),
+    path('open-position/<int:id>/', views.OpenPositionForm.as_view(), name='open_position'),
     path('<int:id>/close-position/', views.close_position, name='close_position'),
 
     re_path(r'^account_activation_sent/$', views.account_activation_sent, name='account_activation_sent'),

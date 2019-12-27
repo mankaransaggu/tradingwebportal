@@ -8,7 +8,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, Passwo
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.db.models import Count
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, request
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 
@@ -23,12 +23,13 @@ from django.template.loader import render_to_string
 
 import pandas as pd
 
-from .backend import get_nyse_data
+from .backend import get_nyse_data, get_nasdaq_data
 from .backend import stock_data as data
 from .forms import SignUpForm, EditAccountForm, CreatePositionForm
 from .tokens import account_activation_token
-from .models import Exchange, Stock, MarketData, Position
+from .models import Exchange, Stock, MarketData, Position, Account
 from .backend import database as db
+from .backend.exchange import NYSE, NASDAQ
 
 import threading
 
@@ -45,6 +46,7 @@ class IndexView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         context['favourites'] = sidebar(self.request)
+        context['open_positions'] = footer(self.request)
         return context
 
 
@@ -58,6 +60,7 @@ class ExchangesView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(ExchangesView, self).get_context_data(**kwargs)
         context['favourites'] = sidebar(self.request)
+        context['open_positions'] = footer(self.request)
         return context
 
 
@@ -72,6 +75,7 @@ class ExchangeStocksView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(ExchangeStocksView, self).get_context_data(**kwargs)
         context['favourites'] = sidebar(self.request)
+        context['open_positions'] = footer(self.request)
         return context
 
 
@@ -88,10 +92,10 @@ class StocksView(generic.ListView):
         context = super(StocksView, self).get_context_data(**kwargs)
         request = self.request
         user = request.user
-        equities = Stock.objects.all()
         context['stock_count'] = Exchange.objects.annotate(num_stocks=Count('stock'))
         context['favourites'] = Stock.objects.filter(
             favourite__pk=user.pk).only('id', 'ticker')
+        context['open_positions'] = footer(self.request)
         return context
 
 
@@ -111,9 +115,9 @@ class StockView(generic.DetailView):
         if stock.favourite.filter(id=user.id).exists():
             is_favourite = True
 
-        open_positions = Position.objects.filter(account_id=user.pk, ticker__id=pk, position_state='open')
-        close_positions = Position.objects.filter(account_id=user.pk, ticker__id=pk,
-                                                  position_state='closed')
+        open_positions = Position.objects.filter(account_id=user.pk, instrument__id=pk, open=True)
+        close_positions = Position.objects.filter(account_id=user.pk, instrument__id=pk,
+                                                  open=False)
 
         context['graph'] = data.create_stock_chart(365, stock, open_positions)
         context['summary'] = data.create_stock_change(stock)
@@ -121,6 +125,7 @@ class StockView(generic.DetailView):
         context['close_positions'] = close_positions
         context['favourites'] = sidebar(request)
         context['is_favourite'] = is_favourite
+        context['open_positions'] = footer(self.request)
         data.get_view_context(context, stock.ticker)
 
         return context
@@ -129,8 +134,20 @@ class StockView(generic.DetailView):
 class OpenPositionForm(FormView):
     template_name = 'trading/open_position.html'
     form_class = CreatePositionForm
-    success_url = reverse_lazy('index')
+    success_url = ('account/')
     model = Position
+
+    def get_initial(self):
+        initial = super(OpenPositionForm, self).get_initial()
+
+        id = self.kwargs['id']
+        instrument = Stock.objects.get(id=id)
+        latest = data.get_yesterday(instrument.ticker)
+
+        initial['instrument'] = instrument
+        initial['open_date'] = latest.date
+        initial['open_price'] = latest.close_price
+        return initial
 
     def form_valid(self, form):
         post = form.save(commit=False)
@@ -142,25 +159,38 @@ class OpenPositionForm(FormView):
     def get_context_data(self, **kwargs):
         context = super(OpenPositionForm, self).get_context_data(**kwargs)
         context['favourites'] = sidebar(self.request)
+        context['open_positions'] = footer(self.request)
         return context
 
 
 def close_position(request, id):
-    position = Position.objects.get(position_number=id)
+    position = Position.objects.get(id=id)
+    user = request.user
+    account = User.objects.get(id=user.id)
 
-    stock = Stock.objects.get(ticker=position.ticker)
-    close_date = data.get_yesterday(stock.ticker)
+    stock = Stock.objects.get(ticker=position.instrument)
+    close = data.get_yesterday(stock.ticker)
+    close_price = close.close_price
+    close_date = close.date
 
-    position.close_price = close_date.close
-    position.close_date = close_date.date
-    position.position_state = 'Closed'
+    position.close_price = close_price
+    position.close_date = close_date
+    position.open = False
 
     if position.direction == 'BUY':
-        position.result = position.open_price - close_date.close * position.quantity
+        result = (close_price - position.open_price) * position.quantity
     else:
-        position.result = close_date.close - position.open_price * position.quantity
+        result = (position.open_price - close_price) * position.quantity
+
+    position.result = result
+    print(result)
+    if result > 0:
+        account.account.value = account.account.value + result
+    else:
+        account.account.value = account.account.value - result
 
     position.save()
+    account.save()
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -169,6 +199,11 @@ class AccountView(TemplateView):
     model = User
     template_name = 'account/account.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return super(AccountView, self).dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
         request = self.request
@@ -176,7 +211,7 @@ class AccountView(TemplateView):
 
         if request.user.is_authenticated:
             favourites = user.favourite.all().order_by('ticker')
-            positions = Position.objects.filter(account_id=request.user.pk).order_by('-open_date')
+            positions = Position.objects.filter(account_id=request.user.pk).order_by('-open')
             context['positions'] = positions
 
             for fav in favourites.iterator():
@@ -185,12 +220,14 @@ class AccountView(TemplateView):
                 if stock.favourite.filter(id=user.id).exists():
                     is_favourite = True
 
-            context['is_favourite'] = is_favourite
+                context['is_favourite'] = is_favourite
             context['favourites'] = favourites
+            context['open_positions'] = footer(self.request)
             return context
 
         else:
-            return redirect('login')
+            messages.success(request, "Please log in")
+            return context
 
 
 class Setting(TemplateView):
@@ -202,18 +239,27 @@ class Setting(TemplateView):
         context['setting'] = self.request.GET.get('setting')
         request = self.request
         context['favourites'] = sidebar(request)
+        context['open_positions'] = footer(self.request)
 
         setting = context['setting']
 
         if request.user.is_authenticated:
 
-            if setting == 'download':
-                get_nyse_data.save_nyse_tickers()
+            if setting == 'download-nyse':
+                NYSE().save_stocks()
+                messages.success(request, "%s SQL statements were executed." % count)
+
+            if setting == 'download-nasdaq':
+                get_nasdaq_data.save_nasdaq_tickers()
                 messages.success(request, "%s SQL statements were executed." % count)
 
             if setting == 'update':
-                get_nyse_data.update_market_data()
+                NASDAQ().update_market_data()
                 messages.success(request, "%s SQL statements were executed." % count)
+
+            if setting == 'update-nyse':
+                NYSE.update_market_data()
+                messages.success(request, "Update success with new class")
 
             return context
         else:
@@ -229,7 +275,14 @@ def sidebar(request):
         return 'None'
 
 
-def favourite_equity(request, id):
+def footer(request):
+    if request.user.is_authenticated:
+        user = request.user
+        open_positions = Position.objects.filter(account=user, open=True).order_by('open_date')
+        return open_positions
+
+
+def favourite_stock(request, id):
     stock = get_object_or_404(Stock, id=id)
 
     if stock.favourite.filter(id=request.user.id).exists():

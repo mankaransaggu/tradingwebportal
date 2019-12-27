@@ -1,0 +1,151 @@
+import MySQLdb
+import bs4 as bs
+import pickle
+import datetime as dt
+import os
+import pandas as pd
+import pandas_datareader.data as web
+import requests
+import matplotlib.pyplot as plt
+import numpy as numpy
+import sqlalchemy
+from django.db import IntegrityError
+from matplotlib import style
+from pandas_datareader._utils import RemoteDataError
+from .database import delete_stock, insert_stock, get_engine, create_df
+from ..models import Stock, MarketData, Exchange
+
+
+class StockExchange:
+    def ___init__(self, name, code, links, tickers, country):
+        self.name = name
+        self.code = code
+        self.links = links
+        self.ticker = tickers
+        self.country = country
+
+    def save_stocks(self):
+        tickers = []
+        print(type(self.links))
+        for link in self.links:
+            resp = requests.get(link)
+            soup = bs.BeautifulSoup(resp.text, "lxml")
+            table = soup.findAll('table')[1]
+
+            for row in table.findAll('tr')[1:]:
+                ticker = row.findAll('td')[1].text
+                ticker = ticker[:-1]
+                mapping = str.maketrans(".", "-")
+                ticker = ticker.translate(mapping)
+                name = row.findAll('td')[0].text
+                exchange = Exchange.objects.get(code='NYSE')
+
+                try:
+                    stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
+                    success = True
+                    stock = Stock.objects.get(ticker=ticker)
+                    print('Added {} to stock table'.format(ticker))
+                except IntegrityError:
+                    print('{} already exists in Stock table'.format(ticker))
+                    success = True
+
+                if success:
+                    self.get_yahoo_data(stock)
+        return tickers
+
+    @staticmethod
+    def get_yahoo_data(stock):
+        try:
+
+            start = dt.datetime(2005, 1, 1)
+            end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+
+            df = web.DataReader(stock.ticker, 'yahoo', start, end)
+            df = df.rename(columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
+                                    'Volume': 'volume', 'Adj Close': 'adj_close'})
+            df['ticker'] = stock.pk
+            df.rename_axis('date', axis='index', inplace=True)
+            df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+
+        except RemoteDataError:
+            print('No market data for {}'.format(stock.ticker))
+            stock.delete()
+        except IntegrityError:
+            print('Data for {} already exists'.format(stock.ticker))
+        except MySQLdb._exceptions.IntegrityError:
+            print('Data for {} already exists'.format(stock.ticker))
+        except sqlalchemy.exc.IntegrityError:
+            print('Data for {} already exists'.format(stock.ticker))
+        except KeyError:
+            print('No market data for {}'.format(stock.ticker))
+            stock.delete()
+
+    def update_market_data(self):
+        start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+        end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+
+        for stock in Stock.objects.filter(exchange__code=self.code):
+            try:
+                ticker = stock.ticker
+                stock = Stock.objects.get(ticker=ticker)
+                df = web.DataReader(ticker, 'yahoo', start, end)
+                df = df.rename(
+                    columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
+                             'Volume': 'volume',
+                             'Adj Close': 'adj_close'})
+                df['ticker'] = stock.pk
+                df.index.names = ['date']
+                df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+                print('Recent data for {} added'.format(ticker))
+            except RemoteDataError:
+                print('No new market data for {}'.format(ticker))
+                stock.delete()
+            except IntegrityError:
+                print('Recent data for {} already exists'.format(ticker))
+            except MySQLdb._exceptions.IntegrityError:
+                print('Recent data for {} already exists'.format(ticker))
+            except sqlalchemy.exc.IntegrityError:
+                print('Recent data for {} already exists'.format(ticker))
+            except KeyError:
+                print('No market data for {}'.format(ticker))
+                stock.delete()
+
+
+class NYSE(StockExchange):
+    def __init__(self):
+        self.name = 'New York Stock Exchange'
+        self.code = 'NYSE'
+        self.links = ("https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(0%E2%80%939)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(A)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(B)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(C)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(D)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(E)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(F)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(G)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(H)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(I)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(J)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(K)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(L)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(M)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(N)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(O)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(P)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Q)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(R)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(S)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(T)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(U)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(V)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(W)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(X)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Y)",
+             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Z)")
+
+
+class NASDAQ(StockExchange):
+    def __init__(self):
+        self.name = 'Nasdaq'
+        self.code = 'NASDAQ'
+        self.links = ('https://en.wikipedia.org/wiki/NASDAQ-100',)

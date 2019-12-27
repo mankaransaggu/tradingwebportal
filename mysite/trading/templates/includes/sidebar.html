@@ -6,12 +6,12 @@
     </div>
 
     <ul class="list-unstyled components">
-
+{% if user.is_authenticated %}
         {% for fav in favourites %}
         <div class="row justify-content-center" style="width:100%">
             <a href="{% url 'equity' fav.id %}"><button class="btn btn-primary text-center" style="width:90%">{{ fav.ticker }}</button></a>
         </div>
         {% endfor %}
-
+{% endif %}
     </ul>
 </nav>

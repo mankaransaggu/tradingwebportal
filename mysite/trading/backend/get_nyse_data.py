@@ -9,6 +9,7 @@ import requests
 import matplotlib.pyplot as plt
 import numpy as numpy
 import sqlalchemy
+from django.db import IntegrityError
 from matplotlib import style
 from pandas_datareader._utils import RemoteDataError
 from .database import delete_stock, insert_stock, get_engine, create_df
@@ -65,15 +66,30 @@ def save_nyse_tickers():
             exchange = Exchange.objects.get(code='NYSE')
 
             try:
-                insert_stock(name, ticker, exchange.pk)
-                stock = Stock.objects.get(ticker=ticker)
-                get_nyse_data_yahoo(ticker)
+                stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
+                success = True
                 tickers.append(ticker)
-                print('Added ', ticker)
+                print('Added {} to stock table'.format(ticker))
+            except IntegrityError:
+                print('{} already exists in Stock table'.format(ticker))
+                success = True
 
-            except:
-                print('Error with {}'.format(ticker))
-                delete_stock(stock.pk)
+            if success:
+                try:
+                    stock = Stock.objects.get(ticker=ticker)
+                    get_nyse_data_yahoo(ticker)
+                except RemoteDataError:
+                    print('No market data for {}'.format(ticker))
+                    stock.delete()
+                except IntegrityError:
+                    print('Data for {} already exists'.format(ticker))
+                except MySQLdb._exceptions.IntegrityError:
+                    print('Data for {} already exists'.format(ticker))
+                except sqlalchemy.exc.IntegrityError:
+                    print('Data for {} already exists'.format(ticker))
+                except KeyError:
+                    print('No market data for {}'.format(ticker))
+                    stock.delete()
 
     return tickers, message
 
@@ -84,9 +100,14 @@ def get_nyse_data_yahoo(ticker, reload_nyse=False):
 
     stock = Stock.objects.get(ticker=ticker)
     df = web.DataReader(ticker, 'yahoo', start, end)
-    df = df.rename(columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close', 'Volume': 'volume', 'Adj Close': 'adj_close'})
+    print('Before:')
+    print(df.head())
+    df = df.rename(columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
+                            'Volume': 'volume', 'Adj Close': 'adj_close'})
     df['ticker'] = stock.pk
-    df.index.names = ['date']
+    df.rename_axis('date', axis='index', inplace=True)
+    print('after:')
+    print(df.head())
     df.to_sql('market_data', get_engine(), if_exists='append', index=True)
 
 
@@ -99,7 +120,7 @@ def update_market_data():
             ticker = stock.ticker
             stock = Stock.objects.get(ticker=ticker)
             df = web.DataReader(ticker, 'yahoo', start, end)
-            df = df.rename(columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close', 'Volume': 'volume',
+            df = df.rename(columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price', 'Volume': 'volume',
                                     'Adj Close': 'adj_close'})
             df['ticker'] = stock.pk
             df.index.names = ['date']
@@ -120,7 +141,7 @@ def compile_nyse_data():
         print(df.head())
 
         df.rename(columns={'adj_close': ticker}, inplace=True)
-        df.drop(['ticker', 'open', 'high', 'low', 'close', 'volume'], 1, inplace=True)
+        df.drop(['ticker', 'open_price', 'high_price', 'low_price', 'close_price', 'volume'], 1, inplace=True)
         print(df.head())
 
         if main_df.empty:
@@ -133,43 +154,3 @@ def compile_nyse_data():
 
     print(main_df.head())
     main_df.to_csv('compiled_data/nyse_joined.csv')
-
-
-def visualize_nyse_data():
-    df = pd.read_csv('nyse_joined.csv')
-    # df['AAPL'].plot()
-    # plt.show()
-
-    # This correleates the data
-    df_corr = df.corr()
-    print(df_corr)
-
-    data = df_corr.values
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-
-    # This is building  the heat map, we take the colours RYG(Red, Yellow, Green)
-    heatmap = ax.pcolor(data, cmap=plt.cm.RdYlGn)
-    fig.colorbar(heatmap)
-    #Every .5 there will be a tick
-    ax.set_xticks(numpy.arange(data.shape[0]) + 0.5, minor=False)
-    ax.set_yticks(numpy.arange(data.shape[1]) + 0.5, minor=False)
-
-    # This rotates the axis, the x is displayed at the top and the y on the side
-    ax.invert_yaxis()
-    ax.xaxis.tick_top()
-
-    # Sets the row and column text
-    column_labels = df_corr.columns
-    row_labels = df_corr.index
-
-    # Sets the graph labels and rotates the x axis 90
-    ax.set_xticklabels(column_labels)
-    ax.set_yticklabels(row_labels)
-    plt.xticks(rotation=90)
-    heatmap.set_clim(-1, 1)
-    plt.tight_layout()
-    plt.show()
-
-
-

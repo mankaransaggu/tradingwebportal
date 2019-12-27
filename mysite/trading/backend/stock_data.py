@@ -14,7 +14,7 @@ def get_change_percent(current, previous):
     if current == previous:
         return 0
     try:
-        return (abs(current - previous) / previous) * 100.0
+        return (abs(current - previous) / previous) * 100
     except ZeroDivisionError:
         return 0
 
@@ -29,7 +29,7 @@ def get_yesterday(symbol):
     yesterday = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days=1), '%Y-%m-%d')
     result = get_closest_to_dt(yesterday, symbol)
     nearest_yesterday = result.date
-    latest = MarketData.objects.get(ticker__ticker=symbol, date=nearest_yesterday)
+    latest = MarketData.objects.get(instrument__ticker=symbol, date=nearest_yesterday)
 
     return latest
 
@@ -39,7 +39,7 @@ def get_week(symbol):
     week = dt.datetime.strftime(latest.date - dt.timedelta(days=7), '%Y-%m-%d')
     res = get_closest_to_dt(week, symbol)
     week = res.date
-    week = MarketData.objects.get(ticker__ticker=symbol, date=week)
+    week = MarketData.objects.get(instrument__ticker=symbol, date=week)
 
     return week
 
@@ -50,7 +50,7 @@ def get_month(symbol):
     year = dt.datetime.strftime(latest.date - dt.timedelta(days=30), '%Y-%m-%d')
     res = get_closest_to_dt(year, symbol)
     month = res.date
-    month = MarketData.objects.get(ticker__ticker=symbol, date=month)
+    month = MarketData.objects.get(instrument__ticker=symbol, date=month)
 
     return month
 
@@ -61,28 +61,28 @@ def get_ytd(symbol):
     year = dt.datetime.strftime(latest.date - dt.timedelta(days=365), '%Y-%m-%d')
     res = get_closest_to_dt(year, symbol)
     ytd = res.date
-    ytd = MarketData.objects.get(ticker__ticker=symbol, date=ytd)
+    ytd = MarketData.objects.get(instrument__ticker=symbol, date=ytd)
 
     return ytd
 
 
 def get_earliest(symbol):
-    earliest = MarketData.objects.filter(ticker__ticker=symbol).order_by("date").first()
+    earliest = MarketData.objects.filter(instrument__ticker=symbol).order_by("date").first()
 
     return earliest
 
 
 # Gets the second business day past
 def get_day_before(symbol):
-    day_before = MarketData.objects.filter(ticker__ticker=symbol).order_by('-date')[1]
+    day_before = MarketData.objects.filter(instrument__ticker=symbol).order_by('-date')[1]
 
     return day_before
 
 
 # Gets the closest date to the given date
 def get_closest_to_dt(date, symbol):
-    greater = MarketData.objects.filter(date__gte=date, ticker__ticker=symbol).order_by("date").first()
-    less = MarketData.objects.filter(date__lte=date, ticker__ticker=symbol).order_by("-date").first()
+    greater = MarketData.objects.filter(date__gte=date, instrument__ticker=symbol).order_by("date").first()
+    less = MarketData.objects.filter(date__lte=date, instrument__ticker=symbol).order_by("-date").first()
     date_obj = dt.datetime.strptime(date, '%Y-%m-%d').date()
 
     if greater and less:
@@ -93,15 +93,17 @@ def get_closest_to_dt(date, symbol):
 
 def create_stock_chart(days, instr, positions):
     df = stock_df(days, instr.ticker)
+    df['adj_close'] = df['adj_close'].apply(float)
+    print(df)
     df_ohlc = df['adj_close'].resample('10D').ohlc()
     df_ohlc.reset_index(inplace=True)
     df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
 
     fig = go.Figure(data=[go.Candlestick(x=df.index,
-                                         open=df['open'],
-                                         high=df['high'],
-                                         low=df['low'],
-                                         close=df['close']
+                                         open=df['open_price'],
+                                         high=df['high_price'],
+                                         low=df['low_price'],
+                                         close=df['close_price']
                                          )])
 
     fig.update_layout(
@@ -172,33 +174,33 @@ def create_stock_change(instr):
         mode="number+delta",
         title={
             "text": "<span style='font-size:0.8em;color:gray'>1D Change</span>"},
-        value=yesterday.close,
+        value=yesterday.close_price,
         domain={'x': [0, 0.25], 'y': [0, 0]},
-        delta={'reference': day_before.close, 'relative': True}))
+        delta={'reference': day_before.close_price, 'relative': True}))
 
     fig.add_trace(go.Indicator(
         mode="number+delta",
         title={
             "text": "<span style='font-size:0.8em;color:gray'>7D Change</span>"},
-        value=week.close,
+        value=week.close_price,
         domain={'x': [0.25, 0.5], 'y': [0, 0]},
-        delta={'reference': yesterday.close, 'relative': True}))
+        delta={'reference': yesterday.close_price, 'relative': True}))
 
     fig.add_trace(go.Indicator(
         mode="number+delta",
         title={
             "text": "<span style='font-size:0.8em;color:gray'>30D Change</span>"},
-        value=month.close,
+        value=month.close_price,
         domain={'x': [0.5, 0.75], 'y': [0, 0]},
-        delta={'reference': yesterday.close, 'relative': True}))
+        delta={'reference': yesterday.close_price, 'relative': True}))
 
     fig.add_trace(go.Indicator(
         mode="number+delta",
         title={
             "text": "<span style='font-size:0.8em;color:gray'>YTD Change</span>"},
-        value=year.close,
+        value=year.close_price,
         domain={'x': [0.75, 1], 'y': [0, 0]},
-        delta={'reference': yesterday.close, 'relative': True}))
+        delta={'reference': yesterday.close_price, 'relative': True}))
 
     summary = opy.plot(fig, auto_open=False, output_type='div')
     return summary
@@ -206,10 +208,11 @@ def create_stock_change(instr):
 
 def stock_df(days, ticker):
     try:
-        date = end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days), '%Y-%m-%d')
-        qs = MarketData.objects.filter(ticker__ticker=ticker, date__gte=date)
+        date = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days), '%Y-%m-%d')
+        qs = MarketData.objects.filter(instrument__ticker=ticker, date__gte=date)
         df = read_frame(qs)
         del df['id']
+        del df['instrument']
         df.set_index('date', inplace=True)
         df.index = pd.to_datetime(df.index)
 
@@ -227,24 +230,24 @@ def get_view_context(context, symbol):
     context['ytd'] = get_ytd(symbol)
     context['earliest'] = get_earliest(symbol)
 
-    context['yest_diff'] = get_change(context['latest'].close, context['day_bef'].close)
-    context['yest_diff_perc'] = get_change_percent(context['latest'].close, context['day_bef'].close)
+    context['yest_diff'] = get_change(context['latest'].close_price, context['day_bef'].close_price)
+    context['yest_diff_perc'] = get_change_percent(context['latest'].close_price, context['day_bef'].close_price)
     context['yest_vol_diff'] = get_change_percent(context['latest'].volume, context['day_bef'].volume)
 
-    context['week_diff'] = get_change(context['latest'].close, context['week'].close)
-    context['week_diff_perc'] = get_change_percent(context['latest'].close, context['week'].close)
+    context['week_diff'] = get_change(context['latest'].close_price, context['week'].close_price)
+    context['week_diff_perc'] = get_change_percent(context['latest'].close_price, context['week'].close_price)
     context['week_vol_diff'] = get_change_percent(context['latest'].volume, context['week'].volume)
 
-    context['month_diff'] = get_change(context['latest'].close, context['month'].close)
-    context['month_diff_perc'] = get_change_percent(context['latest'].close, context['month'].close)
+    context['month_diff'] = get_change(context['latest'].close_price, context['month'].close_price)
+    context['month_diff_perc'] = get_change_percent(context['latest'].close_price, context['month'].close_price)
     context['month_vol_diff'] = get_change_percent(context['latest'].volume, context['month'].volume)
 
-    context['ytd_diff_perc'] = get_change_percent(context['latest'].close, context['ytd'].close)
-    context['ytd_diff'] = get_change(context['latest'].close, context['ytd'].close)
+    context['ytd_diff_perc'] = get_change_percent(context['latest'].close_price, context['ytd'].close_price)
+    context['ytd_diff'] = get_change(context['latest'].close_price, context['ytd'].close_price)
     context['ytd_vol_diff'] = get_change_percent(context['latest'].volume, context['ytd'].volume)
 
-    context['early_diff'] = get_change(context['latest'].close, context['earliest'].close)
-    context['early_diff_perc'] = get_change_percent(context['latest'].close, context['earliest'].close)
+    context['early_diff'] = get_change(context['latest'].close_price, context['earliest'].close_price)
+    context['early_diff_perc'] = get_change_percent(context['latest'].close_price, context['earliest'].close_price)
     context['early_vol_diff'] = get_change_percent(context['latest'].volume, context['earliest'].volume)
 
     return context
