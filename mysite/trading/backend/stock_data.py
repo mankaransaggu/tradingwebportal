@@ -166,14 +166,13 @@ def create_stock_change(instr):
     week = get_week(instr)
     month = get_month(instr)
     year = get_ytd(instr)
-    all = get_earliest(instr)
 
     fig = go.Figure()
 
     fig.add_trace(go.Indicator(
         mode="number+delta",
         title={
-            "text": "<span style='font-size:0.8em;color:gray'>1D Change</span>"},
+            "text": "<span style='font-size:0.8em;color:gray'>1D Close Change</span>"},
         value=yesterday.close_price,
         domain={'x': [0, 0.25], 'y': [0, 0]},
         delta={'reference': day_before.close_price, 'relative': True}))
@@ -181,15 +180,15 @@ def create_stock_change(instr):
     fig.add_trace(go.Indicator(
         mode="number+delta",
         title={
-            "text": "<span style='font-size:0.8em;color:gray'>7D Change</span>"},
-        value=week.close_price,
+            "text": "<span style='font-size:0.8em;color:gray'>7D Close Change</span>"},
+        value=yesterday.close_price,
         domain={'x': [0.25, 0.5], 'y': [0, 0]},
-        delta={'reference': yesterday.close_price, 'relative': True}))
+        delta={'reference': week.close_price, 'relative': True}))
 
     fig.add_trace(go.Indicator(
         mode="number+delta",
         title={
-            "text": "<span style='font-size:0.8em;color:gray'>30D Change</span>"},
+            "text": "<span style='font-size:0.8em;color:gray'>30D Close Change</span>"},
         value=month.close_price,
         domain={'x': [0.5, 0.75], 'y': [0, 0]},
         delta={'reference': yesterday.close_price, 'relative': True}))
@@ -197,10 +196,10 @@ def create_stock_change(instr):
     fig.add_trace(go.Indicator(
         mode="number+delta",
         title={
-            "text": "<span style='font-size:0.8em;color:gray'>YTD Change</span>"},
-        value=year.close_price,
+            "text": "<span style='font-size:0.8em;color:gray'>YTD Close Change</span>"},
+        value=yesterday.close_price,
         domain={'x': [0.75, 1], 'y': [0, 0]},
-        delta={'reference': yesterday.close_price, 'relative': True}))
+        delta={'reference': year.close_price, 'relative': True}))
 
     summary = opy.plot(fig, auto_open=False, output_type='div')
     return summary

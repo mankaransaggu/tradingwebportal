@@ -26,7 +26,7 @@ class StockExchange:
 
     def save_stocks(self):
         tickers = []
-        print(type(self.links))
+
         for link in self.links:
             resp = requests.get(link)
             soup = bs.BeautifulSoup(resp.text, "lxml")
@@ -38,56 +38,66 @@ class StockExchange:
                 mapping = str.maketrans(".", "-")
                 ticker = ticker.translate(mapping)
                 name = row.findAll('td')[0].text
-                exchange = Exchange.objects.get(code='NYSE')
+                exchange = Exchange.objects.get(code=self.code)
 
                 try:
                     stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
                     success = True
-                    stock = Stock.objects.get(ticker=ticker)
-                    print('Added {} to stock table'.format(ticker))
+                    stock = Stock.objects.get(ticker=ticker, name=name, exchange=exchange)
+                    print('SUCCESS: Added {} to stock table'.format(ticker))
                 except IntegrityError:
-                    print('{} already exists in Stock table'.format(ticker))
+                    print('ERROR - IntegrityError: {} already exists in Stock table'.format(ticker))
                     success = True
 
                 if success:
                     self.get_yahoo_data(stock)
+
         return tickers
 
     @staticmethod
     def get_yahoo_data(stock):
         try:
-
+            print(stock.pk)
             start = dt.datetime(2005, 1, 1)
             end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
             df = web.DataReader(stock.ticker, 'yahoo', start, end)
-            df = df.rename(columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
-                                    'Volume': 'volume', 'Adj Close': 'adj_close'})
+            df = df.rename(
+                columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
+                         'Volume': 'volume', 'Adj Close': 'adj_close'})
             df['ticker'] = stock.pk
             df.rename_axis('date', axis='index', inplace=True)
             df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+            print('SUCCESS: Market data for {} added'.format(stock.ticker))
 
         except RemoteDataError:
-            print('No market data for {}'.format(stock.ticker))
+            print('ERROR - RemoteDataError: No market data for {}'.format(stock.ticker))
             stock.delete()
+
         except IntegrityError:
-            print('Data for {} already exists'.format(stock.ticker))
+            print('ERROR - IntegrityError: Data for {} already exists'.format(stock.ticker))
+
         except MySQLdb._exceptions.IntegrityError:
-            print('Data for {} already exists'.format(stock.ticker))
+            print('ERROR - MySQL IntegrityError: Data for {} already exists'.format(stock.ticker))
+
         except sqlalchemy.exc.IntegrityError:
-            print('Data for {} already exists'.format(stock.ticker))
+            print('ERROR - SQLAlchemy IntegrityError: Data for {} already exists'.format(stock.ticker))
+
         except KeyError:
-            print('No market data for {}'.format(stock.ticker))
+            print('ERROR - KeyError: No market data for {}'.format(stock.ticker))
             stock.delete()
+
+        except AssertionError:
+            print('ERROR - AssertionError: Stock {} should be deleted'.format(stock.ticker))
 
     def update_market_data(self):
         start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
         end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
         for stock in Stock.objects.filter(exchange__code=self.code):
+
             try:
                 ticker = stock.ticker
-                stock = Stock.objects.get(ticker=ticker)
                 df = web.DataReader(ticker, 'yahoo', start, end)
                 df = df.rename(
                     columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
@@ -97,15 +107,20 @@ class StockExchange:
                 df.index.names = ['date']
                 df.to_sql('market_data', get_engine(), if_exists='append', index=True)
                 print('Recent data for {} added'.format(ticker))
+
             except RemoteDataError:
                 print('No new market data for {}'.format(ticker))
                 stock.delete()
+
             except IntegrityError:
                 print('Recent data for {} already exists'.format(ticker))
+
             except MySQLdb._exceptions.IntegrityError:
                 print('Recent data for {} already exists'.format(ticker))
+
             except sqlalchemy.exc.IntegrityError:
                 print('Recent data for {} already exists'.format(ticker))
+
             except KeyError:
                 print('No market data for {}'.format(ticker))
                 stock.delete()
@@ -116,36 +131,91 @@ class NYSE(StockExchange):
         self.name = 'New York Stock Exchange'
         self.code = 'NYSE'
         self.links = ("https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(0%E2%80%939)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(A)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(B)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(C)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(D)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(E)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(F)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(G)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(H)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(I)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(J)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(K)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(L)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(M)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(N)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(O)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(P)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Q)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(R)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(S)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(T)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(U)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(V)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(W)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(X)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Y)",
-             "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Z)")
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(A)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(B)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(C)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(D)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(E)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(F)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(G)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(H)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(I)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(J)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(K)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(L)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(M)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(N)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(O)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(P)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Q)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(R)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(S)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(T)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(U)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(V)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(W)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(X)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Y)",
+                      "https://en.wikipedia.org/wiki/Companies_listed_on_the_New_York_Stock_Exchange_(Z)")
 
 
 class NASDAQ(StockExchange):
     def __init__(self):
         self.name = 'Nasdaq'
         self.code = 'NASDAQ'
-        self.links = ('https://en.wikipedia.org/wiki/NASDAQ-100',)
+        self.links = ('https://www.advfn.com/nasdaq/nasdaq.asp?companies=A',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=B',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=C',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=D',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=E',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=F',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=G',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=H',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=I',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=J',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=K',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=L',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=M',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=N',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=O',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=P',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Q',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=R',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=S',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=T',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=U',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=V',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=W',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=X',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Y',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Z',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=0',)
+
+    def save_stocks(self):
+        tickers = []
+
+        for link in self.links:
+            resp = requests.get(link)
+            soup = bs.BeautifulSoup(resp.text, "lxml")
+            table = soup.find('table', {'class': 'market tab1'})
+
+            for row in table.findAll('tr')[2:]:
+                ticker = row.findAll('td')[1].text
+                mapping = str.maketrans(".", "-")
+                ticker = ticker.translate(mapping)
+                name = row.findAll('td')[0].text
+                exchange = Exchange.objects.get(code='NASDAQ')
+
+                try:
+                    stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
+                    success = True
+                    stock = Stock.objects.get(ticker=ticker, exchange__code=self.code)
+                    print('Added {} to stock table'.format(ticker))
+                except IntegrityError:
+                    print('{} already exists in Stock table'.format(ticker))
+                    success = True
+
+                if success:
+                    self.get_yahoo_data(stock)
+
+        return tickers

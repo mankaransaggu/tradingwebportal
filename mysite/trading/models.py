@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 
 from django.db import models
@@ -12,6 +13,8 @@ class Account(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     value = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    earned = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    spent = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
 
     @receiver(post_save, sender=User)
     def update_user_profile(sender, instance, created, **kwargs):
@@ -31,6 +34,16 @@ class Country (models.Model):
         db_table = 'country'
 
 
+class Currency(models.Model):
+    code = models.CharField(max_length=5, unique=True)
+    name = models.CharField(max_length=50, unique=True)
+    country = models.ManyToManyField(Country, related_name='country_currency')
+    base = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.code
+
+
 class Exchange(models.Model):
     code = models.CharField(max_length=25, unique=True)
     name = models.CharField(max_length=250, unique=True)
@@ -44,7 +57,7 @@ class Exchange(models.Model):
 
 
 class Stock(models.Model):
-    ticker = models.CharField(unique=True, max_length=10)
+    ticker = models.CharField(max_length=10)
     name = models.CharField(max_length=255, blank=True, null=True)
     exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, default=1)
     favourite = models.ManyToManyField(User, related_name='favourite', blank=True)
@@ -54,6 +67,9 @@ class Stock(models.Model):
 
     class Meta:
         db_table = 'stock'
+        constraints = [
+            models.UniqueConstraint(fields=['ticker', 'name', 'exchange_id'], name='Company Stock')
+        ]
 
 
 class MarketData(models.Model):
@@ -84,8 +100,8 @@ class Position(models.Model):
     ]
 
     instrument = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    open_date = models.DateField(default=None, blank=True, null=True)
-    close_date = models.DateField(default=None, blank=True, null=True)
+    open_date = models.DateTimeField(default=datetime.now)
+    close_date = models.DateTimeField(default=None, blank=True, null=True)
 
     quantity = models.IntegerField(default=1)
     open_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
@@ -98,3 +114,4 @@ class Position(models.Model):
 
     class Meta:
         db_table = 'positions'
+

@@ -11,14 +11,16 @@
             <th scope="col">Ticker</th>
             <th scope="col">Name</th>
             <th scope="col">Exchange</th>
+            <th scope="col">Price</th>
             <th scope="col" class="text-center">Bookmark</i></th>
         </tr>
         <tbody>
         {% for stock in stocks %}
         <tr>
-            <th scope="row"><a href="{% url 'equity' stock.id %}">{{stock.ticker}}</a></th>
-            <td>{{stock.name}}</td>
-            <td>{{stock.exchange}}</td>
+            <th scope="row"><a href="{% url 'equity' stock.id %}">{{ stock.ticker }}</a></th>
+            <td>{{ stock.name }}</td>
+            <td>{{ stock.exchange }}</td>
+            <td>{{ stock.price }}</td>
 
             <td class="text-center">
                 {% if stock in favourites %}

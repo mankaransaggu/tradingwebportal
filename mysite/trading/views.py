@@ -1,3 +1,4 @@
+from datetime import datetime
 from itertools import count
 
 from bootstrap_modal_forms.mixins import PassRequestMixin
@@ -70,7 +71,9 @@ class ExchangeStocksView(generic.ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Stock.objects.order_by('ticker')
+        pk = self.kwargs['pk']
+
+        return Stock.objects.filter(exchange_id=pk).order_by('ticker')
 
     def get_context_data(self, **kwargs):
         context = super(ExchangeStocksView, self).get_context_data(**kwargs)
@@ -92,9 +95,12 @@ class StocksView(generic.ListView):
         context = super(StocksView, self).get_context_data(**kwargs)
         request = self.request
         user = request.user
-        context['stock_count'] = Exchange.objects.annotate(num_stocks=Count('stock'))
-        context['favourites'] = Stock.objects.filter(
-            favourite__pk=user.pk).only('id', 'ticker')
+
+        favourites = Stock.objects.filter(favourite__pk=user.pk).only('id', 'ticker')
+        count = Exchange.objects.annotate(num_stocks=Count('stock'))
+
+        context['stock_count'] = count
+        context['favourites'] = favourites
         context['open_positions'] = footer(self.request)
         return context
 
@@ -145,7 +151,7 @@ class OpenPositionForm(FormView):
         latest = data.get_yesterday(instrument.ticker)
 
         initial['instrument'] = instrument
-        initial['open_date'] = latest.date
+        initial['open_date'] = datetime.now()
         initial['open_price'] = latest.close_price
         return initial
 
@@ -166,15 +172,14 @@ class OpenPositionForm(FormView):
 def close_position(request, id):
     position = Position.objects.get(id=id)
     user = request.user
-    account = User.objects.get(id=user.id)
+    account = Account.objects.get(id=user.id)
 
     stock = Stock.objects.get(ticker=position.instrument)
     close = data.get_yesterday(stock.ticker)
     close_price = close.close_price
-    close_date = close.date
 
     position.close_price = close_price
-    position.close_date = close_date
+    position.close_date = datetime.now()
     position.open = False
 
     if position.direction == 'BUY':
@@ -183,11 +188,12 @@ def close_position(request, id):
         result = (position.open_price - close_price) * position.quantity
 
     position.result = result
-    print(result)
     if result > 0:
-        account.account.value = account.account.value + result
+        account.value = account.value + result
+        account.earned = account.earned + result
     else:
-        account.account.value = account.account.value - result
+        account.value = account.value - result
+        account.earned = account.earned - result
 
     position.save()
     account.save()
@@ -250,15 +256,15 @@ class Setting(TemplateView):
                 messages.success(request, "%s SQL statements were executed." % count)
 
             if setting == 'download-nasdaq':
-                get_nasdaq_data.save_nasdaq_tickers()
+                NASDAQ().save_stocks()
                 messages.success(request, "%s SQL statements were executed." % count)
 
-            if setting == 'update':
+            if setting == 'update-nasdaq':
                 NASDAQ().update_market_data()
                 messages.success(request, "%s SQL statements were executed." % count)
 
             if setting == 'update-nyse':
-                NYSE.update_market_data()
+                NYSE().update_market_data()
                 messages.success(request, "Update success with new class")
 
             return context
