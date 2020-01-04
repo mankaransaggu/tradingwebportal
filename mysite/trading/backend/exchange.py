@@ -1,19 +1,14 @@
 import MySQLdb
 import bs4 as bs
-import pickle
 import datetime as dt
-import os
-import pandas as pd
 import pandas_datareader.data as web
 import requests
-import matplotlib.pyplot as plt
-import numpy as numpy
 import sqlalchemy
+from alpha_vantage.timeseries import TimeSeries
 from django.db import IntegrityError
-from matplotlib import style
 from pandas_datareader._utils import RemoteDataError
 from .database import delete_stock, insert_stock, get_engine, create_df
-from ..models import Stock, MarketData, Exchange
+from ..models import Stock, StockData, Exchange
 
 
 class StockExchange:
@@ -58,16 +53,19 @@ class StockExchange:
     def get_yahoo_data(stock):
         try:
             print(stock.pk)
-            start = dt.datetime(2005, 1, 1)
+            start = dt.datetime(2000, 1, 1)
             end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
             df = web.DataReader(stock.ticker, 'yahoo', start, end)
+
             df = df.rename(
-                columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
+                columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                          'Volume': 'volume', 'Adj Close': 'adj_close'})
-            df['ticker'] = stock.pk
+            df['instrument_id'] = stock.pk
+
             df.rename_axis('date', axis='index', inplace=True)
-            df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+            df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
+
             print('SUCCESS: Market data for {} added'.format(stock.ticker))
 
         except RemoteDataError:
@@ -90,6 +88,49 @@ class StockExchange:
         except AssertionError:
             print('ERROR - AssertionError: Stock {} should be deleted'.format(stock.ticker))
 
+    @staticmethod
+    # This method uses the alpha vantage API, unfortunately not suitable  due to api call limits
+    def get_stock_data(stock):
+        try:
+            print(stock.pk)
+            print(stock.ticker)
+            ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
+            df, meta_data = ts.get_daily_adjusted(symbol=stock.ticker, outputsize='full')
+
+            df = df.rename(
+                columns={'1. open': 'open', '2. high': 'high', '3. low': 'low', '4. close': 'close',
+                         '5. adjusted close': 'adj_close', '6. volume': 'volume', '7. dividend amount': 'dividend',
+                         '8. split coefficient': 'split_coefficient'})
+            df['instrument_id'] = stock.pk
+            df.rename_axis('date', axis='index', inplace=True)
+
+            df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
+            print('SUCCESS: Market data for {} added'.format(stock.ticker))
+
+        except RemoteDataError:
+            print('ERROR - RemoteDataError: No market data for {}'.format(stock.ticker))
+            stock.delete()
+
+        except IntegrityError:
+            print('ERROR - IntegrityError: Data for {} already exists'.format(stock.ticker))
+
+        except MySQLdb._exceptions.IntegrityError:
+            print('ERROR - MySQL IntegrityError: Data for {} already exists'.format(stock.ticker))
+
+        except sqlalchemy.exc.IntegrityError:
+            print('ERROR - SQLAlchemy IntegrityError: Data for {} already exists'.format(stock.ticker))
+
+        except KeyError:
+            print('ERROR - KeyError: No market data for {}'.format(stock.ticker))
+            stock.delete()
+
+        except AssertionError:
+            print('ERROR - AssertionError: Stock {} should be deleted'.format(stock.ticker))
+
+        except ValueError:
+            print('ERROR - ValueError: No market data for {}'.format(stock.ticker))
+            stock.delete()
+
     def update_market_data(self):
         start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
         end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
@@ -100,12 +141,11 @@ class StockExchange:
                 ticker = stock.ticker
                 df = web.DataReader(ticker, 'yahoo', start, end)
                 df = df.rename(
-                    columns={'High': 'high_price', 'Low': 'low_price', 'Open': 'open_price', 'Close': 'close_price',
-                             'Volume': 'volume',
-                             'Adj Close': 'adj_close'})
+                    columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
+                             'Volume': 'volume', 'Adj Close': 'adj_close'})
                 df['ticker'] = stock.pk
                 df.index.names = ['date']
-                df.to_sql('market_data', get_engine(), if_exists='append', index=True)
+                df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
                 print('Recent data for {} added'.format(ticker))
 
             except RemoteDataError:

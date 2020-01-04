@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Exchange, Country, Stock, MarketData, Position
+from .models import Exchange, Country, Stock, StockData, Position, Currency, Instrument
+
+
+class CurrencyAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ('Currency', {'fields': ['code', 'name', 'base']}),
+        ('Value', {'fields': ['rate']}),
+    ]
 
 
 class CountryAdmin(admin.ModelAdmin):
@@ -11,6 +18,12 @@ class CountryAdmin(admin.ModelAdmin):
 class ExchangeAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Exchange', {'fields': ['code', 'name', 'country']}),
+    ]
+
+
+class InstrumentAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ('Instrument', {'fields': ['code', 'name', 'description']}),
     ]
 
 
@@ -34,8 +47,10 @@ class PositionAdmin(admin.ModelAdmin):
     ]
 
 
+admin.site.register(Currency, CurrencyAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Exchange, ExchangeAdmin)
+admin.site.register(Instrument, InstrumentAdmin)
 admin.site.register(Stock, StockAdmin)
-admin.site.register(MarketData, MarketDataAdmin)
+admin.site.register(StockData, MarketDataAdmin)
 admin.site.register(Position, PositionAdmin)

@@ -23,7 +23,19 @@ class Account(models.Model):
         instance.account.save()
 
 
-class Country (models.Model):
+class Instrument(models.Model):
+    code = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=50, unique=True)
+    description = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        db_table = 'instrument'
+
+
+class Country(models.Model):
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=50, unique=True)
 
@@ -35,13 +47,18 @@ class Country (models.Model):
 
 
 class Currency(models.Model):
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, default=2)
     code = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=50, unique=True)
+    rate = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal(0.00))
     country = models.ManyToManyField(Country, related_name='country_currency')
     base = models.BooleanField(default=False)
 
     def __str__(self):
         return self.code
+
+    class Meta:
+        db_table = 'currency'
 
 
 class Exchange(models.Model):
@@ -57,6 +74,7 @@ class Exchange(models.Model):
 
 
 class Stock(models.Model):
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, default=1)
     ticker = models.CharField(max_length=10)
     name = models.CharField(max_length=255, blank=True, null=True)
     exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, default=1)
@@ -72,24 +90,44 @@ class Stock(models.Model):
         ]
 
 
-class MarketData(models.Model):
+class StockData(models.Model):
     date = models.DateField()
-    instrument = models.ForeignKey(Stock, on_delete=models.CASCADE, db_column='ticker')
+    instrument = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
-    high_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    low_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    open_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    close_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    high = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    low = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    open = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     volume = models.IntegerField(blank=True, null=True)
     adj_close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    dividend = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    split_coefficient = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(1.0))
 
     def __str__(self):
         string = self.instrument.ticker + ' ' + self.date.strftime('%Y-%m-%d')
         return string
 
     class Meta:
-        db_table = 'market_data'
+        db_table = 'stock_data'
         unique_together = (('date', 'instrument'),)
+
+
+class IntradayData(models.Model):
+    timestamp = models.DateTimeField()
+    instrument = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    high = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    low = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    open = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    volume = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        string = self.instrument.ticker + ' ' + self.timestamp
+        return string
+
+    class Meta:
+        db_table = 'intraday_data'
+        unique_together = (('timestamp', 'instrument'),)
 
 
 class Position(models.Model):

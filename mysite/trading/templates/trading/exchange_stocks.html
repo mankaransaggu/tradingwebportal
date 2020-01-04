@@ -6,7 +6,7 @@
 
 <div class="container-fluid">
 
-    <h1>{{exchange}} Listed Stocks</h1>
+    <h1>{{exchange.code}} Listed Stocks</h1>
 
      {% include "includes/paginator_nav.html" %}
 
@@ -14,14 +14,26 @@
         <tr>
             <th scope="col">Ticker</th>
             <th scope="col">Name</th>
+            <th scope="col">Price</th>
+            <th scope="col" class="text-center">Bookmark</i></th>
         </tr>
         <tbody>
+
         {% for stock in stocks %}
         <tr>
             <th scope="row"><a href="{% url 'equity' stock.id %}">{{stock.ticker}}</a></th>
             <td>{{stock.name}}</td>
+            <td>{{stock.price}}</td>
+            <td class="text-center">
+                {% if stock in favourites %}
+                <a href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
+                {% else %}
+                <a href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x"></i></a>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
+
         </tbody>
     </table>
 

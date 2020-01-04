@@ -1,8 +1,5 @@
 from datetime import datetime
 from itertools import count
-
-from bootstrap_modal_forms.mixins import PassRequestMixin
-from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, PasswordChangeForm
@@ -11,29 +8,19 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.http import HttpResponseRedirect, request
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy, reverse
-
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode
-
 from django.views import generic
-
 from django.views.generic import TemplateView, FormView
 from django.template.loader import render_to_string
-
 import pandas as pd
-
-from .backend import get_nyse_data, get_nasdaq_data
 from .backend import stock_data as data
 from .forms import SignUpForm, EditAccountForm, CreatePositionForm
 from .tokens import account_activation_token
-from .models import Exchange, Stock, MarketData, Position, Account
-from .backend import database as db
+from .models import Exchange, Stock, StockData, Position, Account
 from .backend.exchange import NYSE, NASDAQ
-
-import threading
-
+from alpha_vantage.timeseries import TimeSeries
 pd.core.common.is_list_like = pd.api.types.is_list_like
 
 
@@ -42,7 +29,7 @@ class IndexView(generic.ListView):
     context_object_name = 'latest_stock_list'
 
     def get_queryset(self):
-        return MarketData.objects.order_by('-date')[:5]
+        return StockData.objects.order_by('-date')[:5]
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
@@ -77,7 +64,15 @@ class ExchangeStocksView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ExchangeStocksView, self).get_context_data(**kwargs)
-        context['favourites'] = sidebar(self.request)
+
+        pk = self.kwargs['pk']
+        request = self.request
+        user = request.user
+        favourites = Stock.objects.filter(favourite__pk=user.pk, exchange_id=pk).only('id', 'ticker')
+        exchange = Exchange.objects.get(id=pk)
+
+        context['exchange'] = exchange
+        context['favourites'] = favourites
         context['open_positions'] = footer(self.request)
         return context
 
@@ -125,7 +120,8 @@ class StockView(generic.DetailView):
         close_positions = Position.objects.filter(account_id=user.pk, instrument__id=pk,
                                                   open=False)
 
-        context['graph'] = data.create_stock_chart(365, stock, open_positions)
+        context['historic_graph'] = data.create_stock_chart(365, stock, open_positions)
+        context['intraday_graph'] = data.create_intraday_chart(stock, open_positions)
         context['summary'] = data.create_stock_change(stock)
         context['open_positions'] = open_positions
         context['close_positions'] = close_positions
@@ -266,6 +262,11 @@ class Setting(TemplateView):
             if setting == 'update-nyse':
                 NYSE().update_market_data()
                 messages.success(request, "Update success with new class")
+
+            if setting == 'yahoo':
+                ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
+                data, meta_data = ts.get_monthly(symbol='AAPL')
+                print(data)
 
             return context
         else:
