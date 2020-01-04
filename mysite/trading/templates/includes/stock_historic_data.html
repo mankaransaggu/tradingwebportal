@@ -1,0 +1,252 @@
+<!-- Data Box -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+
+                        <ul class="nav nav-tabs card-header-tabs" id="bologna-list" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#today" role="tab" aria-controls="today" aria-selected="true">Today</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#latest" role="tab" aria-controls="latest" aria-selected="false">1D</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#week" role="tab" aria-controls="week" aria-selected="false">7D</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#month" role="tab" aria-controls="month" aria-selected="false">30D</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#ytd" role="tab" aria-controls="ytd" aria-selected="false">YTD</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#alltime" role="tab" aria-controls="alltime" aria-selected="false">All Time</a>
+                            </li>
+                            <li class="nav-item">
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="card-title">Market Data</h3>
+                        <h5>{{ stock.ticker }}/{{ stock.name  }}</h5>
+
+                        <div class="tab-content mt-3">
+
+                            <div class="tab-pane active" id="today" role="tabpanel">
+                                <div class="card-text">
+                                    <ul class="list-group list-group-horizontal">
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>Latest Price Of: {{ latest.timestamp }}</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Price:</h6> <p>{{latest.close}}</p></li>
+                                                <li class="list-group-item flex-fill"><h6>Change:</h6> <span>{{ day_change }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Change %:</h6> <span>{{ day_change_perc }}</span></li>
+                                            </ul>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="latest" role="tabpanel">
+                                <div class="card-text">
+                                    <ul class="list-group list-group-horizontal">
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ latest.timestamp }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{yesterday.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>Change</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Daily Change:</h6> <span>{{ yest_diff }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Daily Change %:</h6> <span>{{ yest_diff_perc }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume Change %:</h6> <span>{{ yest_vol_diff }}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ day_bef.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{day_bef.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{day_bef.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{day_bef.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{day_bef.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{day_bef.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="week" role="tabpanel">
+                                <div class="card-text">
+                                    <ul class="list-group list-group-horizontal">
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ latest.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>Change</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Week Change:</h6> <span>{{ week_diff }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Week Change %:</h6> <span>{{ week_diff_perc }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Week Change %:</h6> <span>{{ week_vol_diff }}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ week.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{week.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{week.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{week.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{week.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{week.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="month" role="tabpanel">
+                                <div class="card-text">
+                                    <ul class="list-group list-group-horizontal">
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ latest.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>Change</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Month Change:</h6> <span>{{ month_diff }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Month Change %:</h6> <span>{{ month_diff_perc }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume Change %:</h6> <span>{{ month_vol_diff }}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ month.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{month.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{month.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{month.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{month.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{month.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="ytd" role="tabpanel" aria-labelledby="ytd-tab">
+                                <div class="card-text">
+                                    <ul class="list-group list-group-horizontal">
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ latest.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>Change</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Yearly Change:</h6> <span>{{ ytd_diff }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Yearly Change %:</h6> <span>{{ ytd_diff_perc }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume Change %:</h6> <span>{{ ytd_vol_diff }}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ ytd.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{ytd.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{ytd.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{ytd.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{ytd.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{ytd.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="alltime" role="tabpanel" aria-labelledby="alltime-tab">
+                                <div class="card-text">
+                                    <ul class="list-group list-group-horizontal">
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ latest.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{latest.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{latest.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{latest.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{latest.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{latest.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>Change</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>All Time Change:</h6> <span>{{ early_diff }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>All Time Change %:</h6> <span>{{ early_diff_perc }}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>All Time Volume Change %:</h6> <span>{{ early_vol_diff }}</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="list-group-item flex-fill">
+                                            <h6>{{ earliest.date }} Data</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item flex-fill"><h6>Open:</h6> <span>{{earliest.open}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Close:</h6>  <span>{{earliest.close}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>High:</h6> <span>{{earliest.high}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Low:</h6> <span>{{earliest.low}}</span></li>
+                                                <li class="list-group-item flex-fill"><h6>Volume:</h6> <span>{{earliest.volume}}</span></li>
+                                            </ul>
+                                        </div>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>

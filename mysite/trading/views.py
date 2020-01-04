@@ -15,7 +15,7 @@ from django.views import generic
 from django.views.generic import TemplateView, FormView
 from django.template.loader import render_to_string
 import pandas as pd
-from .backend import stock_data as data
+from .backend import stock_data, user_bookmarks, user_positions
 from .forms import SignUpForm, EditAccountForm, CreatePositionForm
 from .tokens import account_activation_token
 from .models import Exchange, Stock, StockData, Position, Account
@@ -108,27 +108,17 @@ class StockView(generic.DetailView):
         context = super(StockView, self).get_context_data(**kwargs)
         request = self.request
         user = request.user
-
         pk = self.kwargs['pk']
+
         stock = get_object_or_404(Stock, pk=pk)
+        user_bookmarks.check_is_favourite(user, stock, context)
+        user_positions.get_positions(user, pk, context)
 
-        is_favourite = False
-        if stock.favourite.filter(id=user.id).exists():
-            is_favourite = True
-
-        open_positions = Position.objects.filter(account_id=user.pk, instrument__id=pk, open=True)
-        close_positions = Position.objects.filter(account_id=user.pk, instrument__id=pk,
-                                                  open=False)
-
-        context['historic_graph'] = data.create_stock_chart(365, stock, open_positions)
-        context['intraday_graph'] = data.create_intraday_chart(stock, open_positions)
-        context['summary'] = data.create_stock_change(stock)
-        context['open_positions'] = open_positions
-        context['close_positions'] = close_positions
         context['favourites'] = sidebar(request)
-        context['is_favourite'] = is_favourite
+
         context['open_positions'] = footer(self.request)
-        data.get_view_context(context, stock.ticker)
+
+        stock_data.create_detail_data(stock, context)
 
         return context
 
@@ -144,7 +134,7 @@ class OpenPositionForm(FormView):
 
         id = self.kwargs['id']
         instrument = Stock.objects.get(id=id)
-        latest = data.get_yesterday(instrument.ticker)
+        latest = stock_data.get_yesterday(instrument.ticker)
 
         initial['instrument'] = instrument
         initial['open_date'] = datetime.now()
@@ -171,7 +161,7 @@ def close_position(request, id):
     account = Account.objects.get(id=user.id)
 
     stock = Stock.objects.get(ticker=position.instrument)
-    close = data.get_yesterday(stock.ticker)
+    close = stock_data.get_yesterday(stock.ticker)
     close_price = close.close_price
 
     position.close_price = close_price

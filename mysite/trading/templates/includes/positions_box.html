@@ -1,0 +1,134 @@
+<!-- Positions Box -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+
+                        <ul class="nav nav-tabs card-header-tabs" id="position-list" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#open" role="tab" aria-controls="open" aria-selected="true">Open Positions</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#closed" role="tab" aria-controls="closed" aria-selected="false">Closed Positions</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="card-title">Positions</h3>
+
+                        <div class="tab-content mt-3">
+
+                            <div class="tab-pane active" id="open" role="tabpanel">
+                                <div class="card-text">
+
+                                    <div class="list-group-item flex-fill">
+                                        <h6>Open Positions</h6>
+                                        {% if user.is_authenticated %}
+                                        {% if open_positions %}
+                                        <table class="table">
+                                            <thead>
+                                            <tr>
+                                                <th scope="col">Position #</th>
+                                                <th scope="col">Open Date</th>
+                                                <th scope="col">Close Date</th>
+                                                <th scope="col">Instrument</th>
+                                                <th scope="col">Direction</th>
+                                                <th scope="col">Quantity</th>
+                                                <th scope="col">Open Price</th>
+                                                <th scope="col">Close Price</th>
+                                                <th scope="col">State</th>
+                                                <th scope="col">Result</th>
+                                            </tr>
+                                            </thead>
+
+                                            <tbody>
+                                            {% for position in open_positions %}
+                                            <tr>
+                                                <th scope="row">{{position.id}}</th>
+                                                <td>{{position.open_date}}</td>
+                                                <td>{{position.close_date}}</td>
+                                                <td> <a href="{% url 'equity' position.instrument.id %}">{{position.instrument}}</a></td>
+                                                <td>{{position.direction}}</td>
+                                                <td>{{position.quantity}}</td>
+                                                <td>{{position.open}}</td>
+                                                <td>{{position.close}}</td>
+                                                <td>{{position.open}}</td>
+                                                <td>{{position.result}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+
+                                        </table>
+
+                                        {% else %}
+                                        <span>No positions have been created with this instrument</span>
+                                        {% endif %}
+
+                                        {% else %}
+                                        <span>Please <a href="/login">Login</a> to you account</span>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="closed" role="tabpanel">
+                                <div class="card-text">
+
+                                    <div class="list-group-item flex-fill">
+                                        <h6>Closed Positions</h6>
+                                        {% if user.is_authenticated %}
+                                        {% if close_positions %}
+                                        <table class="table">
+                                            <thead>
+                                            <tr>
+                                                <th scope="col">Position #</th>
+                                                <th scope="col">Open Date</th>
+                                                <th scope="col">Close Date</th>
+                                                <th scope="col">Instrument</th>
+                                                <th scope="col">Direction</th>
+                                                <th scope="col">Quantity</th>
+                                                <th scope="col">Open Price</th>
+                                                <th scope="col">Close Price</th>
+                                                <th scope="col">State</th>
+                                                <th scope="col">Result</th>
+                                            </tr>
+                                            </thead>
+
+                                            <tbody>
+                                            {% for position in close_positions %}
+                                            <tr>
+                                                <th scope="row">{{position.position_number}}</th>
+                                                <td>{{position.open_date}}</td>
+                                                <td>{{position.close_date}}</td>
+                                                <td> <a href="{% url 'equity' position.instrument.id %}">{{position.ticker}}</a></td>
+                                                <td>{{position.direction}}</td>
+                                                <td>{{position.quantity}}</td>
+                                                <td>{{position.open}}</td>
+                                                <td>{{position.close}}</td>
+                                                <td>{{position.position_state}}</td>
+                                                <td>{{position.result}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+
+
+
+                                        {% else %}
+                                        <span>No positions have been created with this instrument</span>
+                                        {% endif %}
+
+                                        {% else %}
+                                        <span>Please <a href="/login">Login</a> to you account</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>

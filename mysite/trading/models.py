@@ -47,7 +47,6 @@ class Country(models.Model):
 
 
 class Currency(models.Model):
-    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, default=2)
     code = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=50, unique=True)
     rate = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal(0.00))

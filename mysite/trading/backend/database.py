@@ -1,8 +1,11 @@
+import MySQLdb
 import pandas as pd
+import sqlalchemy
+from django.db import IntegrityError
 from sqlalchemy import create_engine, insert, MetaData, Table, select, and_, delete, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists
-from ..models import Stock, StockData
+from ..models import Stock, StockData, IntradayData
 
 
 def createmysqldb():
@@ -19,26 +22,6 @@ def get_engine():
     return engine
 
 
-# Deletes stock from stock table of database
-def delete_stock(stock):
-    Stock.objects.filter(id=stock).delete()
-    print('Deleted Stock {}'.format(stock))
-
-
-# Inserts stock record into stock table of database
-def insert_stock(name, ticker, exchange):
-    engine = get_engine()
-    metadata = MetaData(bind=engine)
-    session = sessionmaker(bind=engine)()
-
-    stock_table = Table('stock', metadata, autoload=True)
-    stock = insert(stock_table)
-    stock = stock.values({'name': name, 'ticker': ticker, 'exchange_id': exchange})
-
-    session.execute(stock)
-    session.commit()
-
-
 # Gets all of the market data for the provided ticker
 def get_stock_data(ticker):
     # Selects all records from market_data table where the ticker equals provided ticker
@@ -46,12 +29,8 @@ def get_stock_data(ticker):
     print(stock.pk)
     engine = get_engine()
     metadata = MetaData(bind=engine)
-    session = sessionmaker(bind=engine)()
     table = Table('stock_data', metadata, autoload=True, autoload_with=engine)
     stmt = select([table]).where(and_(table.columns.instrument_id == stock.pk))
-
-    fields = ['date', 'instrument_id', 'high', 'low', 'open', 'close', 'volume', 'adj_close']
-    stocks = session.query()
 
     connection = engine.connect()
     results = connection.execute(stmt).fetchall()
@@ -59,6 +38,7 @@ def get_stock_data(ticker):
     return results
 
 
+# Old method using raw sql, can now use django ORM
 def create_df(ticker):
     try:
         stock = Stock.objects.get(ticker=ticker)
@@ -70,8 +50,9 @@ def create_df(ticker):
         # Set the index of the dataframe as the date and make it datetime data so it can be used for resample
         df.set_index('date', inplace=True)
         df.index = pd.to_datetime(df.index)
-        print(df.head())
+
         return df
+
     except:
         return 'No stock with provided ticker'
 
@@ -80,3 +61,32 @@ def get_stock_pk(ticker):
     stock = Stock.objects.get(ticker=ticker)
 
     return stock
+
+
+def df_to_sql(df):
+    for index, row in df.iterrows():
+
+        try:
+            timestamp = index
+            high = row['high']
+            low = row['low']
+            open = row['open']
+            close = row['close']
+            volume = row['volume']
+            instrument = row['instrument_id']
+
+            data = IntradayData.objects.update_or_create(timestamp=timestamp, high=high, low=low, open=open,
+                                                         close=close, volume=volume, instrument_id=instrument)
+
+
+        except IntegrityError:
+            print('Data {} already exists'.format(row['instrument_id']))
+            break
+
+        except MySQLdb._exceptions.IntegrityError:
+            print('Data {} already exists'.format(row['instrument_id']))
+            break
+
+        except sqlalchemy.exc.IntegrityError:
+            print('Data {} already exists'.format(row['instrument_id']))
+            break

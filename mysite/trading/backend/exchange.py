@@ -7,8 +7,8 @@ import sqlalchemy
 from alpha_vantage.timeseries import TimeSeries
 from django.db import IntegrityError
 from pandas_datareader._utils import RemoteDataError
-from .database import delete_stock, insert_stock, get_engine, create_df
-from ..models import Stock, StockData, Exchange
+from .database import get_engine
+from ..models import Stock, Exchange
 
 
 class StockExchange:
@@ -70,7 +70,7 @@ class StockExchange:
 
         except RemoteDataError:
             print('ERROR - RemoteDataError: No market data for {}'.format(stock.ticker))
-            stock.delete()
+            stock.delee()
 
         except IntegrityError:
             print('ERROR - IntegrityError: Data for {} already exists'.format(stock.ticker))
@@ -143,7 +143,7 @@ class StockExchange:
                 df = df.rename(
                     columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                              'Volume': 'volume', 'Adj Close': 'adj_close'})
-                df['ticker'] = stock.pk
+                df['instrument_id'] = stock.pk
                 df.index.names = ['date']
                 df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
                 print('Recent data for {} added'.format(ticker))
