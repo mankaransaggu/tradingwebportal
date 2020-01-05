@@ -82,6 +82,13 @@ class Stock(models.Model):
     def __str__(self):
         return self.ticker
 
+    def is_favourite(self, user):
+        if self.favourite.filter(id=user.id).exists():
+            return True
+
+        return False
+
+
     class Meta:
         db_table = 'stock'
         constraints = [

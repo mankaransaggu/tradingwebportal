@@ -26,7 +26,6 @@ def get_change(current, previous):
 
 def get_latest(stock):
     latest = IntradayData.objects.filter(instrument=stock).order_by('-timestamp').first()
-
     return latest
 
 
@@ -96,7 +95,7 @@ def get_closest_to_dt(date, stock):
         return greater or less
 
 
-def create_stock_chart(days, stock, positions):
+def create_stock_chart(days, stock):
     df = stock_df(days, stock)
     df['adj_close'] = df['adj_close'].apply(float)
     df_ohlc = df['adj_close'].resample('10D').ohlc()
@@ -148,22 +147,12 @@ def create_stock_chart(days, stock, positions):
         autosize=True
     )
 
-    for position in positions:
-        fig.update_layout(
-            shapes=[dict(
-                y0=position.open_price, y1=position.open_price, x0=0, x1=1, yref='y', xref='paper',
-                line_width=1)],
-            annotations=[dict(
-                y=position.open_price - 1, x=0.05, yref='y', xref='paper',
-                showarrow=False, xanchor='left', text='Position Open')]
-        )
-
     chart = opy.plot(fig, auto_open=False, output_type='div')
 
     return chart
 
 
-def create_intraday_chart(stock, positions):
+def create_intraday_chart(stock):
     df = real_time_df(stock)
     df['close'] = df['close'].apply(float)
     df_ohlc = df['close'].resample('1m').ohlc()
@@ -182,17 +171,6 @@ def create_intraday_chart(stock, positions):
         height=1000,
         autosize=True
     )
-
-    for position in positions:
-        print(position)
-        fig.update_layout(
-            shapes=[dict(
-                y0=position.open_price, y1=position.open_price, x0=0, x1=1, yref='y', xref='paper',
-                line_width=1)],
-            annotations=[dict(
-                y=position.open_price - 1, x=0.05, yref='y', xref='paper',
-                showarrow=False, xanchor='left', text='Position Open')]
-        )
 
     chart = opy.plot(fig, auto_open=False, output_type='div')
 
@@ -305,6 +283,9 @@ def get_view_context(context):
 
 
 def create_detail_data(stock, context):
+    context['historic_graph'] = create_stock_chart(365, stock)
+    context['intraday_graph'] = create_intraday_chart(stock)
+
     context['latest'] = get_latest(stock)
     context['yesterday'] = get_yesterday(stock)
     context['day_bef'] = get_day_before(stock)
@@ -315,8 +296,6 @@ def create_detail_data(stock, context):
 
     get_view_context(context)
 
-    context['historic_graph'] = create_stock_chart(365, stock, context['open_positions'])
-    context['intraday_graph'] = create_intraday_chart(stock, context['open_positions'])
     context['summary'] = create_stock_change(stock)
 
 

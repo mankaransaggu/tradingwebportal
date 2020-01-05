@@ -33,8 +33,15 @@ class IndexView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['favourites'] = sidebar(self.request)
-        context['open_positions'] = footer(self.request)
+        request = self.request
+        user = request.user
+
+        # Check the user is logged in before searching
+        if user.is_authenticated:
+            # Methods that deal with user favourites and positions
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
+
         return context
 
 
@@ -47,8 +54,15 @@ class ExchangesView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ExchangesView, self).get_context_data(**kwargs)
-        context['favourites'] = sidebar(self.request)
-        context['open_positions'] = footer(self.request)
+        request = self.request
+        user = request.user
+
+        # Check the user is logged in before searching
+        if user.is_authenticated:
+            # Methods that deal with user favourites and positions
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
+
         return context
 
 
@@ -59,21 +73,24 @@ class ExchangeStocksView(generic.ListView):
 
     def get_queryset(self):
         pk = self.kwargs['pk']
-
         return Stock.objects.filter(exchange_id=pk).order_by('ticker')
 
     def get_context_data(self, **kwargs):
         context = super(ExchangeStocksView, self).get_context_data(**kwargs)
-
-        pk = self.kwargs['pk']
         request = self.request
         user = request.user
-        favourites = Stock.objects.filter(favourite__pk=user.pk, exchange_id=pk).only('id', 'ticker')
-        exchange = Exchange.objects.get(id=pk)
 
+        pk = self.kwargs['pk']
+        exchange = Exchange.objects.get(id=pk)
         context['exchange'] = exchange
-        context['favourites'] = favourites
-        context['open_positions'] = footer(self.request)
+
+        # Check the user is logged in before searching
+        if user.is_authenticated:
+            # Methods that deal with user favourites and positions
+            user_bookmarks.check_exchange_stock(user, exchange, context)
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
+
         return context
 
 
@@ -91,12 +108,13 @@ class StocksView(generic.ListView):
         request = self.request
         user = request.user
 
-        favourites = Stock.objects.filter(favourite__pk=user.pk).only('id', 'ticker')
-        count = Exchange.objects.annotate(num_stocks=Count('stock'))
+        # Check the user is logged in before searching
+        if user.is_authenticated:
+            # Methods that deal with user favourites and positions
+            user_bookmarks.check_stock_list(user, context)
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
 
-        context['stock_count'] = count
-        context['favourites'] = favourites
-        context['open_positions'] = footer(self.request)
         return context
 
 
@@ -111,14 +129,15 @@ class StockView(generic.DetailView):
         pk = self.kwargs['pk']
 
         stock = get_object_or_404(Stock, pk=pk)
-        user_bookmarks.check_is_favourite(user, stock, context)
-        user_positions.get_positions(user, pk, context)
-
-        context['favourites'] = sidebar(request)
-
-        context['open_positions'] = footer(self.request)
-
+        # Creates the stock charts and the change summary
         stock_data.create_detail_data(stock, context)
+
+        # Check the user is logged in before searching
+        if user.is_authenticated:
+            # Methods that deal with user favourites and positions
+            user_bookmarks.check_is_favourite(user, stock, context)
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
 
         return context
 
@@ -134,24 +153,39 @@ class OpenPositionForm(FormView):
 
         id = self.kwargs['id']
         instrument = Stock.objects.get(id=id)
-        latest = stock_data.get_yesterday(instrument.ticker)
+        latest = stock_data.get_latest(instrument)
 
         initial['instrument'] = instrument
         initial['open_date'] = datetime.now()
-        initial['open_price'] = latest.close_price
+        initial['open_price'] = latest.close
+
         return initial
 
     def form_valid(self, form):
+        request = self.request
+        user = request.user
+        account = Account.objects.get(id=user.id)
+
         post = form.save(commit=False)
         post.account_id = self.request.user.pk
         post.position_state = 'Open'
         post.save()
-        return redirect('account')
+
+        account.value = post.open_price * post.quantity
+        account.save()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
     def get_context_data(self, **kwargs):
         context = super(OpenPositionForm, self).get_context_data(**kwargs)
-        context['favourites'] = sidebar(self.request)
-        context['open_positions'] = footer(self.request)
+        request = self.request
+        user = request.user
+
+        if user.is_authenticated:
+            # Methods that deal with user favourites and positions
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
+
         return context
 
 
@@ -192,8 +226,10 @@ class AccountView(TemplateView):
     template_name = 'account/account.html'
 
     def dispatch(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return redirect('login')
+
         return super(AccountView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -202,19 +238,13 @@ class AccountView(TemplateView):
         user = request.user
 
         if request.user.is_authenticated:
-            favourites = user.favourite.all().order_by('ticker')
-            positions = Position.objects.filter(account_id=request.user.pk).order_by('-open')
-            context['positions'] = positions
 
-            for fav in favourites.iterator():
-                is_favourite = False
-                stock = get_object_or_404(Stock, id=fav.id)
-                if stock.favourite.filter(id=user.id).exists():
-                    is_favourite = True
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
 
-                context['is_favourite'] = is_favourite
-            context['favourites'] = favourites
-            context['open_positions'] = footer(self.request)
+            for fav in context['favourites'].iterator():
+                user_bookmarks.check_is_favourite(user, fav, context)
+
             return context
 
         else:
@@ -228,14 +258,14 @@ class Setting(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(Setting, self).get_context_data(**kwargs)
-        context['setting'] = self.request.GET.get('setting')
+        setting = self.request.GET.get('setting')
         request = self.request
-        context['favourites'] = sidebar(request)
-        context['open_positions'] = footer(self.request)
-
-        setting = context['setting']
+        user = request.user
 
         if request.user.is_authenticated:
+
+            user_bookmarks.get_user_favourites(user, context)
+            user_positions.get_open_positions(user, context)
 
             if setting == 'download-nyse':
                 NYSE().save_stocks()
@@ -261,22 +291,6 @@ class Setting(TemplateView):
             return context
         else:
             return context
-
-
-def sidebar(request):
-    if request.user.is_authenticated:
-        user = request.user
-        favourites = user.favourite.all()
-        return favourites
-    else:
-        return 'None'
-
-
-def footer(request):
-    if request.user.is_authenticated:
-        user = request.user
-        open_positions = Position.objects.filter(account=user, open=True).order_by('open_date')
-        return open_positions
 
 
 def favourite_stock(request, id):

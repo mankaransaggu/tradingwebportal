@@ -2,59 +2,17 @@
 
 {% block content %}
 
-{% if stocks %}
-
 <div class="container-fluid">
 
     <h1>{{exchange.code}} Listed Stocks</h1>
 
-     {% include "includes/paginator_nav.html" %}
+    {% if stocks %}
 
-    <table class="table">
-        <tr>
-            <th scope="col">Ticker</th>
-            <th scope="col">Name</th>
-            <th scope="col">Price</th>
-            <th scope="col" class="text-center">Bookmark</i></th>
-        </tr>
-        <tbody>
+    {% include "includes/paginator_nav.html" %}
+    {% include "includes/stock_list.html" %}
+    {% include "includes/paginator_nav.html" %}
 
-        {% for stock in stocks %}
-        <tr>
-            <th scope="row"><a href="{% url 'equity' stock.id %}">{{stock.ticker}}</a></th>
-            <td>{{stock.name}}</td>
-            <td>{{stock.price}}</td>
-            <td class="text-center">
-                {% if stock in favourites %}
-                <a href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
-                {% else %}
-                <a href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x"></i></a>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-
-        </tbody>
-    </table>
-
-    <div class="pagination">
-    <span class="step-links">
-        {% if stocks.has_previous %}
-            <a href="?page={{ exchange.previous_page_number }}">previous</a>
-        {% endif %}
-
-        <span class="current">
-            Page {{ stocks.number }} of {{ stocks.paginator.num_pages }}.
-        </span>
-    </span>
-    </div>
-
-
-    {% elif message %}
-    <h4>{{message}}</h4>
     {% endif %}
-
-   {% include "includes/paginator_nav.html" %}
 
 </div>
 
