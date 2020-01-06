@@ -29,7 +29,7 @@ def get_latest(stock):
     try:
         latest = IntradayData.objects.filter(instrument=stock).order_by('-timestamp').first()
     except IntradayData.DoesNotExist:
-        latest - StockData.objects.filter(instrument=stock).order_by('-date').first()
+        latest - StockData.objects.filter(instrument=stock).order_by('-timestamp').first()
 
     return latest
 
@@ -38,18 +38,18 @@ def get_latest(stock):
 def get_yesterday(stock):
     yesterday = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days=1), '%Y-%m-%d')
     result = get_closest_to_dt(yesterday, stock)
-    nearest_yesterday = result.date
-    latest = StockData.objects.get(instrument=stock, date=nearest_yesterday)
+    nearest_yesterday = result.timestamp
+    latest = StockData.objects.get(instrument=stock, timestamp=nearest_yesterday)
 
     return latest
 
 
 def get_week(stock):
     latest = get_yesterday(stock)
-    week = dt.datetime.strftime(latest.date - dt.timedelta(days=7), '%Y-%m-%d')
+    week = dt.datetime.strftime(latest.timestamp - dt.timedelta(days=7), '%Y-%m-%d')
     res = get_closest_to_dt(week, stock)
-    week = res.date
-    week = StockData.objects.get(instrument=stock, date=week)
+    week = res.timestamp
+    week = StockData.objects.get(instrument=stock, timestamp=week)
 
     return week
 
@@ -57,10 +57,10 @@ def get_week(stock):
 # Gets the date closest to 365 days ago
 def get_month(stock):
     latest = get_yesterday(stock)
-    year = dt.datetime.strftime(latest.date - dt.timedelta(days=30), '%Y-%m-%d')
+    year = dt.datetime.strftime(latest.timestamp - dt.timedelta(days=30), '%Y-%m-%d')
     res = get_closest_to_dt(year, stock)
-    month = res.date
-    month = StockData.objects.get(instrument=stock, date=month)
+    month = res.timestamp
+    month = StockData.objects.get(instrument=stock, timestamp=month)
 
     return month
 
@@ -68,34 +68,34 @@ def get_month(stock):
 # Gets the date closest to 365 days ago
 def get_ytd(stock):
     latest = get_yesterday(stock)
-    year = dt.datetime.strftime(latest.date - dt.timedelta(days=365), '%Y-%m-%d')
+    year = dt.datetime.strftime(latest.timestamp - dt.timedelta(days=365), '%Y-%m-%d')
     res = get_closest_to_dt(year, stock)
-    ytd = res.date
-    ytd = StockData.objects.get(instrument=stock, date=ytd)
+    ytd = res.timestamp
+    ytd = StockData.objects.get(instrument=stock, timestamp=ytd)
 
     return ytd
 
 
 def get_earliest(stock):
-    earliest = StockData.objects.filter(instrument=stock).order_by("date").first()
+    earliest = StockData.objects.filter(instrument=stock).order_by("timestamp").first()
 
     return earliest
 
 
 # Gets the second business day past
 def get_day_before(stock):
-    day_before = StockData.objects.filter(instrument=stock).order_by('-date')[1]
+    day_before = StockData.objects.filter(instrument=stock).order_by('-timestamp')[1]
     return day_before
 
 
 # Gets the closest date to the given date
 def get_closest_to_dt(date, stock):
-    greater = StockData.objects.filter(date__gte=date, instrument__ticker=stock).order_by("date").first()
-    less = StockData.objects.filter(date__lte=date, instrument__ticker=stock).order_by("-date").first()
-    date_obj = dt.datetime.strptime(date, '%Y-%m-%d').date()
+    greater = StockData.objects.filter(timestamp__gte=date, instrument__ticker=stock).order_by("timestamp").first()
+    less = StockData.objects.filter(timestamp__lte=date, instrument__ticker=stock).order_by("-timestamp").first()
+    date_obj = dt.datetime.now()
 
     if greater and less:
-        return greater if abs(greater.date - date_obj) < abs(less.date - date_obj) else less
+        return greater if abs(greater.timestamp(dt.timezone.utc) - date_obj) < abs(less.timestamp(dt.timezone.utc) - date_obj) else less
     else:
         return greater or less
 
@@ -230,17 +230,17 @@ def create_stock_change(stock):
 def stock_df(days, stock):
     try:
         date = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days), '%Y-%m-%d')
-        qs = StockData.objects.filter(instrument=stock, date__gte=date)
+        qs = StockData.objects.filter(instrument=stock, timestamp__gte=date)
         df = read_frame(qs)
         del df['id']
         del df['instrument']
-        df.set_index('date', inplace=True)
+        df.set_index('timestamp', inplace=True)
         df.index = pd.to_datetime(df.index)
 
         return df
 
     except:
-        return 'No stock with provided ticker'
+        return print('No stock with provided ticker')
 
 
 def real_time_df(stock):
