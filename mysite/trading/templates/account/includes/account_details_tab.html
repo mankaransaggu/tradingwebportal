@@ -1,0 +1,17 @@
+<div class="tab-pane active" id="account" role="tabpanel">
+    <div class="card-text">
+        <ul class="list-group list-group-horizontal">
+            <div class="list-group-item flex-fill">
+                <h6>Account Details</h6>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item flex-fill"><h6>First Name:</h6><span>{{user.first_name}}</span></li>
+                    <li class="list-group-item flex-fill"><h6>Last Name:</h6> <span>{{user.last_name}}</span></li>
+                    <li class="list-group-item flex-fill"><h6>Email:</h6> <span>{{user.email}}</span></li>
+                    <li class="list-group-item flex-fill"><h6>Account Opened:</h6> <span>{{user.date_joined}}</span></li>
+                    <li class="list-group-item flex-fill"><h6>Account Value:</h6> <span>£{{user.account.value}}</span></li>
+                    <li class="list-group-item flex-fill"><h6>Account Earnings:</h6> <span>£{{user.account.earned}}</span></li>
+                </ul>
+            </div>
+        </ul>
+    </div>
+</div>

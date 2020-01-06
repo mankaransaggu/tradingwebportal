@@ -24,18 +24,18 @@
 
 <div class="wrapper">
 
-    {% include "includes/sidebar.html" %}
-    {% include "includes/messaging.html" %}
+    {% include "page_elements/sidebar.html" %}
+    {% include "page_elements/messaging.html" %}
 
     <div id="content">
 
-        {% include "includes/navbar.html" %}
+        {% include "page_elements/navbar.html" %}
 
         {% block content %}
 
         {% endblock %}
 
-        {% include "includes/footer.html" %}
+        {% include "page_elements/footer.html" %}
 
     </div>
 </div>

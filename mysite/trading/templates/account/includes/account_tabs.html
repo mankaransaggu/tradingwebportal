@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+
+                <ul class="nav nav-tabs card-header-tabs" id="bologna-list" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#account" role="tab" aria-controls="account" aria-selected="true">Account</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#positions" role="tab" aria-controls="positions" aria-selected="false">Positions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#favourites" role="tab" aria-controls="favourites" aria-selected="false">Favourites</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body">
+                <h3 class="card-title">Your Account</h3>
+
+                <a href="{% url 'edit_account' %}"><button class="btn btn-primary">Edit Account <i class="fas fa-user-cog fa-1x"></i></button></a>
+                <a href="{% url 'change_password' %}"><button class="btn btn-primary">Change Password</button></a>
+
+                <div class="tab-content mt-3">
+
+                    {% include "account/includes/account_details_tab.html" %}
+                    {% include "account/includes/account_positions_tab.html" %}
+                    {% include "account/includes/account_favourites_tab.html" %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

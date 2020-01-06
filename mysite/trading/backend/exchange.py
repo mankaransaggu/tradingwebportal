@@ -63,14 +63,14 @@ class StockExchange:
                          'Volume': 'volume', 'Adj Close': 'adj_close'})
             df['instrument_id'] = stock.pk
 
-            df.rename_axis('date', axis='index', inplace=True)
+            df.rename_axis('timestamp', axis='index', inplace=True)
             df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
 
             print('SUCCESS: Market data for {} added'.format(stock.ticker))
 
         except RemoteDataError:
             print('ERROR - RemoteDataError: No market data for {}'.format(stock.ticker))
-            stock.delee()
+            stock.delete()
 
         except IntegrityError:
             print('ERROR - IntegrityError: Data for {} already exists'.format(stock.ticker))
@@ -102,7 +102,7 @@ class StockExchange:
                          '5. adjusted close': 'adj_close', '6. volume': 'volume', '7. dividend amount': 'dividend',
                          '8. split coefficient': 'split_coefficient'})
             df['instrument_id'] = stock.pk
-            df.rename_axis('date', axis='index', inplace=True)
+            df.rename_axis('timestamp', axis='index', inplace=True)
 
             df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
             print('SUCCESS: Market data for {} added'.format(stock.ticker))
@@ -144,7 +144,7 @@ class StockExchange:
                     columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                              'Volume': 'volume', 'Adj Close': 'adj_close'})
                 df['instrument_id'] = stock.pk
-                df.index.names = ['date']
+                df.index.names = ['timestamp']
                 df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
                 print('Recent data for {} added'.format(ticker))
 

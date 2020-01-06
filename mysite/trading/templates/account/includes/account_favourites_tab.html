@@ -1,0 +1,44 @@
+<div class="tab-pane" id="favourites" role="tabpanel">
+    <div class="card-text">
+        <ul class="list-group list-group-horizontal">
+
+            <div class="list-group-item flex-fill">
+                <h6>Favourites</h6>
+                {% if favourites %}
+
+                <table class="table scroll">
+                    <thead>
+                    <tr>
+                        <th scope="col">Instrument</th>
+                        <th scope="col">Name</th>
+                        <th scope="col" class="text-center">Bookmark</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for favourite in favourites %}
+                    <tr>
+                        <td><a href="{% url 'equity' favourite.id %}">{{ favourite.ticker }}</a></td>
+                        <td>{{favourite.name}}</td>
+
+                        <td class="text-center">
+                            {% if is_favourite %}
+                            <a href="{% url 'favourite_stock' favourite.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
+                            {% else %}
+                            <a href="{% url 'favourite_stock' favourite.id %}"><i class="far fa-bookmark fa-2x"></i></a>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+
+                {% else %}
+                <span>You dont have any favourite instruments</span>
+                {% endif %}
+            </div>
+        </ul>
+    </div>
+</div>

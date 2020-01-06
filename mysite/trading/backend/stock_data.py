@@ -25,7 +25,12 @@ def get_change(current, previous):
 
 
 def get_latest(stock):
-    latest = IntradayData.objects.filter(instrument=stock).order_by('-timestamp').first()
+
+    try:
+        latest = IntradayData.objects.filter(instrument=stock).order_by('-timestamp').first()
+    except IntradayData.DoesNotExist:
+        latest - StockData.objects.filter(instrument=stock).order_by('-date').first()
+
     return latest
 
 
@@ -100,7 +105,7 @@ def create_stock_chart(days, stock):
     df['adj_close'] = df['adj_close'].apply(float)
     df_ohlc = df['adj_close'].resample('10D').ohlc()
     df_ohlc.reset_index(inplace=True)
-    df_ohlc['date'] = df_ohlc['date'].map(mdates.date2num)
+    df_ohlc['timestamp'] = df_ohlc['timestamp'].map(mdates.date2num)
 
     fig = go.Figure(data=[go.Candlestick(x=df.index,
                                          open=df['open'],
@@ -299,3 +304,8 @@ def create_detail_data(stock, context):
     context['summary'] = create_stock_change(stock)
 
 
+def get_latest_stock_details(context):
+    stocks = Stock.objects.all().only('id')
+    details = get_latest(stocks)
+
+    context['stock_details'] = details

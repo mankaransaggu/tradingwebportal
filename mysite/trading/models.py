@@ -88,6 +88,27 @@ class Stock(models.Model):
 
         return False
 
+    def current_price(self):
+
+        intraday = IntradayData.objects.filter(instrument=self).order_by('-timestamp')[:1]
+        day = StockData.objects.filter(instrument=self).order_by('-timestamp')[:1]
+
+        if intraday.exists() and day.exists():
+            intraday = intraday.first()
+            day = day.first()
+
+            if intraday.timestamp > day.timestamp:
+                return intraday
+            else:
+                return day
+
+        elif intraday.exists():
+            intraday = intraday.first()
+            return intraday
+
+        elif day.exists():
+            day = day.first()
+            return day
 
     class Meta:
         db_table = 'stock'
@@ -97,7 +118,7 @@ class Stock(models.Model):
 
 
 class StockData(models.Model):
-    date = models.DateField()
+    timestamp = models.DateTimeField()
     instrument = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
     high = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
@@ -110,12 +131,12 @@ class StockData(models.Model):
     split_coefficient = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(1.0))
 
     def __str__(self):
-        string = self.instrument.ticker + ' ' + self.date.strftime('%Y-%m-%d')
+        string = self.instrument.ticker + ' ' + self.timestamp.strftime('%Y-%m-%d')
         return string
 
     class Meta:
         db_table = 'stock_data'
-        unique_together = (('date', 'instrument'),)
+        unique_together = (('timestamp', 'instrument'),)
 
 
 class IntradayData(models.Model):
@@ -137,7 +158,6 @@ class IntradayData(models.Model):
 
 
 class Position(models.Model):
-
     DIRECTION_CHOICES = [
         ('BUY', 'BUY'),
         ('SELL', 'SELL'),
@@ -158,4 +178,3 @@ class Position(models.Model):
 
     class Meta:
         db_table = 'positions'
-

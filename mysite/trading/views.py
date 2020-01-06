@@ -69,7 +69,7 @@ class ExchangesView(generic.ListView):
 class ExchangeStocksView(generic.ListView):
     template_name = 'trading/exchange_stocks.html'
     context_object_name = 'stocks'
-    paginate_by = 50
+    paginate_by = 5
 
     def get_queryset(self):
         pk = self.kwargs['pk']
@@ -96,9 +96,9 @@ class ExchangeStocksView(generic.ListView):
 
 class StocksView(generic.ListView):
     model = Stock
-    template_name = 'trading/stocks.html'
+    template_name = 'stock/stock_listing.html'
     context_object_name = 'stocks'
-    paginate_by = 50
+    paginate_by = 5
 
     def get_queryset(self):
         return Stock.objects.all().order_by('ticker')
@@ -120,7 +120,7 @@ class StocksView(generic.ListView):
 
 class StockView(generic.DetailView):
     model = Stock
-    template_name = 'trading/detail.html'
+    template_name = 'stock/stock_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super(StockView, self).get_context_data(**kwargs)
@@ -137,7 +137,7 @@ class StockView(generic.DetailView):
             # Methods that deal with user favourites and positions
             user_bookmarks.check_is_favourite(user, stock, context)
             user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
+            user_positions.get_stock_positions(user, stock, context)
 
         return context
 
@@ -195,8 +195,8 @@ def close_position(request, id):
     account = Account.objects.get(id=user.id)
 
     stock = Stock.objects.get(ticker=position.instrument)
-    close = stock_data.get_yesterday(stock.ticker)
-    close_price = close.close_price
+    close = stock_data.get_latest(stock)
+    close_price = close.close
 
     position.close_price = close_price
     position.close_date = datetime.now()
@@ -241,6 +241,7 @@ class AccountView(TemplateView):
 
             user_bookmarks.get_user_favourites(user, context)
             user_positions.get_open_positions(user, context)
+            user_positions.get_closed_positions(user, context)
 
             for fav in context['favourites'].iterator():
                 user_bookmarks.check_is_favourite(user, fav, context)

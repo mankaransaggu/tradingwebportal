@@ -28,3 +28,4 @@ def check_exchange_stock(user, exchange, context):
 def check_stock_list(user, context):
     favourites = Stock.objects.filter(favourite__pk=user.pk).only('id', 'ticker')
     context['is_favourite'] = favourites
+

@@ -51,9 +51,15 @@
                                                 <td> <a href="{% url 'equity' position.instrument.id %}">{{position.instrument}}</a></td>
                                                 <td>{{position.direction}}</td>
                                                 <td>{{position.quantity}}</td>
-                                                <td>{{position.open}}</td>
-                                                <td>{{position.close}}</td>
-                                                <td>{{position.open}}</td>
+                                                <td>{{position.open_price}}</td>
+                                                <td>{{position.close_price}}</td>
+                                                <td>
+                                                    {% if position.open == True %}
+                                                        Open
+                                                    {% else %}
+                                                        Closed
+                                                    {% endif %}
+                                                </td>
                                                 <td>{{position.result}}</td>
                                             </tr>
                                             {% endfor %}
@@ -99,15 +105,21 @@
                                             <tbody>
                                             {% for position in close_positions %}
                                             <tr>
-                                                <th scope="row">{{position.position_number}}</th>
+                                                <th scope="row">{{position.id}}</th>
                                                 <td>{{position.open_date}}</td>
                                                 <td>{{position.close_date}}</td>
-                                                <td> <a href="{% url 'equity' position.instrument.id %}">{{position.ticker}}</a></td>
+                                                <td> {{position.instrument}}</td>
                                                 <td>{{position.direction}}</td>
                                                 <td>{{position.quantity}}</td>
-                                                <td>{{position.open}}</td>
-                                                <td>{{position.close}}</td>
-                                                <td>{{position.position_state}}</td>
+                                                <td>{{position.open_price}}</td>
+                                                <td>{{position.close_price}}</td>
+                                                <td>
+                                                     {% if position.open == True %}
+                                                        Open
+                                                    {% else %}
+                                                        Closed
+                                                    {% endif %}
+                                                </td>
                                                 <td>{{position.result}}</td>
                                             </tr>
                                             {% endfor %}
