@@ -7,8 +7,8 @@ import sqlalchemy
 from alpha_vantage.timeseries import TimeSeries
 from django.db import IntegrityError
 from pandas_datareader._utils import RemoteDataError
-from .database import get_engine
-from ..models import Stock, Exchange
+from .database import df_to_sql
+from ..models import Stock, Exchange, StockData
 
 
 class StockExchange:
@@ -38,7 +38,7 @@ class StockExchange:
                 try:
                     stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
                     success = True
-                    stock = Stock.objects.get(ticker=ticker, name=name, exchange=exchange)
+                    stock = Stock.objects.get(ticker=ticker, exchange=exchange)
                     print('SUCCESS: Added {} to stock table'.format(ticker))
                 except IntegrityError:
                     print('ERROR - IntegrityError: {} already exists in Stock table'.format(ticker))
@@ -51,8 +51,8 @@ class StockExchange:
 
     @staticmethod
     def get_yahoo_data(stock):
+        print(stock)
         try:
-            print(stock.pk)
             start = dt.datetime(2000, 1, 1)
             end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
 
@@ -64,7 +64,7 @@ class StockExchange:
             df['instrument_id'] = stock.pk
 
             df.rename_axis('timestamp', axis='index', inplace=True)
-            df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
+            df_to_sql(df)
 
             print('SUCCESS: Market data for {} added'.format(stock.ticker))
 
@@ -72,14 +72,8 @@ class StockExchange:
             print('ERROR - RemoteDataError: No market data for {}'.format(stock.ticker))
             stock.delete()
 
-        except IntegrityError:
+        except (IntegrityError, MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError) as e:
             print('ERROR - IntegrityError: Data for {} already exists'.format(stock.ticker))
-
-        except MySQLdb._exceptions.IntegrityError:
-            print('ERROR - MySQL IntegrityError: Data for {} already exists'.format(stock.ticker))
-
-        except sqlalchemy.exc.IntegrityError:
-            print('ERROR - SQLAlchemy IntegrityError: Data for {} already exists'.format(stock.ticker))
 
         except KeyError:
             print('ERROR - KeyError: No market data for {}'.format(stock.ticker))
@@ -89,7 +83,7 @@ class StockExchange:
             print('ERROR - AssertionError: Stock {} should be deleted'.format(stock.ticker))
 
     @staticmethod
-    # This method uses the alpha vantage API, unfortunately not suitable  due to api call limits
+    # This method uses the alpha vantage API, unfortunately not suitable for constant use due to api call limits
     def get_stock_data(stock):
         try:
             print(stock.pk)
@@ -104,21 +98,15 @@ class StockExchange:
             df['instrument_id'] = stock.pk
             df.rename_axis('timestamp', axis='index', inplace=True)
 
-            df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
+            df_to_sql(df)
             print('SUCCESS: Market data for {} added'.format(stock.ticker))
 
         except RemoteDataError:
             print('ERROR - RemoteDataError: No market data for {}'.format(stock.ticker))
             stock.delete()
 
-        except IntegrityError:
+        except (IntegrityError, MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError) as e:
             print('ERROR - IntegrityError: Data for {} already exists'.format(stock.ticker))
-
-        except MySQLdb._exceptions.IntegrityError:
-            print('ERROR - MySQL IntegrityError: Data for {} already exists'.format(stock.ticker))
-
-        except sqlalchemy.exc.IntegrityError:
-            print('ERROR - SQLAlchemy IntegrityError: Data for {} already exists'.format(stock.ticker))
 
         except KeyError:
             print('ERROR - KeyError: No market data for {}'.format(stock.ticker))
@@ -132,38 +120,40 @@ class StockExchange:
             stock.delete()
 
     def update_market_data(self):
-        start = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
-        end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
+        end = dt.date.today() - dt.timedelta(1)
 
         for stock in Stock.objects.filter(exchange__code=self.code):
 
-            try:
-                ticker = stock.ticker
-                df = web.DataReader(ticker, 'yahoo', start, end)
-                df = df.rename(
-                    columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
-                             'Volume': 'volume', 'Adj Close': 'adj_close'})
-                df['instrument_id'] = stock.pk
-                df.index.names = ['timestamp']
-                df.to_sql('stock_data', get_engine(), if_exists='append', index=True)
-                print('Recent data for {} added'.format(ticker))
+            latest = StockData.objects.filter(instrument=stock).order_by('-timestamp')[:1]
+            if latest.exists():
+                latest = latest.first()
+                start = latest.timestamp.date() + dt.timedelta(1)
 
-            except RemoteDataError:
-                print('No new market data for {}'.format(ticker))
-                stock.delete()
+                if start < end:
 
-            except IntegrityError:
-                print('Recent data for {} already exists'.format(ticker))
+                    try:
+                        ticker = stock.ticker
+                        df = web.DataReader(ticker, 'yahoo', start, end)
+                        # Format df ready for insertion to db
+                        df = df.rename(
+                            columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
+                                     'Volume': 'volume', 'Adj Close': 'adj_close'})
+                        df['instrument_id'] = stock.pk
+                        df.index.names = ['timestamp']
 
-            except MySQLdb._exceptions.IntegrityError:
-                print('Recent data for {} already exists'.format(ticker))
+                        df_to_sql(df)
+                        print('Recent data for {} added'.format(ticker))
 
-            except sqlalchemy.exc.IntegrityError:
-                print('Recent data for {} already exists'.format(ticker))
+                    except RemoteDataError:
+                        print('No new market data for {}'.format(ticker))
+                        stock.delete()
 
-            except KeyError:
-                print('No market data for {}'.format(ticker))
-                stock.delete()
+                    except (IntegrityError, MySQLdb._exceptions.IntegrityError, sqlalchemy.exc.IntegrityError,) as e:
+                        print('Recent data for {} already exists'.format(ticker))
+
+                    except KeyError:
+                        print('No market data for {}'.format(ticker))
+                        stock.delete()
 
 
 class NYSE(StockExchange):
@@ -231,6 +221,7 @@ class NASDAQ(StockExchange):
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Z',
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=0',)
 
+    # Currently have to overife parent due to different elements, looking to solve
     def save_stocks(self):
         tickers = []
 
@@ -248,9 +239,9 @@ class NASDAQ(StockExchange):
 
                 try:
                     stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
-                    success = True
-                    stock = Stock.objects.get(ticker=ticker, exchange__code=self.code)
                     print('Added {} to stock table'.format(ticker))
+                    stock = Stock.objects.get(ticker=ticker, exchange=exchange)
+                    success = True
                 except IntegrityError:
                     print('{} already exists in Stock table'.format(ticker))
                     success = True

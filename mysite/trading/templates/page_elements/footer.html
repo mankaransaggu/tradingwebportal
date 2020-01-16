@@ -3,19 +3,19 @@
         <div class="panel-heading">
             <div class="row">
 
-                    <div class="col-3">
-                        <p class="ml-5 text-white text-left"><a href="{% url 'account'%}">{{ user.email }}</a></p>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="panel-title text-center">
+                <div class="col-3">
+                    <p class="ml-5 text-white text-left"><a href="{% url 'account'%}">{{ user.email }}</a></p>
+                </div>
+                <div class="col-6">
+                    <h4 class="panel-title text-center">
                         <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
                             <i class="fas fa-arrows-alt-v text-center"></i>
                         </a>
-                        </h4>
-                    </div>
-                    <div class="col-3">
-                        <p class="ml-auto mr-5 text-white text-right">Account Result: £{{ user.account.earned }} | Account Value: £{{ user.account.value }}</p>
-                    </div>
+                    </h4>
+                </div>
+                <div class="col-3">
+                    <p class="ml-auto mr-5 text-white text-right">Account Result: £{{ user.account.earned }} | Account Value: £{{ user.account.value }}</p>
+                </div>
 
             </div>
         </div>
@@ -59,7 +59,7 @@
                                 Closed
                                 {% endif %}
                             </td>
-                            <td>{{position.result}}</td>
+                            <td>{{position.current_result}}</td>
 
                             <td class="text-center">
                                 <a href="{% url 'close_position' position.id %}">
@@ -76,9 +76,6 @@
                 </div>
             </div>
 
-
-
         </div>
     </div>
-</div>
 </div>

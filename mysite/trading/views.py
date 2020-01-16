@@ -2,11 +2,10 @@ from datetime import datetime
 from itertools import count
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, PasswordChangeForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.models import User
-from django.db.models import Count
-from django.http import HttpResponseRedirect, request
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
@@ -15,7 +14,7 @@ from django.views import generic
 from django.views.generic import TemplateView, FormView
 from django.template.loader import render_to_string
 import pandas as pd
-from .backend import stock_data, user_bookmarks, user_positions
+from .backend import user_bookmarks, user_positions, stock_data
 from .forms import SignUpForm, EditAccountForm, CreatePositionForm
 from .tokens import account_activation_token
 from .models import Exchange, Stock, StockData, Position, Account
@@ -221,6 +220,18 @@ def close_position(request, id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
+class SearchView(TemplateView):
+    template_name = 'search.html'
+
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get('q', '')
+        self.results = Stock.objects.filter(name__icontains=q, ticker__icontains=q)
+        return super().get(request=self.results, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(results=self.results, **kwargs)
+
+
 class AccountView(TemplateView):
     model = User
     template_name = 'account/account.html'
@@ -317,7 +328,7 @@ def signup(request):
 
                 current_site = get_current_site(request)
                 subject = 'Activate Your Trading Account'
-                message = render_to_string('trading/account_activation_email.html', {
+                message = render_to_string('account/account_activation_email.html', {
                     'user': user,
                     'domain': current_site.domain,
                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
@@ -331,12 +342,12 @@ def signup(request):
                     messages.error(request, f"{msg}: {form.error_messages[msg]}")
 
                     return render(request,
-                                  "trading/signup.html",
+                                  "account/signup.html",
                                   {"form": form})
 
         else:
             form = SignUpForm()
-        return render(request, 'trading/signup.html', {'form': form})
+        return render(request, 'account/signup.html', {'form': form})
 
     else:
         return redirect('index')
@@ -357,11 +368,11 @@ def activate(request, uidb64, token):
         messages.success(request, f"New account activated: {user.email}")
         return redirect('index')
     else:
-        return render(request, 'trading/account_activation_invalid.html')
+        return render(request, 'account/account_activation_invalid.html')
 
 
 def account_activation_sent(request):
-    return render(request, 'trading/account_activation_sent.html')
+    return render(request, 'account/account_activation_sent.html')
 
 
 def login_request(request):
@@ -381,7 +392,7 @@ def login_request(request):
             messages.error(request, "Invalid username or password.")
     form = AuthenticationForm()
     return render(request,
-                  'trading/login.html',
+                  'account/login.html',
                   {'form': form})
 
 

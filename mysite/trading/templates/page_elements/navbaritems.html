@@ -36,9 +36,9 @@
     </li>
 </ul>
 
-<form class="mx-2 my-auto d-inline w-100" action=" " method="get" id="navBarSearchForm">
+<form class="mx-2 my-auto " action=" " method="get" action="{% url 'search' %}"  id="navBarSearchForm">
     <div class="input-group">
-        <input class="form-control mx-2" placeholder="Search Coming Soon..." disabled="disabled">
+        <input class="form-control mx-2" placeholder="Search...">
         <span class="input-group-append">
             <button class="btn btn-primary" type="button">Search</button>
         </span>

@@ -88,8 +88,7 @@ class Stock(models.Model):
 
         return False
 
-    def current_price(self):
-
+    def current_data(self):
         intraday = IntradayData.objects.filter(instrument=self).order_by('-timestamp')[:1]
         day = StockData.objects.filter(instrument=self).order_by('-timestamp')[:1]
 
@@ -175,6 +174,13 @@ class Position(models.Model):
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
     open = models.BooleanField(default=True)
     account = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def current_result(self):
+        stock = Stock.objects.get(id=self.instrument.id)
+        current_price = stock.current_data()
+        print(current_price.close)
+        result = current_price.close - self.open_price
+        return result
 
     class Meta:
         db_table = 'positions'

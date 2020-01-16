@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import plotly.offline as opy
 import datetime as dt
 from django_pandas.io import read_frame
+from django.utils import timezone
 
 
 # Gets the change between two dates data in percent
@@ -92,10 +93,10 @@ def get_day_before(stock):
 def get_closest_to_dt(date, stock):
     greater = StockData.objects.filter(timestamp__gte=date, instrument__ticker=stock).order_by("timestamp").first()
     less = StockData.objects.filter(timestamp__lte=date, instrument__ticker=stock).order_by("-timestamp").first()
-    date_obj = dt.datetime.now()
+    date_obj = timezone.now()
 
     if greater and less:
-        return greater if abs(greater.timestamp(dt.timezone.utc) - date_obj) < abs(less.timestamp(dt.timezone.utc) - date_obj) else less
+        return greater if abs(greater.timestamp - date_obj) < abs(less.timestamp - date_obj) else less
     else:
         return greater or less
 
