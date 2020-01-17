@@ -51,7 +51,6 @@ class StockExchange:
 
     @staticmethod
     def get_yahoo_data(stock):
-        print(stock)
         try:
             start = dt.datetime(2000, 1, 1)
             end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')

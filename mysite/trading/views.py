@@ -45,7 +45,7 @@ class IndexView(generic.ListView):
 
 
 class ExchangesView(generic.ListView):
-    template_name = 'trading/exchanges.html'
+    template_name = 'exchange/exchanges.html'
     context_object_name = 'exchanges'
 
     def get_queryset(self):
@@ -66,7 +66,7 @@ class ExchangesView(generic.ListView):
 
 
 class ExchangeStocksView(generic.ListView):
-    template_name = 'trading/exchange_stocks.html'
+    template_name = 'exchange/exchange_stocks.html'
     context_object_name = 'stocks'
     paginate_by = 5
 
