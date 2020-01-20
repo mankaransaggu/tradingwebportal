@@ -1,11 +1,10 @@
 from django.contrib import admin
-from .models import Exchange, Country, Stock, StockData, Position, Currency, Instrument
+from . models import *
 
 
 class CurrencyAdmin(admin.ModelAdmin):
     fieldsets = [
-        ('Currency', {'fields': ['code', 'name', 'base']}),
-        ('Value', {'fields': ['rate']}),
+        ('Currency', {'fields': ['code', 'name']}),
     ]
 
 
@@ -33,24 +32,44 @@ class StockAdmin(admin.ModelAdmin):
     ]
 
 
-class MarketDataAdmin(admin.ModelAdmin):
+class StockDataAdmin(admin.ModelAdmin):
     fieldsets = [
-        ('Instrument', {'fields': ['ticker', 'date']}),
+        ('Instrument', {'fields': ['stock', 'timestamp']}),
         ('Data', {'fields': ['high',  'low', 'open', 'close', 'volume', 'adj_close']})
+    ]
+
+
+class FXAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ('FX', {'fields': ['code', 'from_currency', 'to_currency']}),
+    ]
+
+
+class FXDataAdmin(admin.ModelAdmin):
+    fieldsets = [
+        ('Currencies', {'fields': ['currency_pair', 'timestamp']}),
+        ('Data', {'fields': ['high', 'low', 'open', 'close', 'volume']})
     ]
 
 
 class PositionAdmin(admin.ModelAdmin):
     fieldsets = [
-        ('Account Positions', {'fields': ['open_date', 'close_date', 'ticker', 'position_state', 'account']}),
+        ('Account Positions', {'fields': ['open_date', 'close_date', 'open', 'account']}),
+        ('Position Instrument', {'fields': ['stock', 'fx']}),
         ('Position Details', {'fields': ['open_price', 'close_price', 'direction', 'quantity', 'result']}),
     ]
 
 
 admin.site.register(Currency, CurrencyAdmin)
 admin.site.register(Country, CountryAdmin)
+
 admin.site.register(Exchange, ExchangeAdmin)
 admin.site.register(Instrument, InstrumentAdmin)
+
 admin.site.register(Stock, StockAdmin)
-admin.site.register(StockData, MarketDataAdmin)
+admin.site.register(StockPriceData, StockDataAdmin)
+
+admin.site.register(FX, FXAdmin)
+admin.site.register(FXPriceData, FXDataAdmin)
+
 admin.site.register(Position, PositionAdmin)
