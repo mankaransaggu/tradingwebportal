@@ -1,9 +1,9 @@
-from ..models import Position
+from ...models import Position
 
 
 def get_stock_positions(user, stock, context):
-    open_positions = Position.objects.filter(account_id=user.pk, instrument=stock, open=True)
-    close_positions = Position.objects.filter(account_id=user.pk, instrument=stock, open=False)
+    open_positions = Position.objects.filter(account_id=user.pk, stock=stock, open=True)
+    close_positions = Position.objects.filter(account_id=user.pk, stock=stock, open=False)
 
     context['open_positions'] = open_positions
     context['close_positions'] = close_positions

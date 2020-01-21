@@ -1,7 +1,7 @@
 from django.views import generic
 
-from mysite.trading.backend import user_bookmarks, user_positions
-from mysite.trading.models import Stock, Exchange
+from ..backend.account import account_bookmarks, account_positions
+from ..models import Stock, Exchange
 
 
 class ExchangesView(generic.ListView):
@@ -19,8 +19,8 @@ class ExchangesView(generic.ListView):
         # Check the user is logged in before searching
         if user.is_authenticated:
             # Methods that deal with user favourites and positions
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
         return context
 
@@ -46,8 +46,8 @@ class ExchangeStocksView(generic.ListView):
         # Check the user is logged in before searching
         if user.is_authenticated:
             # Methods that deal with user favourites and positions
-            user_bookmarks.check_exchange_stock(user, exchange, context)
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
+            account_bookmarks.check_exchange_stock(user, exchange, context)
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
         return context

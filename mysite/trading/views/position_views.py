@@ -3,9 +3,10 @@ import datetime
 from django.http import HttpResponseRedirect
 from django.views.generic import FormView
 
-from mysite.trading.backend import stock_data, user_positions, user_bookmarks
-from mysite.trading.forms import CreatePositionForm
-from mysite.trading.models import Stock, Account, Position
+from ..backend import stock_data
+from ..backend.account import account_bookmarks, account_positions
+from ..forms import CreatePositionForm
+from ..models import Stock, Account, Position
 
 
 class OpenPositionForm(FormView):
@@ -49,8 +50,8 @@ class OpenPositionForm(FormView):
 
         if user.is_authenticated:
             # Methods that deal with user favourites and positions
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
         return context
 

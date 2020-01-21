@@ -36,5 +36,5 @@ class CreatePositionForm(forms.ModelForm):
                   'direction',
                   'quantity',
                   'open_price',
-                  'instrument')
+                  'stock')
 

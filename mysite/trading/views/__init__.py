@@ -6,8 +6,8 @@ from .stock_views import *
 
 from django.views import generic
 
-from mysite.trading.backend import user_bookmarks, user_positions
-from mysite.trading.models import StockPriceData
+from ..backend.account import account_bookmarks, account_positions
+from ..models import StockPriceData
 
 
 class IndexView(generic.ListView):
@@ -25,7 +25,7 @@ class IndexView(generic.ListView):
         # Check the user is logged in before searching
         if user.is_authenticated:
             # Methods that deal with user favourites and positions
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
         return context

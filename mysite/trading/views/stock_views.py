@@ -2,8 +2,9 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
-from mysite.trading.backend import user_positions, user_bookmarks, stock_data
-from mysite.trading.models import Stock
+from ..backend.stock.stock_detail_data import create_detail_data
+from ..backend.account import account_bookmarks, account_positions
+from ..models import Stock
 
 
 class StocksView(generic.ListView):
@@ -23,9 +24,9 @@ class StocksView(generic.ListView):
         # Check the user is logged in before searching
         if user.is_authenticated:
             # Methods that deal with user favourites and positions
-            user_bookmarks.check_stock_list(user, context)
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
+            account_bookmarks.check_stock_list(user, context)
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
         return context
 
@@ -42,14 +43,14 @@ class StockView(generic.DetailView):
 
         stock = get_object_or_404(Stock, pk=pk)
         # Creates the stock charts and the change summary
-        stock_data.create_detail_data(stock, context)
+        create_detail_data(stock, context)
 
         # Check the user is logged in before searching
         if user.is_authenticated:
             # Methods that deal with user favourites and positions
-            user_bookmarks.check_is_favourite(user, stock, context)
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_stock_positions(user, stock, context)
+            account_bookmarks.check_is_favourite(user, stock, context)
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_stock_positions(user, stock, context)
 
         return context
 

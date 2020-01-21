@@ -9,8 +9,8 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import TemplateView
 
-from mysite.trading.backend import user_bookmarks, user_positions
-from mysite.trading.forms import SignUpForm, EditAccountForm
+from ..backend.account import account_bookmarks, account_positions
+from ..forms import SignUpForm, EditAccountForm
 
 
 class AccountView(TemplateView):
@@ -31,12 +31,12 @@ class AccountView(TemplateView):
 
         if request.user.is_authenticated:
 
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
-            user_positions.get_closed_positions(user, context)
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
+            account_positions.get_closed_positions(user, context)
 
             for fav in context['favourites'].iterator():
-                user_bookmarks.check_is_favourite(user, fav, context)
+                account_bookmarks.check_is_favourite(user, fav, context)
 
             return context
 

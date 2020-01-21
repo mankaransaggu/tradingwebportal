@@ -4,9 +4,9 @@ from alpha_vantage.timeseries import TimeSeries
 from django.contrib import messages
 from django.views.generic import TemplateView
 
-from mysite.trading.backend import user_bookmarks, user_positions
-from mysite.trading.backend.exchange import NYSE, NASDAQ
-from mysite.trading.models import Stock
+from ..backend.account import account_bookmarks, account_positions
+from ..backend.exchange.exchange import NYSE, NASDAQ
+from ..models import Stock
 
 
 class SearchView(TemplateView):
@@ -31,32 +31,27 @@ class Setting(TemplateView):
         request = self.request
         user = request.user
 
-        if request.user.is_authenticated:
+        account_bookmarks.get_user_favourites(user, context)
+        account_positions.get_open_positions(user, context)
 
-            user_bookmarks.get_user_favourites(user, context)
-            user_positions.get_open_positions(user, context)
+        if setting == 'download-nyse':
+            NYSE().save_stocks()
+            messages.success(request, "%s SQL statements were executed." % count)
 
-            if setting == 'download-nyse':
-                NYSE().save_stocks()
-                messages.success(request, "%s SQL statements were executed." % count)
+        if setting == 'download-nasdaq':
+            NASDAQ().save_stocks()
+            messages.success(request, "%s SQL statements were executed." % count)
 
-            if setting == 'download-nasdaq':
-                NASDAQ().save_stocks()
-                messages.success(request, "%s SQL statements were executed." % count)
+        if setting == 'update-nasdaq':
+            NASDAQ().update_market_data()
+            messages.success(request, "%s SQL statements were executed." % count)
 
-            if setting == 'update-nasdaq':
-                NASDAQ().update_market_data()
-                messages.success(request, "%s SQL statements were executed." % count)
+        if setting == 'update-nyse':
+            NYSE().update_market_data()
+            messages.success(request, "Update success with new class")
 
-            if setting == 'update-nyse':
-                NYSE().update_market_data()
-                messages.success(request, "Update success with new class")
+        if setting == 'yahoo':
+            ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
+            data, meta_data = ts.get_monthly(symbol='AAPL')
+            print(data)
 
-            if setting == 'yahoo':
-                ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
-                data, meta_data = ts.get_monthly(symbol='AAPL')
-                print(data)
-
-            return context
-        else:
-            return context

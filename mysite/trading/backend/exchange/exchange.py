@@ -7,8 +7,8 @@ import sqlalchemy
 from alpha_vantage.timeseries import TimeSeries
 from django.db import IntegrityError
 from pandas_datareader._utils import RemoteDataError
-from .database import df_to_sql
-from ..models import Stock, Exchange, StockData
+from ..stock.stock_dataframes import df_to_sql
+from ...models import Stock, Exchange, StockPriceData
 
 
 class StockExchange:
@@ -60,7 +60,7 @@ class StockExchange:
             df = df.rename(
                 columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                          'Volume': 'volume', 'Adj Close': 'adj_close'})
-            df['instrument_id'] = stock.pk
+            df['stock'] = stock
 
             df.rename_axis('timestamp', axis='index', inplace=True)
             df_to_sql(df)
@@ -123,7 +123,7 @@ class StockExchange:
 
         for stock in Stock.objects.filter(exchange__code=self.code):
 
-            latest = StockData.objects.filter(instrument=stock).order_by('-timestamp')[:1]
+            latest = StockPriceData.objects.filter(instrument=stock).order_by('-timestamp')[:1]
             if latest.exists():
                 latest = latest.first()
                 start = latest.timestamp.date() + dt.timedelta(1)
@@ -204,21 +204,21 @@ class NASDAQ(StockExchange):
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=J',
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=K',
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=L',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=M',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=N',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=O',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=P',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Q',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=R',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=S',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=T',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=U',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=V',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=W',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=X',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Y',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Z',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=0',)
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=M',)
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=N',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=O',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=P',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Q',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=R',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=S',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=T',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=U',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=V',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=W',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=X',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Y',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Z',
+                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=0',)
 
     # Currently have to overife parent due to different elements, looking to solve
     def save_stocks(self):

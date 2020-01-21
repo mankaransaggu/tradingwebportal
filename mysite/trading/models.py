@@ -116,10 +116,12 @@ class Stock(models.Model):
 class StockPriceData(models.Model):
     timestamp = models.DateTimeField()
     stock = models.ForeignKey(Stock, related_name='stock_data', on_delete=models.CASCADE)
+
     high = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     low = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     open = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+
     volume = models.IntegerField(blank=True, null=True)
     adj_close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     dividend = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
@@ -142,7 +144,7 @@ class FX(models.Model):
     from_currency = models.ForeignKey(Currency, related_name='from_currency', on_delete=models.CASCADE, default=1)
     to_currency = models.ForeignKey(Currency, related_name='to_currency', on_delete=models.CASCADE, default='2')
     instrument = models.ForeignKey(Instrument, related_name='fx_instrument', default=1, on_delete=models.CASCADE)
-    favourite = models.ManyToManyField(User, related_name='favourite_fx', blank=True)
+    favourite_fx = models.ManyToManyField(User, related_name='favourite_fx', blank=True)
 
     def __str__(self):
         return self.code
