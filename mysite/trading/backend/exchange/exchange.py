@@ -220,7 +220,7 @@ class NASDAQ(StockExchange):
                       # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Z',
                       # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=0',)
 
-    # Currently have to overife parent due to different elements, looking to solve
+    # Currently have to override parent due to different elements, looking to solve
     def save_stocks(self):
         tickers = []
 
@@ -237,15 +237,15 @@ class NASDAQ(StockExchange):
                 exchange = Exchange.objects.get(code='NASDAQ')
 
                 try:
-                    stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
+                    Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
                     print('Added {} to stock table'.format(ticker))
-                    stock = Stock.objects.get(ticker=ticker, exchange=exchange)
                     success = True
                 except IntegrityError:
                     print('{} already exists in Stock table'.format(ticker))
                     success = True
 
                 if success:
+                    stock = Stock.objects.get(ticker=ticker, exchange=exchange)
                     self.get_yahoo_data(stock)
 
         return tickers

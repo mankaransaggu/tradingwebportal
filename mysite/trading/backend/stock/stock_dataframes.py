@@ -44,29 +44,33 @@ def real_time_df(stock):
 
 
 def df_to_sql(df):
-    for index, row in df.iterrows():
+
+    df = df.iloc[::-1]
+    print(df)
+    for row in df[::1].itertuples():
 
         try:
-            timestamp = index
-            high = row['high']
-            low = row['low']
-            open = row['open']
-            close = row['close']
-            volume = row['volume']
-            stock = row['stock']
+            print(row)
+            timestamp = getattr(row, 'Index')
+            high = getattr(row, 'high')
+            low = getattr(row, 'low')
+            open = getattr(row, 'open')
+            close = getattr(row, 'close')
+            volume = getattr(row, 'volume')
+            stock = getattr(row, 'stock')
 
-            StockPriceData.objects.update_or_create(timestamp=timestamp, high=high, low=low, open=open, close=close,
-                                                    volume=volume, stock=stock)
+            StockPriceData.objects.create(timestamp=timestamp, high=high, low=low, open=open, close=close,
+                                          volume=volume, stock=stock)
 
         except IntegrityError:
-            print('Data {} already exists'.format(row['stock']))
+            print('Data {} already exists'.format(stock))
             break
 
         except MySQLdb._exceptions.IntegrityError:
-            print('Data {} already exists'.format(row['stock']))
+            print('Data {} already exists'.format(stock))
             break
 
         except sqlalchemy.exc.IntegrityError:
-            print('Data {} already exists'.format(row['stock']))
+            print('Data {} already exists'.format(stock))
             break
 

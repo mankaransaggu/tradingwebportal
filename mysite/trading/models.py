@@ -63,6 +63,9 @@ class Exchange(models.Model):
         currency = Currency.objects.get(id=country.currency)
         return currency
 
+    def get_stock_count(self):
+        return self.listed_exchange.count()
+
     class Meta:
         db_table = 'exchange'
 
@@ -83,7 +86,7 @@ class Stock(models.Model):
     instrument = models.ForeignKey(Instrument, related_name='stock_instrument', on_delete=models.CASCADE, default=1)
     ticker = models.CharField(max_length=10)
     name = models.CharField(max_length=255, blank=True, null=True)
-    exchange = models.ForeignKey(Exchange, on_delete=models.CASCADE, default=1)
+    exchange = models.ForeignKey(Exchange, related_name='listed_exchange', on_delete=models.CASCADE, default=1)
     favourite = models.ManyToManyField(User, related_name='favourite_stock', blank=True)
 
     def __str__(self):
@@ -92,17 +95,20 @@ class Stock(models.Model):
     def is_favourite(self, user):
         if self.favourite.filter(id=user.id).exists():
             return True
-
         return False
 
-    def current_data(self):
-        data = StockPriceData.objects.filter(stock=self).first()
+    def get_current_data(self):
+        data = StockPriceData.objects.filter(stock=self).order_by('-timestamp')[:1]
         return data
 
+    def get_close(self):
+        data = StockPriceData.objects.filter(stock=self).order_by('-timestamp')[:1]
+        return data.close
+
     def get_currency(self):
-        exchange = Exchange.objects.filter(id=self.exchange)
-        country = Country.objects.filter(id=exchange.country)
-        currency = Currency.objects.filter(id=country.currency)
+        exchange = Exchange.objects.filter(id=self.exchange.pk)
+        country = Country.objects.filter(exchange.country)
+        currency = Currency.objects.filter(country.currency)
 
         return currency
 

@@ -28,7 +28,7 @@ class ExchangesView(generic.ListView):
 class ExchangeStocksView(generic.ListView):
     template_name = 'exchange/exchange_stocks.html'
     context_object_name = 'stocks'
-    paginate_by = 5
+    paginate_by = 25
 
     def get_queryset(self):
         pk = self.kwargs['pk']
