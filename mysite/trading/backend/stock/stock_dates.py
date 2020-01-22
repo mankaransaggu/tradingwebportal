@@ -9,7 +9,8 @@ def get_latest(stock):
     try:
         latest = StockPriceData.objects.filter(stock=stock).order_by('-timestamp').first()
     except StockPriceData.DoesNotExist:
-        latest - StockPriceData.objects.filter(stock=stock).order_by('-timestamp').first()
+        print('Stock doesnt have any data')
+        return None
 
     return latest
 

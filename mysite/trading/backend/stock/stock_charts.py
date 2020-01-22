@@ -1,13 +1,14 @@
 import matplotlib.dates as mdates
 import plotly.graph_objects as go
 import plotly.offline as opy
+from django_pandas.io import read_frame
+
 from ..stock.stock_dataframes import stock_df, real_time_df
 from ..stock.stock_dates import *
 
 
 def create_stock_chart(days, stock):
     df = stock_df(days, stock)
-    print(df)
     df['adj_close'] = df['adj_close'].apply(float)
     df_ohlc = df['adj_close'].resample('10D').ohlc()
     df_ohlc.reset_index(inplace=True)
@@ -64,28 +65,40 @@ def create_stock_chart(days, stock):
 
 
 def create_intraday_chart(stock):
-    df = real_time_df(stock)
-    df['close'] = df['close'].apply(float)
-    df_ohlc = df['close'].resample('1m').ohlc()
-    df_ohlc.reset_index(inplace=True)
-    df_ohlc['timestamp'] = df_ohlc['timestamp'].map(mdates.date2num)
 
-    fig = go.Figure(data=[go.Candlestick(x=df.index,
-                                         open=df['open'],
-                                         high=df['high'],
-                                         low=df['low'],
-                                         close=df['close'])])
+    try:
+        if real_time_df(stock) is None:
+            yest = get_yesterday(stock)
+            qs = StockPriceData.objects.filter(stock=stock, timestamp__gte=yest.timestamp)
+            df = read_frame(qs)
+        else:
+            df = real_time_df(stock)
 
-    fig.update_layout(
-        yaxis_title='Price $',
-        width=2450,
-        height=1000,
-        autosize=True
-    )
+        df['close'] = df['close'].apply(float)
 
-    chart = opy.plot(fig, auto_open=False, output_type='div')
+        df_ohlc = df['close'].resample('1m').ohlc()
+        df_ohlc.reset_index(inplace=True)
+        df_ohlc['timestamp'] = df_ohlc['timestamp'].map(mdates.date2num)
 
-    return chart
+        fig = go.Figure(data=[go.Candlestick(x=df.index,
+                                             open=df['open'],
+                                             high=df['high'],
+                                             low=df['low'],
+                                             close=df['close'])])
+
+        fig.update_layout(
+            yaxis_title='Price $',
+            width=2450,
+            height=1000,
+            autosize=True
+        )
+
+        chart = opy.plot(fig, auto_open=False, output_type='div')
+
+        return chart
+
+    except TypeError:
+        return None
 
 
 def create_stock_change(stock):

@@ -25,6 +25,8 @@
                             <div>
                                 {{ intraday_graph|safe }}
                             </div>
+                            {{ else }}
+                                Intraday Graph could not be produced
                             {% endif %}
 
                         </div>

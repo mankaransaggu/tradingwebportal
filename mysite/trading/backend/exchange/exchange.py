@@ -85,8 +85,6 @@ class StockExchange:
     # This method uses the alpha vantage API, unfortunately not suitable for constant use due to api call limits
     def get_stock_data(stock):
         try:
-            print(stock.pk)
-            print(stock.ticker)
             ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
             df, meta_data = ts.get_daily_adjusted(symbol=stock.ticker, outputsize='full')
 

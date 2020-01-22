@@ -8,7 +8,7 @@
 
             <span>
                 <strong>{{ stock.ticker }} / {{ stock.name }}</strong>
-                <a href="{% url 'open_position' stock.id %}"><button class="btn btn-primary">Open Position</button></a>
+                <a href="{% url 'open_position' id=stock.id %}"><button class="btn btn-primary">Open Position</button></a>
 
                 {% if is_favourite %}
                 <a href="{% url 'favourite_stock' id=stock.id %}"><button class="btn btn-primary"><i class="fas fa-bookmark"></i></button></a>

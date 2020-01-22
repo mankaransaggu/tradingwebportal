@@ -77,28 +77,6 @@ def signup(request):
         return redirect('index')
 
 
-def activate(request, uidb64, token):
-    try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None: #and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.account.email_confirmed = True
-        user.save()
-        login(request, user)
-        messages.success(request, f"New account activated: {user.email}")
-        return redirect('index')
-    else:
-        return render(request, 'account/account_activation_invalid.html')
-
-
-def account_activation_sent(request):
-    return render(request, 'account/account_activation_sent.html')
-
-
 def login_request(request):
     if request.method == 'POST':
         form = AuthenticationForm(request=request, data=request.POST)
@@ -172,5 +150,27 @@ def change_password(request):
     else:
         return redirect('login')
 
+
+# Old account email validation removed for the mean time
+# def activate(request, uidb64, token):
+#     try:
+#         uid = force_text(urlsafe_base64_decode(uidb64))
+#         user = User.objects.get(pk=uid)
+#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+#         user = None
+#
+#     if user is not None: #and account_activation_token.check_token(user, token):
+#         user.is_active = True
+#         user.account.email_confirmed = True
+#         user.save()
+#         login(request, user)
+#         messages.success(request, f"New account activated: {user.email}")
+#         return redirect('index')
+#     else:
+#         return render(request, 'account/account_activation_invalid.html')
+#
+#
+# def account_activation_sent(request):
+#     return render(request, 'account/account_activation_sent.html')
 
 

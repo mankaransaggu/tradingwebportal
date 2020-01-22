@@ -34,8 +34,6 @@ class Country(models.Model):
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_confirmed = models.BooleanField(default=False)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
 
     country = models.ForeignKey(Country, related_name='user_country', on_delete=models.CASCADE, default=1)
     base_currency = models.ForeignKey(Currency, related_name='user_currency', on_delete=models.CASCADE, default=1)
@@ -253,8 +251,8 @@ class Position(models.Model):
 
         elif self.fx is None:
             stock = Stock.objects.get(id=self.stock.id)
-            current_data = stock.current_data()
-            result = current_data.close - self.open_price
+            latest_price = stock.get_close()
+            result = latest_price.close - self.open_price
 
         return result
 

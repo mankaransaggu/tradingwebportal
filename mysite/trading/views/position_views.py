@@ -1,9 +1,10 @@
 import datetime
 
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.views.generic import FormView
 
-from ..backend import stock_data
+from ..backend.stock.stock_dates import get_latest
 from ..backend.account import account_bookmarks, account_positions
 from ..forms import CreatePositionForm
 from ..models import Stock, Account, Position
@@ -18,12 +19,16 @@ class OpenPositionForm(FormView):
     def get_initial(self):
         initial = super(OpenPositionForm, self).get_initial()
 
+        request = self.request
         id = self.kwargs['id']
         instrument = Stock.objects.get(id=id)
-        latest = stock_data.get_latest(instrument)
+        latest = get_latest(instrument)
 
-        initial['instrument'] = instrument
-        initial['open_date'] = datetime.now()
+        if latest is None:
+            messages.warning(request, 'This instrument has no recorded data')
+
+        initial['stock'] = instrument
+        initial['open_date'] = datetime.datetime.now()
         initial['open_price'] = latest.close
 
         return initial
