@@ -1,0 +1,46 @@
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a class="nav-link" href="/">Home<span class="sr-only">Home</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/exchanges">Exchanges<span class="sr-only">Exchanges</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/indices">Indices<span class="sr-only">Indices</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/equities">Equities<span class="sr-only">Equities</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/fx">FX<span class="sr-only">FX</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/bonds">Bonds<span class="sr-only">Bonds</span></a>
+    </li>
+
+    <li class="nav-item dropdown">
+        <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-cog"></i>
+        </a>
+
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="/settings">Settings</a>
+            {% if user.is_authenticated %}
+            <a class="dropdown-item" href="/account">{{user.first_name|title}}</a>
+            <a class="dropdown-item" href="/logout">Logout</a>
+            {% else %}
+            <a class="dropdown-item" href="/login">Login</a>
+            <a class="dropdown-item" href="/signup">Signup</a>
+            {% endif %}
+        </div>
+    </li>
+</ul>
+
+<form class="mx-2 my-auto " action=" " method="get" action="{% url 'search' %}"  id="navBarSearchForm">
+    <div class="input-group">
+        <input class="form-control mx-2" placeholder="Search...">
+        <span class="input-group-append">
+            <button class="btn btn-primary" type="button">Search</button>
+        </span>
+    </div>
+</form>

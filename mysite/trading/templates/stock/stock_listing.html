@@ -1,0 +1,18 @@
+
+{% extends "page_elements/header.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    {% if stocks %}
+
+    {% include "page_elements/paginator_nav.html" %}
+    {% include "stock/includes/stock_list.html" %}
+    {% include "page_elements/paginator_nav.html" %}
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "page_elements/header.html"  %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <h1>{{exchange.code}} Listed Stocks</h1>
+
+    {% if stocks %}
+
+    {% include "page_elements/paginator_nav.html" %}
+    {% include "stock/includes/stock_list.html" %}
+    {% include "page_elements/paginator_nav.html" %}
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+

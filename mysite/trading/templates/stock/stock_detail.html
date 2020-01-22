@@ -1,0 +1,32 @@
+{% extends "page_elements/header.html"  %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-12">
+
+            <span>
+                <strong>{{ stock.ticker }} / {{ stock.name }}</strong>
+                <a href="{% url 'open_position' stock.id %}"><button class="btn btn-primary">Open Position</button></a>
+
+                {% if is_favourite %}
+                <a href="{% url 'favourite_stock' id=stock.id %}"><button class="btn btn-primary"><i class="fas fa-bookmark"></i></button></a>
+                {% else %}
+                <a href="{% url 'favourite_stock' id=stock.id %}"><button class="btn btn-primary"><i class="far fa-bookmark"></i></button></a>
+                {% endif %}
+            </span>
+
+        </div>
+    </div>
+
+    <br>
+    {% include "stock/includes/stock_charts.html" %}
+    {% include "stock/includes/stock_change_summary.html" %}
+    {% include "stock/includes/stock_historic_data.html" %}
+    <br>
+    {% include "stock/includes/positions_box.html" %}
+
+
+</div>
+{% endblock %}
