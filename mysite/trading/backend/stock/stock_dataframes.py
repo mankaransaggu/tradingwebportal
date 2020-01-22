@@ -51,16 +51,12 @@ def df_to_sql(df):
 
         try:
             print(row)
-            timestamp = getattr(row, 'Index')
-            high = getattr(row, 'high')
-            low = getattr(row, 'low')
-            open = getattr(row, 'open')
-            close = getattr(row, 'close')
-            volume = getattr(row, 'volume')
             stock = getattr(row, 'stock')
 
-            StockPriceData.objects.create(timestamp=timestamp, high=high, low=low, open=open, close=close,
-                                          volume=volume, stock=stock)
+            StockPriceData.objects.create(timestamp=getattr(row, 'Index'), high=getattr(row, 'high'),
+                                          low=getattr(row, 'low'), open=getattr(row, 'open'),
+                                          close=getattr(row, 'close'), volume=getattr(row, 'volume'),
+                                          stock=getattr(row, 'stock'))
 
         except IntegrityError:
             print('Data {} already exists'.format(stock))

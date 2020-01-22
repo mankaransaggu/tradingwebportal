@@ -34,7 +34,7 @@ def get_view_context(context):
 
 def create_detail_data(stock, context):
     context['historic_graph'] = create_stock_chart(365, stock)
-    #context['intraday_graph'] = create_intraday_chart(stock)
+    context['intraday_graph'] = create_intraday_chart(stock)
 
     context['latest'] = get_latest(stock)
     context['yesterday'] = get_yesterday(stock)

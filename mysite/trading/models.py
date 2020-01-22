@@ -103,7 +103,8 @@ class Stock(models.Model):
 
     def get_close(self):
         data = StockPriceData.objects.filter(stock=self).order_by('-timestamp')[:1]
-        return data.close
+        data = data.first()
+        return data
 
     def get_currency(self):
         exchange = Exchange.objects.filter(id=self.exchange.pk)
@@ -134,7 +135,7 @@ class StockPriceData(models.Model):
     split_coefficient = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(1.0))
 
     def __str__(self):
-        string = self.instrument.ticker + ' ' + self.timestamp
+        string = self.stock.ticker + ' ' + str(self.timestamp)
         return string
 
     class Meta:
