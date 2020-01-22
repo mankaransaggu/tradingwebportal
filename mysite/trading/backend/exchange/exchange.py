@@ -202,21 +202,21 @@ class NASDAQ(StockExchange):
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=J',
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=K',
                       'https://www.advfn.com/nasdaq/nasdaq.asp?companies=L',
-                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=M',)
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=N',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=O',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=P',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Q',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=R',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=S',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=T',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=U',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=V',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=W',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=X',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Y',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Z',
-                      # 'https://www.advfn.com/nasdaq/nasdaq.asp?companies=0',)
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=M',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=N',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=O',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=P',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Q',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=R',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=S',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=T',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=U',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=V',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=W',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=X',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Y',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=Z',
+                      'https://www.advfn.com/nasdaq/nasdaq.asp?companies=0',)
 
     # Currently have to override parent due to different elements, looking to solve
     def save_stocks(self):

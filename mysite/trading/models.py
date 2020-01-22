@@ -98,10 +98,6 @@ class Stock(models.Model):
 
     def get_current_data(self):
         data = StockPriceData.objects.filter(stock=self).order_by('-timestamp')[:1]
-        return data
-
-    def get_close(self):
-        data = StockPriceData.objects.filter(stock=self).order_by('-timestamp')[:1]
         data = data.first()
         return data
 
@@ -169,7 +165,7 @@ class FX(models.Model):
 
         return False
 
-    def current_data(self):
+    def get_current_data(self):
         data = FXPriceData.objects.filter(stock=self).first()
         return data
 
@@ -246,15 +242,31 @@ class Position(models.Model):
     def current_result(self):
         if self.stock is None:
             fx = FX.objects.filter.get(id=self.fx.id)
-            current_data = fx.current_data()
+            current_data = fx.get_current_data()
             result = current_data.close - self.open_price
 
         elif self.fx is None:
             stock = Stock.objects.get(id=self.stock.id)
-            latest_price = stock.get_close()
+            latest_price = stock.get_current_data()
             result = latest_price.close - self.open_price
 
         return result
+
+    def current_price(self):
+        if self.stock is None:
+            fx = FX.objects.filter.get(id=self.fx.id)
+            data = fx.current_data()
+
+        elif self.fx is None:
+            stock = Stock.objects.get(id=self.stock.id)
+            data = stock.get_current_data()
+
+        return data.close
+
+    def current_value(self):
+        print(self.current_price())
+        print(self.quantity)
+        return self.current_price() * self.quantity
 
     class Meta:
         db_table = 'positions'

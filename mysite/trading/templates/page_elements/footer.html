@@ -34,9 +34,9 @@
                             <th scope="col">Direction</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Open Price</th>
-                            <th scope="col">Close Price</th>
-                            <th scope="col">State</th>
+                            <th scope="col">Price</th>
                             <th scope="col">Result</th>
+                            <th scope="col">Value</th>
                             <th scope="col" class="text-center">Close</th>
                         </tr>
                         </thead>
@@ -51,15 +51,9 @@
                             <td>{{position.direction}}</td>
                             <td>{{position.quantity}}</td>
                             <td>{{position.open_price}}</td>
-                            <td>{{position.close_price}}</td>
-                            <td>
-                                {% if position.open == True %}
-                                Open
-                                {% else %}
-                                Closed
-                                {% endif %}
-                            </td>
+                            <td>{{position.current_price}}</td>
                             <td>{{position.current_result}}</td>
+                            <td>{{position.current_value}}</td>
 
                             <td class="text-center">
                                 <a href="{% url 'close_position' position.id %}">

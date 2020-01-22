@@ -17,7 +17,7 @@
         <td>{{ stock.exchange }}</td>
         <td>
             {% if stock.get_current_data %}
-                <p>{{ stock.get_close.close }} <small></small></p>
+                <p>{{ stock.get_current_data.close }} <small></small></p>
             {% else %}
                 N/A
 

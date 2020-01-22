@@ -40,18 +40,21 @@ def real_time_df(stock):
                      '5. volume': 'volume'})
         df['stock'] = stock
         df.rename_axis('timestamp', axis='index', inplace=True)
+        df.index = pd.to_datetime(df.index)
 
         df_to_sql(df)
         return df
 
     except requests.exceptions.ConnectionError:
         return None
+    except ValueError:
+        return None
 
 
 def df_to_sql(df):
     # Flip the data in the df, so it goes from latest to earliest data
     df = df.iloc[::-1]
-    for row in df[::1].itertuples():
+    for row in df.itertuples():
 
         try:
             print(row)

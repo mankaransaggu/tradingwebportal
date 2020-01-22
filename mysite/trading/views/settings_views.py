@@ -52,6 +52,6 @@ class Setting(TemplateView):
 
         if setting == 'yahoo':
             ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
-            data, meta_data = ts.get_monthly(symbol='AAPL')
+            data, meta_data = ts.get_intraday(symbol='AAPL')
             print(data)
 

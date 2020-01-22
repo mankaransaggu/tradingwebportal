@@ -74,6 +74,8 @@ def create_intraday_chart(stock):
         else:
             df = real_time_df(stock)
 
+        print(df)
+
         df['close'] = df['close'].apply(float)
 
         df_ohlc = df['close'].resample('1m').ohlc()
