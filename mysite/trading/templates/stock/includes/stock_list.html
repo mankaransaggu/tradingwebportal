@@ -5,6 +5,7 @@
         <th scope="col">Name</th>
         <th scope="col">Exchange</th>
         <th scope="col">Price</th>
+        <th>Currency</th>
         <th scope="col" class="text-center">Bookmark</i></th>
     </tr>
     </thead>
@@ -17,17 +18,19 @@
         <td>
             {% if stock.get_current_data %}
                 <p>{{ stock.get_close.close }} <small></small></p>
+            {% else %}
+                N/A
+
+
             {% endif %}
         </td>
-
+        <td>{{ stock.get_currency.code}} </td>
         <td class="text-center">
-
             {% if stock in is_favourite %}
             <a href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
             {% else %}
             <a href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x"></i></a>
             {% endif %}
-
         </td>
 
     </tr>

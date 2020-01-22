@@ -35,7 +35,7 @@ def real_time_df(stock):
     df = df.rename(
         columns={'2. high': 'high', '3. low': 'low', '1. open': 'open', '4. close': 'close',
                  '5. volume': 'volume'})
-    df['instrument_id'] = stock.pk
+    df['stock'] = stock
     df.rename_axis('timestamp', axis='index', inplace=True)
 
     df_to_sql(df)

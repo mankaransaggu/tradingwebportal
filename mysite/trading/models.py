@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.contrib.auth.models import User, AbstractUser
+from django.db.models import UniqueConstraint
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -107,9 +108,9 @@ class Stock(models.Model):
         return data
 
     def get_currency(self):
-        exchange = Exchange.objects.filter(id=self.exchange.pk)
-        country = Country.objects.filter(exchange.country)
-        currency = Currency.objects.filter(country.currency)
+        exchange = Exchange.objects.get(id=self.exchange.pk)
+        country = Country.objects.get(id=exchange.country.pk)
+        currency = Currency.objects.get(id=country.currency.pk)
 
         return currency
 
@@ -144,6 +145,9 @@ class StockPriceData(models.Model):
         indexes = [
             models.Index(fields=['timestamp', 'stock']),
         ]
+        constraints = [
+            models.UniqueConstraint(fields=['stock', 'timestamp'], name='unique_stock_data')
+        ]
 
 
 class FX(models.Model):
@@ -176,6 +180,9 @@ class FX(models.Model):
         indexes = [
             models.Index(fields=['from_currency', 'to_currency']),
         ]
+        constraints = [
+            models.UniqueConstraint(fields=['from_currency', 'to_currency'], name='unique_currency_pair')
+        ]
 
 
 class FXPriceData(models.Model):
@@ -196,6 +203,9 @@ class FXPriceData(models.Model):
         ordering = ['-timestamp']
         indexes = [
             models.Index(fields=['timestamp', 'currency_pair']),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['currency_pair', 'timestamp'], name='unique_fx_data')
         ]
 
 

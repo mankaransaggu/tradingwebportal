@@ -11,7 +11,7 @@ class StocksView(generic.ListView):
     model = Stock
     template_name = 'stock/stock_listing.html'
     context_object_name = 'stocks'
-    paginate_by = 25
+    paginate_by = 50
 
     def get_queryset(self):
         return Stock.objects.all().order_by('ticker')
