@@ -88,6 +88,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
+    def current_result(self):
+        open_positions = Position.objects.filter(user=self, open=True)
+
+        for pos in open_positions:
+            change = pos.result_change()
+            self.result = self.result + change
+            print('pos loop')
+            print(change)
+
+        print(self.result)
+        self.save()
+
 
 def account_post_save(sender, instance, signal, *arg, **kwargs):
     if not instance.is_verified:
@@ -296,17 +308,37 @@ class Position(models.Model):
             raise ValueError('obj parameter must be a Stock, FX, Bond, Indicie class')
 
     def current_result(self):
-        if self.stock is None:
-            fx = FX.objects.filter.get(id=self.fx.id)
-            current_data = fx.get_current_data()
-            result = current_data.close - self.open_price
+        if self.open:
+            if self.stock is None:
+                fx = FX.objects.filter.get(id=self.fx.id)
+                current_data = fx.get_current_data()
+                self.result = current_data.close - self.open_price
 
-        elif self.fx is None:
-            stock = Stock.objects.get(id=self.stock.id)
-            latest_price = stock.get_current_data()
-            result = latest_price.close - self.open_price
+            elif self.fx is None:
+                stock = Stock.objects.get(id=self.stock.id)
+                latest_price = stock.get_current_data()
+                self.result = latest_price.close - self.open_price
 
-        return result
+            return self.result
+        else:
+            return self.result
+
+    def result_change(self):
+        if self.open:
+            if self.stock is None:
+                fx = FX.objects.filter.get(id=self.fx.id)
+                current_data = fx.get_current_data()
+                change = current_data.close - self.open_price
+                print(change)
+                return change
+
+            elif self.fx is None:
+                stock = Stock.objects.get(id=self.stock.id)
+                latest_price = stock.get_current_data()
+                change = latest_price.close - self.open_price
+                return change
+        else:
+            return self.result
 
     def current_price(self):
         if self.stock is None:

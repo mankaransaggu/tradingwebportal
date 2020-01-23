@@ -58,7 +58,7 @@
             <i class="fas fa-cog"></i>
         </a>
 
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+        <div class="dropdown-menu shadow-lg" aria-labelledby="navbarDropdownMenuLink">
             <a class="dropdown-item" href="/settings">Settings</a>
             {% if user.is_authenticated %}
             <a class="dropdown-item" href="/account">{{user.email}}</a>

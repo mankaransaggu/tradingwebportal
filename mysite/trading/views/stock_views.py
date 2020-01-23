@@ -51,7 +51,7 @@ class StockView(generic.DetailView):
             # Methods that deal with user favourites and positions
             account_bookmarks.check_is_favourite(user, stock, context)
             account_bookmarks.get_user_favourites(user, context)
-            account_positions.get_stock_positions(user, stock, context)
+            account_positions.get_open_positions(user, context)
 
         return context
 
