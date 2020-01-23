@@ -15,17 +15,17 @@ class IndexView(generic.ListView):
     context_object_name = 'latest_stock_list'
 
     def get_queryset(self):
-        return StockPriceData.objects.order_by('-date')[:5]
+        return None
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         request = self.request
         user = request.user
 
-        # Check the user is logged in before searching
-        if user.is_authenticated:
-            # Methods that deal with user favourites and positions
-            account_bookmarks.get_user_favourites(user, context)
-            account_positions.get_open_positions(user, context)
+        # # Check the user is logged in before searching
+        # if user.is_authenticated:
+        #     # Methods that deal with user favourites and positions
+        #     account_bookmarks.get_user_favourites(user, context)
+        #     account_positions.get_open_positions(user, context)
 
         return context

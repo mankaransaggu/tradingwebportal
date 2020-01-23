@@ -12,7 +12,7 @@ from django.views.generic import TemplateView
 
 from ..backend.account import account_bookmarks, account_positions
 from ..forms import SignUpForm, EditAccountForm
-from ..models import Account
+from ..models import User
 
 
 class AccountView(TemplateView):
@@ -29,6 +29,7 @@ class AccountView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(AccountView, self).get_context_data(**kwargs)
         request = self.request
+
         user = request.user
 
         if request.user.is_authenticated:
@@ -150,41 +151,18 @@ def change_password(request):
                           'account/change_password.html',
                           args)
     else:
-        return redirect('login')#
+        return redirect('login')
 
 
 def verify(request, uuid):
     try:
-        user = Account.objects.get(verification_uuid=uuid, is_verified=False)
-    except Account.DoesNotExist:
+        user = User.objects.get(verification_uuid=uuid, is_verified=False)
+    except User.DoesNotExist:
         raise Http404("User does not exist or is already verified")
 
     user.is_verified = True
     user.save()
 
     return redirect('index')
-
-
-# Old account email validation removed for the mean time
-# def activate(request, uidb64, token):
-#     try:
-#         uid = force_text(urlsafe_base64_decode(uidb64))
-#         user = User.objects.get(pk=uid)
-#     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-#         user = None
-#
-#     if user is not None: #and account_activation_token.check_token(user, token):
-#         user.is_active = True
-#         user.account.email_confirmed = True
-#         user.save()
-#         login(request, user)
-#         messages.success(request, f"New account activated: {user.email}")
-#         return redirect('index')
-#     else:
-#         return render(request, 'account/account_activation_invalid.html')
-#
-#
-# def account_activation_sent(request):
-#     return render(request, 'account/account_activation_sent.html')
 
 

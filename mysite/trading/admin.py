@@ -10,7 +10,7 @@ class CurrencyAdmin(admin.ModelAdmin):
 
 class CountryAdmin(admin.ModelAdmin):
     fieldsets = [
-        ('Country', {'fields': ['code', 'name']}),
+        ('Country', {'fields': ['code', 'name', 'currency']}),
     ]
 
 
@@ -58,6 +58,11 @@ class PositionAdmin(admin.ModelAdmin):
         ('Position Instrument', {'fields': ['stock', 'fx']}),
         ('Position Details', {'fields': ['open_price', 'close_price', 'direction', 'quantity', 'result']}),
     ]
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    pass
 
 
 admin.site.register(Currency, CurrencyAdmin)

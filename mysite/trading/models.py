@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
+import django
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.core.mail import send_mail
 from django.db import models
 from django.contrib.auth.models import User, AbstractUser
@@ -34,25 +36,73 @@ class Country(models.Model):
         db_table = 'country'
 
 
-class Account(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    email_confirmed = models.BooleanField(default=False)
+class UserAccountManager(BaseUserManager):
+    use_in_migrations = True
 
-    country = models.ForeignKey(Country, related_name='user_country', on_delete=models.CASCADE, default=1)
-    base_currency = models.ForeignKey(Currency, related_name='user_currency', on_delete=models.CASCADE, default=1)
+    def _create_user(self, email, password, **extra_fields):
+        if not email:
+            raise ValueError('Email address must be provided')
 
-    value = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    result = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    spent = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+        if not password:
+            raise ValueError('Password must be provided')
+
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+
+        return user
+
+    def create_user(self, email=None, password=None, **extra_fields):
+        return self._create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email, password, **extra_fields):
+        extra_fields['is_staff'] = True
+        extra_fields['is_superuser'] = True
+
+        return self._create_user(email, password, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'email'
+
+    objects = UserAccountManager()
+
+    email = models.EmailField('email', unique=True, blank=False, null=False)
+    first_name = models.CharField('first_name', blank=False, null=False, max_length=100)
+    last_name = models.CharField('first_name', blank=False, null=False, max_length=100)
+
+    value = models.DecimalField('account_value', blank=False, null=False, decimal_places=2, max_digits=12, default=0)
+    result = models.DecimalField('account_result', blank=True, null=False, decimal_places=2, max_digits=12, default=0)
 
     is_verified = models.BooleanField('verified', default=False)
     verification_uuid = models.UUIDField('Unique Verification UUID', default=uuid.uuid4)
 
-    @receiver(post_save, sender=User)
-    def update_user_profile(sender, instance, created, **kwargs):
-        if created:
-            Account.objects.create(user=instance)
-        instance.account.save()
+    is_staff = models.BooleanField('staff_status', default=False)
+    is_active = models.BooleanField('active', default=True)
+    date_joined = models.DateTimeField('date_joined', default=django.utils.timezone.now)
+    last_login = models.DateTimeField('last_login', default=django.utils.timezone.now)
+
+    def __unicode__(self):
+        return self.email
+
+
+def account_post_save(sender, instance, signal, *arg, **kwargs):
+    if not instance.is_verified:
+        print(instance.email)
+        send_mail(
+            'Verify your trading account',
+            'Click this link to verify: '
+            'http://localhost:8000%s' % reverse('verify', kwargs={'uuid': str(instance.verification_uuid)}),
+            'Baker Financial',
+            [instance.email],
+            fail_silently=False,
+        )
+
+
+signals.post_save.connect(account_post_save, sender=User)
 
 
 class Exchange(models.Model):
@@ -225,12 +275,10 @@ class Position(models.Model):
 
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
     open = models.BooleanField(default=True)
-    account = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     stock = models.ForeignKey(Stock, null=True, blank=True, on_delete=models.CASCADE)
     fx = models.ForeignKey(FX, null=True, blank=True, on_delete=models.CASCADE)
-
-
 
     @property
     def instrument(self):
@@ -278,18 +326,5 @@ class Position(models.Model):
         db_table = 'positions'
 
 
-def account_post_save(sender, instance, signal, *arg, **kwargs):
-    if not instance.is_verified:
-        print(instance.user.email)
-        send_mail(
-            'Verify your trading account',
-            'Click this link to verify: '
-            'http://localhost:8000%s' % reverse('verify', kwargs={'uuid': str(instance.verification_uuid)}),
-            'Baker Financial',
-            [instance.user.email],
-            fail_silently=False,
-        )
 
-
-signals.post_save.connect(account_post_save, sender=Account)
 
