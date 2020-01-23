@@ -10,7 +10,7 @@ from ..stock.stock_dates import *
 def create_stock_chart(days, stock):
 
     df = stock_df(days, stock)
-    print(df)
+
     if not df.empty:
         df['adj_close'] = df['adj_close'].apply(float)
         df_ohlc = df['adj_close'].resample('10D').ohlc()
@@ -72,37 +72,34 @@ def create_stock_chart(days, stock):
 def create_intraday_chart(stock):
 
     try:
-        if real_time_df(stock) is None:
-            yest = get_yesterday(stock)
-            qs = StockPriceData.objects.filter(stock=stock, timestamp__gte=yest.timestamp)
-            df = read_frame(qs)
+
+        df = real_time_df(stock)
+        if not df.empty:
+
+            df['close'] = df['close'].apply(float)
+
+            df_ohlc = df['close'].resample('1m').ohlc()
+            df_ohlc.reset_index(inplace=True)
+            df_ohlc['timestamp'] = df_ohlc['timestamp'].map(mdates.date2num)
+
+            fig = go.Figure(data=[go.Candlestick(x=df.index,
+                                                 open=df['open'],
+                                                 high=df['high'],
+                                                 low=df['low'],
+                                                 close=df['close'])])
+
+            fig.update_layout(
+                yaxis_title='Price $',
+                width=2450,
+                height=1000,
+                autosize=True
+            )
+
+            chart = opy.plot(fig, auto_open=False, output_type='div')
+
+            return chart
         else:
-            df = real_time_df(stock)
-
-        print(df)
-
-        df['close'] = df['close'].apply(float)
-
-        df_ohlc = df['close'].resample('1m').ohlc()
-        df_ohlc.reset_index(inplace=True)
-        df_ohlc['timestamp'] = df_ohlc['timestamp'].map(mdates.date2num)
-
-        fig = go.Figure(data=[go.Candlestick(x=df.index,
-                                             open=df['open'],
-                                             high=df['high'],
-                                             low=df['low'],
-                                             close=df['close'])])
-
-        fig.update_layout(
-            yaxis_title='Price $',
-            width=2450,
-            height=1000,
-            autosize=True
-        )
-
-        chart = opy.plot(fig, auto_open=False, output_type='div')
-
-        return chart
+            print('Cant retrieve intraday data')
 
     except TypeError:
         return None

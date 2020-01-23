@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views import generic
@@ -56,11 +57,17 @@ class StockView(generic.DetailView):
 
 
 def favourite_stock(request, id):
-    stock = get_object_or_404(Stock, id=id)
+    user = request.user
 
-    if stock.favourite.filter(id=request.user.id).exists():
-        stock.favourite.remove(request.user)
+    if not user.is_verified:
+        messages.info(request, 'Please verify your account before bookmarking instruments')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     else:
-        stock.favourite.add(request.user)
+        stock = get_object_or_404(Stock, id=id)
 
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        if stock.favourite.filter(id=request.user.id).exists():
+            stock.favourite.remove(request.user)
+        else:
+            stock.favourite.add(request.user)
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

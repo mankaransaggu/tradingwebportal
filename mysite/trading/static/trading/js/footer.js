@@ -10,6 +10,7 @@ $('#collapseOne').on('hide.bs.collapse', function () {
     }, 500);
 })
 
+// Keep in memory whether the panel was expanded or not
 $(function() {
     var index = 'key';
     var datastore = window.sessionStorage;

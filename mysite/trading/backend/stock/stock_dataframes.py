@@ -52,7 +52,7 @@ def real_time_df(stock):
 
 def df_to_sql(df):
     # Flip the data in the df, so it goes from latest to earliest data
-    df = df.iloc[::-1]
+    df = df.iloc[:-1]
     for row in df.itertuples():
 
         try:

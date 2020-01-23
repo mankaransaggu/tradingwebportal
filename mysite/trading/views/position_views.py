@@ -39,15 +39,20 @@ class OpenPositionForm(FormView):
         user = request.user
         user = User.objects.get(id=user.id)
 
-        post = form.save(commit=False)
-        post.user = self.request.user
-        post.position_state = 'Open'
-        post.save()
+        if not user.is_verified:
+            messages.info(request, 'Please verify your account before opening positions')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-        user.value = post.open_price * post.quantity
-        user.save()
+        elif form.is_valid:
+            post = form.save(commit=False)
+            post.user = self.request.user
+            post.position_state = 'Open'
+            post.save()
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            user.value = post.open_price * post.quantity
+            user.save()
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
     def get_context_data(self, **kwargs):
         context = super(OpenPositionForm, self).get_context_data(**kwargs)

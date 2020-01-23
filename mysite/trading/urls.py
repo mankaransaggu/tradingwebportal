@@ -5,7 +5,7 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
 
-    # path('search/', views.SearchView.as_view(), name='search'),
+    path('search/', views.SearchView.as_view(), name='search'),
 
     path('equities/', views.StocksView.as_view(), name='equites'),
     path('equity/<int:pk>/', views.StockView.as_view(), name='equity'),

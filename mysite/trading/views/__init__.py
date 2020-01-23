@@ -5,6 +5,7 @@ from .exchange_views import *
 from .stock_views import *
 
 from django.views import generic
+from django.contrib.auth.forms import AuthenticationForm
 
 from ..backend.account import account_bookmarks, account_positions
 from ..models import StockPriceData
@@ -27,5 +28,7 @@ class IndexView(generic.ListView):
             # Methods that deal with user favourites and positions
             account_bookmarks.get_user_favourites(user, context)
             account_positions.get_open_positions(user, context)
+        else:
+            context['form'] = AuthenticationForm(request=request, data=request.POST)
 
         return context
