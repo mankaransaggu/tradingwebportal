@@ -21,6 +21,7 @@ urlpatterns = [
     path('change-password/', views.change_password, name='change_password'),
     path('reset-password/', PasswordResetView.as_view(), name='reset_password'),
     path('reset-password/done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
+    re_path(r'^verify/(?P<uuid>[a-z0-9\-]+)/', views.verify, name='verify'),
 
     path('settings/', views.Setting.as_view(), name='settings'),
 

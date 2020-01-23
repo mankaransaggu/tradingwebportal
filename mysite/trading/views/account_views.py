@@ -3,6 +3,7 @@ from django.contrib.auth import login, authenticate, logout, update_session_auth
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
+from django.http import Http404
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
@@ -11,6 +12,7 @@ from django.views.generic import TemplateView
 
 from ..backend.account import account_bookmarks, account_positions
 from ..forms import SignUpForm, EditAccountForm
+from ..models import Account
 
 
 class AccountView(TemplateView):
@@ -148,7 +150,19 @@ def change_password(request):
                           'account/change_password.html',
                           args)
     else:
-        return redirect('login')
+        return redirect('login')#
+
+
+def verify(request, uuid):
+    try:
+        user = Account.objects.get(verification_uuid=uuid, is_verified=False)
+    except Account.DoesNotExist:
+        raise Http404("User does not exist or is already verified")
+
+    user.is_verified = True
+    user.save()
+
+    return redirect('index')
 
 
 # Old account email validation removed for the mean time

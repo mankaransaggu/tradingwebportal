@@ -29,7 +29,6 @@
                         <tr>
                             <th scope="col">Position #</th>
                             <th scope="col">Open Date</th>
-                            <th scope="col">Close Date</th>
                             <th scope="col">Instrument</th>
                             <th scope="col">Direction</th>
                             <th scope="col">Quantity</th>
@@ -46,7 +45,6 @@
                         <tr>
                             <th scope="row">{{position.id}}</th>
                             <td>{{position.open_date}}</td>
-                            <td>{{position.close_date}}</td>
                             <td> <a href="{% url 'equity' position.instrument.id %}">{{position.instrument}}</a></td>
                             <td>{{position.direction}}</td>
                             <td>{{position.quantity}}</td>

@@ -1,11 +1,14 @@
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
+from django.core.mail import send_mail
 from django.db import models
 from django.contrib.auth.models import User, AbstractUser
-from django.db.models import UniqueConstraint
+from django.db.models import UniqueConstraint, signals
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 
 
 class Currency(models.Model):
@@ -41,6 +44,9 @@ class Account(models.Model):
     value = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     result = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     spent = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+
+    is_verified = models.BooleanField('verified', default=False)
+    verification_uuid = models.UUIDField('Unique Verification UUID', default=uuid.uuid4)
 
     @receiver(post_save, sender=User)
     def update_user_profile(sender, instance, created, **kwargs):
@@ -224,6 +230,8 @@ class Position(models.Model):
     stock = models.ForeignKey(Stock, null=True, blank=True, on_delete=models.CASCADE)
     fx = models.ForeignKey(FX, null=True, blank=True, on_delete=models.CASCADE)
 
+
+
     @property
     def instrument(self):
         return self.stock or self.fx
@@ -264,10 +272,24 @@ class Position(models.Model):
         return data.close
 
     def current_value(self):
-        print(self.current_price())
-        print(self.quantity)
         return self.current_price() * self.quantity
 
     class Meta:
         db_table = 'positions'
+
+
+def account_post_save(sender, instance, signal, *arg, **kwargs):
+    if not instance.is_verified:
+        print(instance.user.email)
+        send_mail(
+            'Verify your trading account',
+            'Click this link to verify: '
+            'http://localhost:8000%s' % reverse('verify', kwargs={'uuid': str(instance.verification_uuid)}),
+            'Baker Financial',
+            [instance.user.email],
+            fail_silently=False,
+        )
+
+
+signals.post_save.connect(account_post_save, sender=Account)
 
