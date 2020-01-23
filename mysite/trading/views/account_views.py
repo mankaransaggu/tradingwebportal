@@ -9,10 +9,12 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import TemplateView
+from django.contrib.auth import get_user_model
 
 from ..backend.account import account_bookmarks, account_positions
 from ..forms import SignUpForm, EditAccountForm
 from ..models import User
+User = get_user_model()
 
 
 class AccountView(TemplateView):
@@ -164,5 +166,3 @@ def verify(request, uuid):
     user.save()
 
     return redirect('index')
-
-

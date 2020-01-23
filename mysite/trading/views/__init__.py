@@ -22,10 +22,10 @@ class IndexView(generic.ListView):
         request = self.request
         user = request.user
 
-        # # Check the user is logged in before searching
-        # if user.is_authenticated:
-        #     # Methods that deal with user favourites and positions
-        #     account_bookmarks.get_user_favourites(user, context)
-        #     account_positions.get_open_positions(user, context)
+        # Check the user is logged in before searching
+        if user.is_authenticated:
+            # Methods that deal with user favourites and positions
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
         return context
