@@ -89,14 +89,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
-    def live_result(self):
+    def get_live_result(self):
         open_positions = Position.objects.filter(user=self, open=True)
+        self.live_result = 0
 
         for pos in open_positions:
 
             self.live_result = self.live_result + pos.result
             print(self.live_result)
             self.save()
+
+        return self.live_result
 
 
 def account_post_save(sender, instance, signal, *arg, **kwargs):
