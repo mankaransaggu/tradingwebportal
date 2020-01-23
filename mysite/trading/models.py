@@ -76,6 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     value = models.DecimalField('account_value', blank=False, null=False, decimal_places=2, max_digits=12, default=0)
     result = models.DecimalField('account_result', blank=True, null=False, decimal_places=2, max_digits=12, default=0)
+    live_result = models.DecimalField('live_result', blank=False, null=False, decimal_places=2, max_digits=12, default=0)
 
     is_verified = models.BooleanField('verified', default=False)
     verification_uuid = models.UUIDField('Unique Verification UUID', default=uuid.uuid4)
@@ -88,17 +89,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
-    def current_result(self):
+    def live_result(self):
         open_positions = Position.objects.filter(user=self, open=True)
 
         for pos in open_positions:
-            change = pos.result_change()
-            self.result = self.result + change
-            print('pos loop')
-            print(change)
 
-        print(self.result)
-        self.save()
+            self.live_result = self.live_result + pos.result
+            print(self.live_result)
+            self.save()
 
 
 def account_post_save(sender, instance, signal, *arg, **kwargs):
@@ -282,7 +280,9 @@ class Position(models.Model):
 
     quantity = models.IntegerField(default=1)
     open_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    current_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     close_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     result = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
 
     direction = models.CharField(max_length=5, choices=DIRECTION_CHOICES)
@@ -313,11 +313,13 @@ class Position(models.Model):
                 fx = FX.objects.filter.get(id=self.fx.id)
                 current_data = fx.get_current_data()
                 self.result = current_data.close - self.open_price
+                self.save()
 
             elif self.fx is None:
                 stock = Stock.objects.get(id=self.stock.id)
                 latest_price = stock.get_current_data()
                 self.result = latest_price.close - self.open_price
+                self.save()
 
             return self.result
         else:
@@ -340,19 +342,18 @@ class Position(models.Model):
         else:
             return self.result
 
-    def current_price(self):
+    def current_value(self):
         if self.stock is None:
             fx = FX.objects.filter.get(id=self.fx.id)
-            data = fx.current_data()
+            current_data = fx.get_current_data()
+            self.value = current_data.close * self.quantity
+            self.save()
 
         elif self.fx is None:
             stock = Stock.objects.get(id=self.stock.id)
-            data = stock.get_current_data()
-
-        return data.close
-
-    def current_value(self):
-        return self.current_price() * self.quantity
+            latest_price = stock.get_current_data()
+            self.value = latest_price.close * self.quantity
+            self.save()
 
     class Meta:
         db_table = 'positions'
