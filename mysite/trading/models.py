@@ -105,7 +105,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.live_result = 0
 
         for pos in open_positions:
-            self.live_result = self.live_result + pos.current_result()
+            self.live_result = self.live_result + pos.get_current_data().result
             self.save()
 
         return self.live_result
@@ -316,52 +316,19 @@ class Position(models.Model):
         else:
             raise ValueError('obj parameter must be a Stock, FX, Bond, Indicie class')
 
-    def current_result(self):
-        if self.open:
-            if self.stock is None:
-                fx = FX.objects.filter.get(id=self.fx.id)
-                current_data = fx.get_current_data()
-                self.result = current_data.close - self.open_price
-                self.save()
-
-            elif self.fx is None:
-                stock = Stock.objects.get(id=self.stock.id)
-                latest_price = stock.get_current_data()
-                self.result = latest_price.close - self.open_price
-                self.save()
-
-            return self.result
-        else:
-            return self.result
-
-    def result_change(self):
-        if self.open:
-            if self.stock is None:
-                fx = FX.objects.filter.get(id=self.fx.id)
-                current_data = fx.get_current_data()
-                change = current_data.close - self.open_price
-                print(change)
-                return change
-
-            elif self.fx is None:
-                stock = Stock.objects.get(id=self.stock.id)
-                latest_price = stock.get_current_data()
-                change = latest_price.close - self.open_price
-                return change
-        else:
-            return self.result
-
-    def current_value(self):
+    def get_current_data(self):
         if self.stock is None:
             fx = FX.objects.filter.get(id=self.fx.id)
-            current_data = fx.get_current_data()
-            self.value = current_data.close * self.quantity
+            latest_data = fx.get_current_data()
+            self.value = latest_data.close * self.quantity
+            self.result = latest_data.close - self.open_price
             self.save()
 
         elif self.fx is None:
             stock = Stock.objects.get(id=self.stock.id)
-            latest_price = stock.get_current_data()
-            self.value = latest_price.close * self.quantity
+            latest_data = stock.get_current_data()
+            self.value = latest_data.close * self.quantity
+            self.result = latest_data.close - self.open_price
             self.save()
 
         return self

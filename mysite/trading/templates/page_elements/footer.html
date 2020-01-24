@@ -50,8 +50,8 @@
                                 <td>{{position.quantity}}</td>
                                 <td>{{position.open_price}}</td>
                                 <td>{{position.stock.get_current_data.close}}</td>
-                                <td>{{position.current_result}}</td>
-                                <td>{{position.current_value.value}}</td>
+                                <td>{{position.get_current_data.result}}</td>
+                                <td>{{position.get_current_data.value}}</td>
 
                                 <td class="text-center">
                                     <a href="{% url 'close_position' position.id %}">
