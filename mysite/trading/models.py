@@ -16,9 +16,20 @@ from django.urls import reverse
 class Currency(models.Model):
     code = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=50, unique=True)
+    symbol = models.CharField(max_length=2, null=True, blank=True)
 
     def __str__(self):
         return self.code
+
+    def get_identifier(self):
+        if self.symbol is None:
+            return self.code
+        else:
+            return self.symbol
+
+    def get_pairs(self):
+        print(FX.objects.filter(from_currency=self) | FX.objects.filter(to_currency=self))
+        return FX.objects.filter(from_currency=self) | FX.objects.filter(to_currency=self)
 
     class Meta:
         db_table = 'currency'
@@ -94,9 +105,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.live_result = 0
 
         for pos in open_positions:
-
             self.live_result = self.live_result + pos.result
-            print(self.live_result)
             self.save()
 
         return self.live_result
@@ -127,12 +136,15 @@ class Exchange(models.Model):
         return self.code
 
     def get_currency(self):
-        country = Country.objects.get(id=self.country)
-        currency = Currency.objects.get(id=country.currency)
+        country = Country.objects.get(code=self.country)
+        currency = Currency.objects.get(code=country.currency)
         return currency
 
     def get_stock_count(self):
         return self.listed_exchange.count()
+
+    def get_listed_stocks(self):
+        return self.listed_exchange.all()
 
     class Meta:
         db_table = 'exchange'
@@ -174,7 +186,6 @@ class Stock(models.Model):
         exchange = Exchange.objects.get(id=self.exchange.pk)
         country = Country.objects.get(id=exchange.country.pk)
         currency = Currency.objects.get(id=country.currency.pk)
-
         return currency
 
     class Meta:

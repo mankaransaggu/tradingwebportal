@@ -45,7 +45,7 @@
                         <tr>
                             <th scope="row">{{position.id}}</th>
                             <td>{{position.open_date}}</td>
-                            <td> <a href="{% url 'equity' position.instrument.id %}">{{position.instrument}}</a></td>
+                            <td> <a href="{% url 'stock' position.instrument.id %}">{{position.instrument}}</a></td>
                             <td>{{position.direction}}</td>
                             <td>{{position.quantity}}</td>
                             <td>{{position.open_price}}</td>

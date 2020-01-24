@@ -1,0 +1,33 @@
+{% extends "page_elements/header.html"  %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-10">
+            <span>
+                <strong>{{exchange.code}} - {{exchange.name}}</strong>
+            </span>
+        </div>
+
+        <div class="col-2">
+            <strong>Stocks</strong>
+            <div class="list-group" id="exchange-stocks">
+
+                {% for stock in exchange.get_listed_stocks %}
+                <li class="list-group-item">
+                    <a href="{% url 'stock' stock.id %}" class="list-group-item list-group-item-action">
+                        {{stock.ticker}}
+                    </a>
+                </li>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}

@@ -7,7 +7,7 @@
         <div class="col-12">
 
             <span>
-                <strong>{{ stock.ticker }} / {{ stock.name }}</strong>
+                <strong>{{stock.ticker}} - {{stock.name}}</strong>
                 <a href="{% url 'open_position' id=stock.id %}"><button class="btn btn-primary">Open Position</button></a>
 
                 {% if is_favourite %}

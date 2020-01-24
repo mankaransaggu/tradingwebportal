@@ -2,3 +2,9 @@
   height:150px;
   overflow-y: scroll;
 }
+
+#exchange-stocks {
+    max-height: 100px; !important
+    overflow:scroll;
+
+}

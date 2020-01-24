@@ -43,7 +43,7 @@
 .footer-scrollbar {
 position: relative;
 height: 200px;
-overflow: auto;
+overflow-y: auto;
 }
 
 .table-wrapper-scroll-y {

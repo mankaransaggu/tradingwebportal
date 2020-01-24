@@ -3,6 +3,7 @@ from .settings_views import *
 from .position_views import *
 from .exchange_views import *
 from .stock_views import *
+from .currency_views import *
 
 from django.views import generic
 from django.contrib.auth.forms import AuthenticationForm

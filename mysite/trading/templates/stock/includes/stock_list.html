@@ -5,28 +5,26 @@
         <th scope="col">Name</th>
         <th scope="col">Exchange</th>
         <th scope="col">Price</th>
-        <th scope="col">Currency</th>
         <th scope="col" class="text-center">Bookmark</i></th>
     </tr>
     </thead>
     <tbody>
     {% for stock in stocks %}
     <tr>
-        <th scope="row"><a href="{% url 'equity' stock.id %}">{{ stock.ticker }}</a></th>
-        <td>{{ stock.name }}</td>
-        <td>{{ stock.exchange }}</td>
+        <td><a href="{% url 'stock' stock.id %}">{{stock.ticker}}</a></td>
+        <td>{{stock.name}}</td>
+        <td>{{stock.exchange}}</td>
         <td>
             {% if stock.get_current_data %}
-                <p>{{ stock.get_current_data.close }} <small></small></p>
+                <p>{{stock.get_currency.get_identifier}} {{stock.get_current_data.close}} <small></small></p>
             {% else %}
                 N/A
 
 
             {% endif %}
         </td>
-        <td>{{ stock.get_currency.code}} </td>
         <td class="text-center">
-            {% if stock in is_favourite %}
+            {% if stock in favourite_list %}
             <a href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
             {% else %}
             <a href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x"></i></a>

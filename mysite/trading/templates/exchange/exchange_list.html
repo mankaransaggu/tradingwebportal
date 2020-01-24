@@ -12,15 +12,17 @@
             <th scope="col">Symbol</th>
             <th scope="col">Name</th>
             <th scope="col">Country</th>
+            <th scope="col">Currency</th>
             <th scope="col"># Stocks</th>
         </tr>
         </thead>
         <tbody>
         {% for exchange in exchanges %}
         <tr>
-            <th scope="row"><a href="{% url 'exchange' exchange.id %}">{{exchange.code}}</a></th>
+            <td><a href="{% url 'exchange' exchange.id %}">{{exchange.code}}</a></td>
             <td>{{exchange.name}}</td>
             <td>{{exchange.country}}</td>
+            <td>{{exchange.get_currency.code}} : {{exchange.get_currency.get_identifier}}</td>
             <td>{{exchange.get_stock_count}}</td>
         </tr>
         {% endfor %}

@@ -32,12 +32,12 @@ class StocksView(generic.ListView):
         return context
 
 
-class StockView(generic.DetailView):
+class StockDetailView(generic.DetailView):
     model = Stock
     template_name = 'stock/stock_detail.html'
 
     def get_context_data(self, **kwargs):
-        context = super(StockView, self).get_context_data(**kwargs)
+        context = super(StockDetailView, self).get_context_data(**kwargs)
         request = self.request
         user = request.user
         pk = self.kwargs['pk']

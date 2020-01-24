@@ -1,57 +1,22 @@
 <ul class="navbar-nav mr-auto">
     <li class="nav-item">
-        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="{% url 'index' %}">Home</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/exchanges">Exchanges</a>
+        <a class="nav-link" href="{% url 'exchange_list' %}">Exchanges</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="/indices">Indices</a>
+        <a class="nav-link disabled" href="#">Indices</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/equities">Equities</a>
+        <a class="nav-link" href="{% url 'stock_list' %}">Stocks</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="/fx">FX</a>
+        <a class="nav-link" href="{% url 'currency_list' %}">FX</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="/bonds">Bonds</a>
+        <a class="nav-link disabled" href="#">Bonds</a>
     </li>
-
-    {% if not user.is_authenticated %}
-
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link" data-toggle="dropdown">
-              Login <span class="caret"></span></a>
-			<ul id="login-dp" class="dropdown-menu">
-				<li>
-					 <div class="row">
-							<div class="col-12">
-								Login:
-								 <form class="form" role="form" method="post" action=" {% url 'login' %}" accept-charset="UTF-8" id="login-nav">
-                                     {% csrf_token %}
-										<div class="form-group">
-											 <label class="sr-only" for="exampleInputEmail2">Email address</label>
-											 <input type="username" id="email" username="email" class="form-control" id="exampleInputEmail2" placeholder="Email address" required>
-										</div>
-										<div class="form-group">
-											 <label class="sr-only" for="exampleInputPassword2">Password</label>
-											 <input type="password" class="form-control" id="exampleInputPassword2" placeholder="Password" required>
-                                             <div class="help-block text-right"><a href="">Forget the password ?</a></div>
-										</div>
-										<div class="form-group">
-											 <button type="submit" class="btn btn-primary btn-block">Sign in</button>
-										</div>
-								 </form>
-							</div>
-							<div class="bottom text-center">
-								New here ? <a href="{% url 'signup' %}"><b>Join Us</b></a>
-							</div>
-					 </div>
-				</li>
-			</ul>
-        </li>
-    {% endif %}
 
      <li class="nav-item dropdown">
         <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
