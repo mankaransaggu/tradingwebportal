@@ -47,6 +47,7 @@ class OpenPositionForm(FormView):
             post = form.save(commit=False)
             post.user = self.request.user
             post.position_state = 'Open'
+            #post.position_value =
             post.save()
 
             user.value = post.open_price * post.quantity

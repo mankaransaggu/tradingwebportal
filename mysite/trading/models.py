@@ -105,7 +105,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.live_result = 0
 
         for pos in open_positions:
-            self.live_result = self.live_result + pos.result
+            self.live_result = self.live_result + pos.current_result()
             self.save()
 
         return self.live_result
@@ -363,6 +363,8 @@ class Position(models.Model):
             latest_price = stock.get_current_data()
             self.value = latest_price.close * self.quantity
             self.save()
+
+        return self
 
     class Meta:
         db_table = 'positions'

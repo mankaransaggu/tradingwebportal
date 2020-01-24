@@ -15,7 +15,7 @@
             </div>
 
             <div class="col-3 align-middle">
-                <p class="ml-auto mr-1  text-white text-right">Account Result: £{{ user.get_live_result }} | Account Value: £{{ user.value }}</p>
+                <p class="ml-auto mr-1  text-white text-right">Live Result: £{{ user.get_live_result }} | Account Value: £{{ user.value }}</p>
             </div>
         </div>
 
@@ -51,7 +51,7 @@
                                 <td>{{position.open_price}}</td>
                                 <td>{{position.stock.get_current_data.close}}</td>
                                 <td>{{position.current_result}}</td>
-                                <td>{{position.value}}</td>
+                                <td>{{position.current_value.value}}</td>
 
                                 <td class="text-center">
                                     <a href="{% url 'close_position' position.id %}">
