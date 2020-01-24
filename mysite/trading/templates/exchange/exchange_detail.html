@@ -13,17 +13,15 @@
 
         <div class="col-2">
             <strong>Stocks</strong>
-            <div class="list-group" id="exchange-stocks">
 
+            <div class="border shadow-sm" id="exchange-stocks">
                 {% for stock in exchange.get_listed_stocks %}
-                <li class="list-group-item">
-                    <a href="{% url 'stock' stock.id %}" class="list-group-item list-group-item-action">
-                        {{stock.ticker}}
+                    <a href="{% url 'stock' stock.id %}" class="btn btn-primary w-100 m-1">
+                        <strong>{{stock.ticker}}</strong> - {{stock.get_currency.get_identifier}}{{stock.get_current_data.close}}
                     </a>
-                </li>
                 {% endfor %}
-
             </div>
+
         </div>
     </div>
 

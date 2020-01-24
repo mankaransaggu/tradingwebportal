@@ -234,11 +234,6 @@ class FX(models.Model):
     def __str__(self):
         return self.code
 
-    # def save(self, *args, **kwargs):
-    #     if not self.code:
-    #         self.code = self.base_currency + '/' + self.exchange_currency
-    #     super.save(*args, **kwargs)
-
     def is_favourite(self, user):
         if self.favourite.filter(id=user.id).exists():
             return True

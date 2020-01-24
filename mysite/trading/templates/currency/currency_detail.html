@@ -5,25 +5,23 @@
 <div class="container-fluid">
 
     <div class="row">
-        <div class="col-8">
+        <div class="col-10">
             <span>
                 <strong>{{currency.code}} - {{currency.name}}</strong>
             </span>
         </div>
 
-        <div class="col-4">
+        <div class="col-2">
             <strong>Pairs</strong>
-            <div class="list-group border">
-
+            <div class="border shadow-sm">
                 {% for pair in currency.get_pairs %}
-                <a href="{% url 'fx_pair' pair.id %}" class="list-group-item list-group-item-action">
-                    {{pair.code}}
-                </a>
+                    <a href="{% url 'fx_pair' pair.id %}" class="btn btn-primary w-100 m-1">
+                        {{pair.code}}
+                    </a>
                 {% endfor %}
-
             </div>
-        </div>
 
+        </div>
     </div>
 
 </div>

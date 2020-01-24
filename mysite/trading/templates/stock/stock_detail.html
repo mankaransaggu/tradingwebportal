@@ -4,28 +4,31 @@
 <div class="container-fluid">
 
     <div class="row">
-        <div class="col-12">
+        <div class="col-auto">
+            <strong class="align-middle h-100">{{stock.ticker}} - {{stock.name}}</strong>
+        </div>
 
-            <span>
-                <strong>{{stock.ticker}} - {{stock.name}}</strong>
-                <a href="{% url 'open_position' id=stock.id %}"><button class="btn btn-primary">Open Position</button></a>
+        <div class="col-auto">
+            <a class="align-middle" href="{% url 'open_position' id=stock.id %}"><button class="btn btn-primary shadow-sm">Open Position - {{stock.get_currency.get_identifier}}{{stock.get_current_data.close}}</button></a>
+        </div>
 
-                {% if is_favourite %}
-                <a href="{% url 'favourite_stock' id=stock.id %}"><button class="btn btn-primary"><i class="fas fa-bookmark"></i></button></a>
-                {% else %}
-                <a href="{% url 'favourite_stock' id=stock.id %}"><button class="btn btn-primary"><i class="far fa-bookmark"></i></button></a>
-                {% endif %}
-            </span>
-
+        <div class="col-auto">
+            {% if is_favourite %}
+            <a class="align-middle" href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x border shadow-sm"></i></a>
+            {% else %}
+            <a class="align-middle" href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x border shadow-sm"></i></a>
+            {% endif %}
         </div>
     </div>
 
-    <br>
-    {% include "stock/includes/stock_charts.html" %}
-    {% include "stock/includes/stock_change_summary.html" %}
-    {% include "stock/includes/stock_historic_data.html" %}
-    <br>
-    {% include "stock/includes/positions_box.html" %}
+</div>
+
+<br>
+{% include "stock/includes/stock_charts.html" %}
+{% include "stock/includes/stock_change_summary.html" %}
+{% include "stock/includes/stock_historic_data.html" %}
+<br>
+{% include "stock/includes/positions_box.html" %}
 
 
 </div>

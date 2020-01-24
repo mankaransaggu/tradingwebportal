@@ -6,12 +6,39 @@
     </div>
 
     <ul class="list-unstyled components">
-{% if user.is_authenticated %}
-        {% for fav in favourites %}
-        <div class="row justify-content-center" style="width:100%">
-            <a href="{% url 'stock' fav.id %}"><button class="btn btn-primary text-center" style="width:90%">{{ fav.ticker }}</button></a>
-        </div>
-        {% endfor %}
-{% endif %}
+        {% if user.is_authenticated %}
+
+            <div class="list-group">
+
+                {% for fav in favourites %}
+                    <div class="list-group-item bg-secondary m-1">
+
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <strong class="text-center">{{fav.ticker}} - {{fav.get_currency.get_identifier}}{{fav.get_current_data.close}}</strong>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-5">
+                                <div class="float-left">
+                                    <a class="btn btn-primary" href="{% url 'stock' fav.id %}">View</a>
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="float-right">
+                                    <a class="btn btn-primary" href="{% url 'open_position' fav.id %}">Open</a>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% endif %}
     </ul>
+
 </nav>
