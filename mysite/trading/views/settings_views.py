@@ -1,12 +1,16 @@
 from itertools import count
 
 from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.foreignexchange import ForeignExchange
 from django.contrib import messages
 from django.views.generic import TemplateView
 
 from ..backend.account import account_bookmarks, account_positions
 from ..backend.exchange.exchange import NYSE, NASDAQ
 from ..models import Stock
+from ..backend.stock.stock_data import update_market_data
+from ..backend.fx.fx_data import save_pairs_and_data
+from ..backend.fx.currency import save_currency
 
 
 class SearchView(TemplateView):
@@ -43,17 +47,24 @@ class Setting(TemplateView):
                 NASDAQ().save_stocks()
                 messages.success(request, "%s SQL statements were executed." % count)
 
-            if setting == 'update-nasdaq':
-                NASDAQ().update_market_data()
-                messages.success(request, "%s SQL statements were executed." % count)
+            if setting == 'update-stocks':
+                update_market_data()
 
-            if setting == 'update-nyse':
-                NYSE().update_market_data()
-                messages.success(request, "Update success with new class")
+            if setting == 'fx-pairs':
+                save_pairs_and_data()
 
-            if setting == 'yahoo':
-                ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
-                data, meta_data = ts.get_intraday(symbol='AAPL')
-                print(data)
+            if setting == 'get currency':
+                save_currency()
+
+            # if setting == 'yahoo':
+            #     ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
+            #     data, meta_data = ts.get_intraday(symbol='AAPL')
+            #     print(data)
+            #
+            # if setting == 'fx':
+            #     fx = ForeignExchange(key='3GVY8HKU0D7L550R', output_format='pandas')
+            #     data, meta_data = fx.get_currency_exchange_daily('USD', 'GBP')
+            #     print(data)
+
 
         return context

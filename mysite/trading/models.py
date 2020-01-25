@@ -16,7 +16,10 @@ from django.urls import reverse
 class Currency(models.Model):
     code = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=50, unique=True)
-    symbol = models.CharField(max_length=2, null=True, blank=True)
+    symbol = models.CharField(max_length=15, null=True, blank=True)
+    unicode_char = models.CharField(max_length=15, null=True, blank=True)
+    html_symbol = models.CharField(max_length=15, null=True, blank=True)
+    hex_code = models.CharField(max_length=15, null=True, blank=True)
 
     def __str__(self):
         return self.code
@@ -33,6 +36,9 @@ class Currency(models.Model):
 
     class Meta:
         db_table = 'currency'
+        constraints = [
+            models.UniqueConstraint(fields=['code', 'name'], name='currency')
+        ]
 
 
 class Country(models.Model):
@@ -160,6 +166,9 @@ class Instrument(models.Model):
 
     class Meta:
         db_table = 'instrument'
+        constraints = [
+            models.UniqueConstraint(fields=['code', 'name'], name='instrument_type')
+        ]
 
 
 class Stock(models.Model):
@@ -191,7 +200,7 @@ class Stock(models.Model):
     class Meta:
         db_table = 'stock'
         constraints = [
-            models.UniqueConstraint(fields=['ticker', 'name', 'exchange_id'], name='Company Stock')
+            models.UniqueConstraint(fields=['ticker', 'name', 'exchange_id'], name='company_stock')
         ]
 
 
@@ -241,7 +250,7 @@ class FX(models.Model):
         return False
 
     def get_current_data(self):
-        data = FXPriceData.objects.filter(stock=self).first()
+        data = FXPriceData.objects.filter(currency_pair=self).first()
         return data
 
     class Meta:
@@ -257,10 +266,10 @@ class FX(models.Model):
 class FXPriceData(models.Model):
     timestamp = models.DateTimeField()
     currency_pair = models.ForeignKey(FX, related_name='currency_pair', on_delete=models.CASCADE)
-    high = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    low = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    open = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
-    close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
+    high = models.DecimalField(max_digits=10, decimal_places=3, default=Decimal(0.00))
+    low = models.DecimalField(max_digits=10, decimal_places=3, default=Decimal(0.00))
+    open = models.DecimalField(max_digits=10, decimal_places=3, default=Decimal(0.00))
+    close = models.DecimalField(max_digits=10, decimal_places=3, default=Decimal(0.00))
     volume = models.IntegerField(blank=True, null=True)
 
     def __str__(self):

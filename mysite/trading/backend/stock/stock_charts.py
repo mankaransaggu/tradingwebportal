@@ -3,13 +3,13 @@ import plotly.graph_objects as go
 import plotly.offline as opy
 from django_pandas.io import read_frame
 
-from ..stock.stock_dataframes import stock_df, real_time_df
+from ..stock.stock_dataframes import get_stock_df, get_real_time_df
 from ..stock.stock_dates import *
 
 
 def create_stock_chart(days, stock):
 
-    df = stock_df(days, stock)
+    df = get_stock_df(days, stock)
 
     if not df.empty:
         df['adj_close'] = df['adj_close'].apply(float)
@@ -73,7 +73,7 @@ def create_intraday_chart(stock):
 
     try:
 
-        df = real_time_df(stock)
+        df = get_real_time_df(stock)
         if not df.empty:
 
             df['close'] = df['close'].apply(float)

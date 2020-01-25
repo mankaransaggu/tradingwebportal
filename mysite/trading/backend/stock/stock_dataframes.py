@@ -10,7 +10,7 @@ import datetime as dt
 from django_pandas.io import read_frame
 
 
-def stock_df(days, stock):
+def get_stock_df(days, stock):
     try:
         date = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days), '%Y-%m-%d')
         qs = StockPriceData.objects.filter(stock_id=stock.pk, timestamp__gte=date)
@@ -27,7 +27,7 @@ def stock_df(days, stock):
         return None
 
 
-def real_time_df(stock):
+def get_real_time_df(stock):
 
     try:
         stock = Stock.objects.get(id=stock.pk)
