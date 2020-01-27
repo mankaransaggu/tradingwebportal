@@ -15,7 +15,7 @@
             <strong>Pairs</strong>
             <div class="border shadow-sm">
                 {% for pair in currency.get_pairs %}
-                    <a href="{% url 'fx_pair' pair.id %}" class="btn btn-primary w-100 m-1">
+                    <a href="{% url 'fx_pair' pair.id %}" class="btn btn-primary w-100 mb-1">
                         {{pair.code}}
                         {% if pair.current_data %}
                         - {{pair.get_current_data.close}}

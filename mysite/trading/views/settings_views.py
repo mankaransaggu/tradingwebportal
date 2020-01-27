@@ -11,6 +11,7 @@ from ..models import Stock
 from ..backend.stock.stock_data import update_market_data
 from ..backend.fx.fx_data import save_pairs_and_data
 from ..backend.fx.currency import save_currency
+from ..backend.fx.fx_data import get_fx_data, test
 
 
 class SearchView(TemplateView):
@@ -47,14 +48,26 @@ class Setting(TemplateView):
                 NASDAQ().save_stocks()
                 messages.success(request, "%s SQL statements were executed." % count)
 
+            if setting == 'download-stocks':
+                NYSE().save_stocks()
+                print('NYSE complete')
+                NASDAQ().save_stocks()
+                print('NASDAQ complete')
+
             if setting == 'update-stocks':
                 update_market_data()
 
             if setting == 'fx-pairs':
                 save_pairs_and_data()
 
-            if setting == 'get currency':
+            if setting == 'get-currency':
                 save_currency()
+
+            if setting == 'get-fx':
+                get_fx_data()
+
+            if setting == 'te':
+                test()
 
             # if setting == 'yahoo':
             #     ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')

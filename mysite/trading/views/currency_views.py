@@ -10,7 +10,7 @@ class CurrencyListView(generic.ListView):
     context_object_name = 'currencies'
 
     def get_queryset(self):
-        return Currency.objects.all()
+        return Currency.objects.all().order_by('code')
 
     def get_context_data(self, **kwargs):
         context = super(CurrencyListView, self).get_context_data(**kwargs)

@@ -19,9 +19,9 @@
 
                     {% for favourite in favourites %}
                     <tr>
-                        <td><a href="{% url 'equity' favourite.id %}">{{ favourite.ticker }}</a></td>
+                        <td><a href="{% url 'stock' favourite.id %}">{{ favourite.ticker }}</a></td>
                         <td>{{favourite.name}}</td>
-                        <td>{{favourite.get_current_data.price}}</td>
+                        <td>{{favourite.get_currency.get_identifier}}{{favourite.get_current_data.close}}</td>
                         <td class="text-center">
                             {% if is_favourite %}
                             <a href="{% url 'favourite_stock' favourite.id %}"><i class="fas fa-bookmark fa-2x"></i></a>

@@ -2,6 +2,8 @@ from django.shortcuts import get_object_or_404
 from alpha_vantage.foreignexchange import ForeignExchange
 from ...models import Currency, FX, FXPriceData, Instrument
 from .fx_dataframes import format_df, df_to_sql
+import time
+import datetime
 
 
 def save_currency_pairs():
@@ -18,12 +20,36 @@ def save_currency_pairs():
 
 def get_fx_data():
     fx_pairs = FX.objects.all()
-    for fx in fx_pairs:
-        exchange = ForeignExchange(key='3GVY8HKU0D7L550R', output_format='pandas')
-        data, meta_data = exchange.get_currency_exchange_daily(fx.from_currency.code, fx.to_currency.code)
+    count = 0;
 
-        df = format_df(data, fx)
-        df_to_sql(df)
+    for fx in fx_pairs:
+
+        latest = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
+        if latest and latest.timestamp == datetime.datetime.today():
+            print('Latest data for {} already stored'.format(fx))
+        else:
+            try:
+                # Check if I have hit alphas api limit, if so wait 1 min
+                count += 1
+                if count == 6:
+                    time.sleep(70)
+                    count = 0
+
+                exchange = ForeignExchange(key='3GVY8HKU0D7L550R', output_format='pandas')
+                data, meta_data = exchange.get_currency_exchange_daily(from_symbol=fx.from_currency.code,
+                                                                       to_symbol=fx.to_currency.code, outputsize='full')
+
+                # Format the dataframe and save the data in the db
+                df = format_df(data, fx)
+                df_to_sql(df)
+            except ValueError:
+                raise
+
+
+def test():
+    exchange = ForeignExchange(key='3GVY8HKU0D7L550R', output_format='pandas')
+    data, meta_data = exchange.get_currency_exchange_rate('BGN', 'AED')
+    print(data)
 
 
 def save_pairs_and_data():

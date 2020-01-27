@@ -13,10 +13,10 @@
     <tr>
         <td><a href="{% url 'stock' stock.id %}">{{stock.ticker}}</a></td>
         <td>{{stock.name}}</td>
-        <td>{{stock.exchange}}</td>
+        <td><a href="{% url 'exchange' stock.exchange.id %}">{{stock.exchange}}</a></td>
         <td>
             {% if stock.get_current_data %}
-                <p>{{stock.get_currency.get_identifier}} {{stock.get_current_data.close}} <small></small></p>
+                <p>{{stock.get_currency.get_identifier}}{{stock.get_current_data.close}}<small></small></p>
             {% else %}
                 N/A
 

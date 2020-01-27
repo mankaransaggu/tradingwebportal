@@ -16,7 +16,7 @@
 
             <div class="border shadow-sm" id="exchange-stocks">
                 {% for stock in exchange.get_listed_stocks %}
-                    <a href="{% url 'stock' stock.id %}" class="btn btn-primary w-100 m-1">
+                    <a href="{% url 'stock' stock.id %}" class="btn btn-primary w-100 mb-1">
                         <strong>{{stock.ticker}}</strong> - {{stock.get_currency.get_identifier}}{{stock.get_current_data.close}}
                     </a>
                 {% endfor %}

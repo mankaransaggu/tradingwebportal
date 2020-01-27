@@ -9,6 +9,7 @@ from ..backend.account import account_bookmarks, account_positions
 from ..forms import CreatePositionForm
 from ..models import Stock, User, Position
 from ..backend.stock.stock_dates import get_latest
+from django.utils import timezone
 
 
 class OpenPositionForm(FormView):
@@ -78,7 +79,7 @@ def close_position(request, id):
     close_price = close.close
 
     position.close_price = close_price
-    position.close_date = datetime.now()
+    position.close_date = timezone.now()
     position.open = False
 
     if position.direction == 'BUY':
@@ -89,10 +90,10 @@ def close_position(request, id):
     position.result = result
     if result > 0:
         account.value = account.value + result
-        account.earned = account.earned + result
+        account.result = account.result  + result
     else:
         account.value = account.value - result
-        account.earned = account.earned - result
+        account.result = account.result - result
 
     position.save()
     account.save()

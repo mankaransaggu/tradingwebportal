@@ -10,7 +10,7 @@ class ExchangeListView(generic.ListView):
     context_object_name = 'exchanges'
 
     def get_queryset(self):
-        return Exchange.objects.all()
+        return Exchange.objects.all().order_by('country')
 
     def get_context_data(self, **kwargs):
         context = super(ExchangeListView, self).get_context_data(**kwargs)
