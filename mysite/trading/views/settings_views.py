@@ -1,7 +1,5 @@
 from itertools import count
 
-from alpha_vantage.timeseries import TimeSeries
-from alpha_vantage.foreignexchange import ForeignExchange
 from django.contrib import messages
 from django.views.generic import TemplateView
 
@@ -10,8 +8,8 @@ from ..backend.exchange.exchange import NYSE, NASDAQ
 from ..models import Stock
 from ..backend.stock.stock_data import update_market_data
 from ..backend.fx.fx_data import save_pairs_and_data
-from ..backend.fx.currency import save_currency
-from ..backend.fx.fx_data import get_fx_data, test
+from ..backend.fx.currency import save_currencies
+from ..backend.fx.fx_data import get_fx_data
 
 
 class SearchView(TemplateView):
@@ -61,14 +59,13 @@ class Setting(TemplateView):
                 save_pairs_and_data()
 
             if setting == 'get-currency':
-                save_currency()
+                save_currencies()
 
             if setting == 'get-fx':
                 get_fx_data()
 
             if setting == 'te':
-                test()
-
+                print()
             # if setting == 'yahoo':
             #     ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
             #     data, meta_data = ts.get_intraday(symbol='AAPL')

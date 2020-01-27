@@ -11,6 +11,7 @@
                 <th scope="col">Code</th>
                 <th scope="col">Symbol</th>
                 <th scope="col">Name</th>
+                <th scope="col">Active</th>
             </tr>
         </thead>
 
@@ -20,6 +21,7 @@
                     <td><a href="{% url 'currency' currency.id %}">{{currency.code}}</a></td>
                     <td>{{currency.symbol}}</td>
                     <td>{{currency.name}}</td>
+                    <td>{{currency.active}}</td>
                 </tr>
             {% endfor %}
         </tbody>

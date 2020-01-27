@@ -16,19 +16,10 @@ from django.urls import reverse
 class Currency(models.Model):
     code = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=50, unique=True)
-    symbol = models.CharField(max_length=15, null=True, blank=True)
-    unicode_char = models.CharField(max_length=15, null=True, blank=True)
-    html_symbol = models.CharField(max_length=15, null=True, blank=True)
-    hex_code = models.CharField(max_length=15, null=True, blank=True)
+    active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.code
-
-    def get_identifier(self):
-        if self.symbol is None:
-            return self.code
-        else:
-            return self.symbol
 
     def get_pairs(self):
         print(FX.objects.filter(from_currency=self) | FX.objects.filter(to_currency=self))

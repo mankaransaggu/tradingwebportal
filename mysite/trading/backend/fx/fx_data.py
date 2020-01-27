@@ -7,7 +7,7 @@ import datetime
 
 
 def save_currency_pairs():
-    currencies = Currency.objects.all()
+    currencies = Currency.objects.filter(active=True)
     instrument = get_object_or_404(Instrument, code='FX')
 
     for from_currency in currencies:
@@ -42,14 +42,8 @@ def get_fx_data():
                 # Format the dataframe and save the data in the db
                 df = format_df(data, fx)
                 df_to_sql(df)
-            except ValueError:
-                raise
-
-
-def test():
-    exchange = ForeignExchange(key='3GVY8HKU0D7L550R', output_format='pandas')
-    data, meta_data = exchange.get_currency_exchange_rate('BGN', 'AED')
-    print(data)
+            except ValueError as e:
+                print('{} - Pair: {}'.format(e, fx))
 
 
 def save_pairs_and_data():
