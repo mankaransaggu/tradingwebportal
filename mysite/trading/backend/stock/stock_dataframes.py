@@ -1,13 +1,13 @@
 import MySQLdb
 import requests
 import sqlalchemy
-from django.contrib import messages
 from django.db import IntegrityError
 from alpha_vantage.timeseries import TimeSeries
 from ...models import StockPriceData, Stock
 import pandas as pd
 import datetime as dt
 from django_pandas.io import read_frame
+from ...models import DataType
 
 
 def get_stock_df(days, stock):
@@ -38,6 +38,7 @@ def get_real_time_df(stock):
             columns={'2. high': 'high', '3. low': 'low', '1. open': 'open', '4. close': 'close',
                      '5. volume': 'volume'})
         df['stock'] = stock
+        df['data_type'] = DataType.objects.get(code='INTRADAY')
         df.rename_axis('timestamp', axis='index', inplace=True)
         df.index = pd.to_datetime(df.index)
 
@@ -57,15 +58,13 @@ def df_to_sql(df):
 
         try:
             print(row)
-            stock = getattr(row, 'stock')
-
             StockPriceData.objects.create(timestamp=getattr(row, 'Index'), high=getattr(row, 'high'),
                                           low=getattr(row, 'low'), open=getattr(row, 'open'),
                                           close=getattr(row, 'close'), volume=getattr(row, 'volume'),
-                                          stock=getattr(row, 'stock'))
+                                          stock=getattr(row, 'stock'), data_type=getattr(row, 'data_type'))
 
         except (IntegrityError, sqlalchemy.exc.IntegrityError, MySQLdb._exceptions.IntegrityError):
-            print('Data {} already exists'.format(stock))
+            print('Data {} already exists'.format(getattr(row, 'stock')))
             break
 
 

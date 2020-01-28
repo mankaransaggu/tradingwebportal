@@ -27,6 +27,11 @@ class InstrumentAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(DataType)
+class DataTypeAdmin(admin.ModelAdmin):
+    pass
+
+
 @admin.register(Stock)
 class StockAdmin(admin.ModelAdmin):
     pass

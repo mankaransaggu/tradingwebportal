@@ -13,15 +13,22 @@
             {% for fav in favourites %}
             <div class="list-group-item border-top border-bottom border-left-0 border-right-0 border-primary" style="background-color: #343a40">
                 <div class="m-1" id="favourite-container">
-                    <div class="row p-2">
-                        <div class="col-10 pb-2">
-                            <strong class="text-white">{{fav.ticker}} - {{fav.get_currency.get_identifier}}{{fav.get_current_data.close}}</strong>
+
+                    <div class="row">
+                        <div class="col-10 text-left">
+                            <p class="text-white font-weight-bold">{{fav.ticker}} - {{fav.get_currency.code}}</p>
                         </div>
 
                         <div class="col-2">
                             <a href="{% url 'favourite_stock' fav.id %}">
                                 <i class="fas fa-times-circle"></i>
                             </a>
+                        </div>
+                    </div>
+
+                    <div class="row pb-2">
+                        <div class="col-12">
+                            <div class="text-white text-left font-weight-light d-flex justify-content-between">{{fav.get_current_data.close}} {{fav.get_change}} - {{fav.get_change_perc}}%</div>
                         </div>
                     </div>
 

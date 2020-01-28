@@ -3,7 +3,7 @@ import sqlalchemy
 from alpha_vantage.timeseries import TimeSeries
 from django.db import IntegrityError
 from pandas_datareader._utils import RemoteDataError
-from ...models import Stock, StockPriceData
+from ...models import Stock, StockPriceData, DataType
 from .stock_dataframes import df_to_sql
 import datetime as dt
 import pandas_datareader.data as web
@@ -20,6 +20,8 @@ def get_yahoo_data(stock):
             columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                      'Volume': 'volume', 'Adj Close': 'adj_close'})
         df['stock'] = stock
+
+        df['data_type'] = DataType.objects.get(code='DAILY')
 
         df.rename_axis('timestamp', axis='index', inplace=True)
         df_to_sql(df)
@@ -52,6 +54,7 @@ def get_stock_data(stock):
                      '5. adjusted close': 'adj_close', '6. volume': 'volume', '7. dividend amount': 'dividend',
                      '8. split coefficient': 'split_coefficient'})
         df['instrument_id'] = stock.pk
+        df['data_type'] = DataType.objects.get(code='INTRADAY')
         df.rename_axis('timestamp', axis='index', inplace=True)
 
         df_to_sql(df)
@@ -82,6 +85,7 @@ def update_market_data():
                         columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                                  'Volume': 'volume', 'Adj Close': 'adj_close'})
                     df['instrument_id'] = stock.pk
+                    df['data_type'] = DataType.objects.get(code='DAILY')
                     df.index.names = ['timestamp']
 
                     df_to_sql(df)

@@ -162,6 +162,17 @@ class Instrument(models.Model):
         ]
 
 
+class DataType(models.Model):
+    code = models.CharField(max_length=25, unique=True, blank=False, null=False)
+    description = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        db_table = 'data_types'
+
+
 class Stock(models.Model):
     instrument = models.ForeignKey(Instrument, related_name='stock_instrument', on_delete=models.CASCADE, default=1)
     ticker = models.CharField(max_length=10)
@@ -181,6 +192,49 @@ class Stock(models.Model):
         data = StockPriceData.objects.filter(stock=self).order_by('-timestamp')[:1]
         data = data.first()
         return data
+
+    def get_change(self):
+        latest = StockPriceData.objects.filter(stock=self).order_by('-timestamp')
+
+        if not latest:
+            return None
+        latest = latest.first()
+
+        if latest.data_type.code == 'INTRADAY':
+            previous = StockPriceData.objects.filter(stock=self, data_type__code='DAILY').order_by('-timestamp')[1]
+        else:
+            try:
+                previous = StockPriceData.objects.filter(stock=self, data_type__code='DAILY').order_by('-timestamp')[2]
+            except IndexError:
+                return None
+
+        return latest.close - previous.close
+
+    def get_change_perc(self):
+        latest = StockPriceData.objects.filter(stock=self).order_by('-timestamp')
+
+        if not latest:
+            return None
+        latest = latest.first()
+
+        if latest.data_type.code == 'INTRADAY':
+            previous = StockPriceData.objects.filter(stock=self, data_type__code='DAILY').order_by('-timestamp')[1]
+        else:
+            try:
+                previous = StockPriceData.objects.filter(stock=self, data_type__code='DAILY').order_by('-timestamp')[2]
+            except IndexError:
+                return None
+
+        if latest.close == previous.close:
+            return 0
+
+        try:
+            percent = (abs(latest.close - previous.close) / previous.close) * 100
+            percent = round(percent, 2)
+            return percent
+
+        except ZeroDivisionError:
+            return 0
 
     def get_currency(self):
         exchange = Exchange.objects.get(id=self.exchange.pk)
@@ -208,6 +262,8 @@ class StockPriceData(models.Model):
     adj_close = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     dividend = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(0.00))
     split_coefficient = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal(1.0))
+
+    data_type = models.ForeignKey(DataType, null=False, blank=False, on_delete=models.CASCADE)
 
     def __str__(self):
         string = self.stock.ticker + ' ' + str(self.timestamp)
@@ -262,6 +318,8 @@ class FXPriceData(models.Model):
     open = models.DecimalField(max_digits=10, decimal_places=3, default=Decimal(0.00))
     close = models.DecimalField(max_digits=10, decimal_places=3, default=Decimal(0.00))
     volume = models.IntegerField(blank=True, null=True)
+
+    data_type = models.ForeignKey(DataType, default=1, null=False, blank=False, on_delete=models.CASCADE)
 
     def __str__(self):
         string = self.currency_pair.code + ' ' + self.timestamp

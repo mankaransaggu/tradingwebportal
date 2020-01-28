@@ -135,6 +135,8 @@ class NASDAQ(StockExchange):
 
                 if success:
                     stock = Stock.objects.get(ticker=ticker, exchange=exchange)
+                    if stock.ticker == 'AAPL':
+                        print('THIS IS APPLE WORK BUM')
                     get_yahoo_data(stock)
 
         return tickers
