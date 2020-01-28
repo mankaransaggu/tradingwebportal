@@ -114,7 +114,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.live_result += pos.get_current_data().result * rate.close
             self.save()
 
-        return self.live_result
+        return round(self.live_result, 2)
 
     def get_account_value(self):
         open_positions = Position.objects.filter(user=self, open=True)
@@ -128,7 +128,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.value = self.funds + account_value
         self.save()
 
-        return self.value
+        return round(self.value, 2)
 
 
 def account_post_save(sender, instance, signal, *arg, **kwargs):
@@ -413,6 +413,24 @@ class Position(models.Model):
             self.save()
 
         return self
+
+    def get_user_currency(self):
+        self.get_current_data()
+
+        user = User.objects.get(id=self.user.pk)
+        user_currency = user.base_currency
+        instrument_curreny = self.stock.get_currency()
+        fx = FX.objects.get(from_currency=instrument_curreny.pk, to_currency=user_currency.pk)
+        rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp')
+        rate = rate.first()
+
+        converted = Position
+        converted.value = round(self.value * rate.close, 2)
+        converted.open_price = round(self.open_price * rate.close, 2)
+        converted.close_price = round(self.close_price * rate.close, 2)
+        converted.current_price = round(self.stock.get_current_data().close * rate.close, 2)
+        converted.result = round(self.result * rate.close, 2)
+        return converted
 
     class Meta:
         db_table = 'positions'

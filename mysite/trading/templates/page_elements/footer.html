@@ -15,7 +15,7 @@
             </div>
 
             <div class="col-5 align-middle">
-                <p class="ml-auto mr-1  text-white text-right">Currency: {{user.base_currency.code}} | Free Funds: {{user.funds}} | Live Result: {{ user.get_live_result }} | Account Value: {{ user.get_account_value }}</p>
+                <p class="ml-auto mr-1  text-white text-right">Currency: {{user.base_currency.code}} | Free Funds: {{user.funds}} | Live Result: {{user.get_live_result}} | Account Value: {{user.get_account_value}}</p>
             </div>
         </div>
 
@@ -47,13 +47,13 @@
                                 <th scope="row">{{position.id}}</th>
                                 <td>{{position.open_date}}</td>
                                 <td><a href="{% url 'stock' position.instrument.id %}">{{position.instrument}}</a></td>
-                                <td><a href="{% url 'currency' position.instrument.get_currency.pk %}">{{position.instrument.get_currency.code}}</a></td>
+                                <td><a href="{% url 'currency' position.instrument.get_currency.pk %}">{{position.user.base_currency.code}}</a></td>
                                 <td>{{position.direction}}</td>
                                 <td>{{position.quantity}}</td>
-                                <td>{{position.open_price}}</td>
-                                <td>{{position.stock.get_current_data.close}}</td>
-                                <td>{{position.get_current_data.result}}</td>
-                                <td>{{position.get_current_data.value}}</td>
+                                <td>{{position.get_user_currency.open_price}}</td>
+                                <td>{{position.get_user_currency.current_price}}</td>
+                                <td>{{position.get_user_currency.result}}</td>
+                                <td>{{position.get_user_currency.value}}</td>
 
                                 <td class="text-center">
                                     <a href="{% url 'close_position' position.id %}">

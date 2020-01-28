@@ -1,13 +1,11 @@
 <!-- THIS NEEDS REWORKING ITS MESSY -->
 
 <!-- Data Box -->
-<div class="row">
+<div class="row p-2 b-1">
     <div class="col-12">
         <div class="card">
             {% include 'stock/includes/components/historic_data_header.html' %}
             <div class="card-body">
-                <h3 class="card-title">Market Data</h3>
-                <h5>{{ stock.ticker }}/{{ stock.name  }}</h5>
                 <div class="tab-content mt-3">
                     {% include 'stock/includes/components/historic_data_tab_panes.html' %}
                 </div>
