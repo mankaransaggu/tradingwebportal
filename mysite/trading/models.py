@@ -107,19 +107,28 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.live_result = 0
 
         for pos in open_positions:
-            self.live_result = self.live_result + pos.get_current_data().result
+            currency = pos.instrument.exchange.get_currency()
+            fx = FX.objects.get(from_currency=currency, to_currency=self.base_currency)
+            rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
+
+            self.live_result += pos.get_current_data().result * rate.close
             self.save()
 
         return self.live_result
 
     def get_account_value(self):
         open_positions = Position.objects.filter(user=self, open=True)
-        position_value = 0
+        account_value = 0
         for position in open_positions:
-            position_value += position.value
+            currency = position.instrument.exchange.get_currency()
+            fx = FX.objects.get(from_currency=currency, to_currency=self.base_currency)
+            rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
+            account_value += position.value * rate.close
 
-        self.value = self.funds + position_value
+        self.value = self.funds + account_value
         self.save()
+
+        return self.value
 
 
 def account_post_save(sender, instance, signal, *arg, **kwargs):
