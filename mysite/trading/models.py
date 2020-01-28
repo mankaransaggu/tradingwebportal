@@ -72,7 +72,6 @@ class UserAccountManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-
     REQUIRED_FIELDS = []
     USERNAME_FIELD = 'email'
 
@@ -83,8 +82,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField('first_name', blank=False, null=False, max_length=100)
 
     value = models.DecimalField('account_value', blank=False, null=False, decimal_places=2, max_digits=12, default=0)
+    funds = models.DecimalField('account_funds', blank=False, null=False, decimal_places=2, max_digits=12, default=0)
+
     result = models.DecimalField('account_result', blank=True, null=False, decimal_places=2, max_digits=12, default=0)
-    live_result = models.DecimalField('live_result', blank=False, null=False, decimal_places=2, max_digits=12, default=0)
+    live_result = models.DecimalField('live_result', blank=False, null=False, decimal_places=2, max_digits=12,
+                                      default=0)
 
     is_verified = models.BooleanField('verified', default=False)
     verification_uuid = models.UUIDField('Unique Verification UUID', default=uuid.uuid4)
@@ -93,6 +95,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField('active', default=True)
     date_joined = models.DateTimeField('date_joined', default=django.utils.timezone.now)
     last_login = models.DateTimeField('last_login', default=django.utils.timezone.now)
+
+    base_currency = models.ForeignKey(Currency, related_name='base_currency', blank=False, null=False,
+                                      on_delete=models.CASCADE)
 
     def __unicode__(self):
         return self.email
@@ -106,6 +111,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.save()
 
         return self.live_result
+
+    def get_account_value(self):
+        open_positions = Position.objects.filter(user=self, open=True)
+        position_value = 0
+        for position in open_positions:
+            position_value += position.value
+
+        self.value = self.funds + position_value
+        self.save()
 
 
 def account_post_save(sender, instance, signal, *arg, **kwargs):
@@ -393,7 +407,3 @@ class Position(models.Model):
 
     class Meta:
         db_table = 'positions'
-
-
-
-

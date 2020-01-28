@@ -122,7 +122,8 @@ def edit_account(request):
             form = EditAccountForm(request.POST, instance=request.user)
 
             if form.is_valid():
-                form.save()
+                user = form.save(commit=False)
+                request.user.get_account_value()
                 return redirect('/account')
 
         else:

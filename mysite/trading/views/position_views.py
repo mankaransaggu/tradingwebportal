@@ -45,14 +45,21 @@ class OpenPositionForm(FormView):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
         elif form.is_valid:
-            post = form.save(commit=False)
-            post.user = self.request.user
-            post.position_state = 'Open'
-            #post.position_value =
-            post.save()
+            user = self.request.user
 
-            user.value = post.open_price * post.quantity
-            user.save()
+            post = form.save(commit=False)
+            post.user = user
+            post.value = post.open_price * post.quantity
+
+            if user.funds < post.value:
+                messages.warning(request, 'You do not have the required funds to open this position')
+            else:
+                post.position_state = 'Open'
+                post.save()
+
+                user.funds - post.value
+                user.save()
+                user.get_account_value()
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 

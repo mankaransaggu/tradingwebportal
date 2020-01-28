@@ -10,7 +10,13 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'password1', 'password2')
+        fields = ('first_name',
+                  'last_name',
+                  'email',
+                  'password1',
+                  'password2',
+                  'funds',
+                  'base_currency',)
     #
     # def save(self, commit=True):
     #     user = super(SignUpForm, self).save(commit=False)
@@ -24,6 +30,7 @@ class LoginForm(AuthenticationForm):
         Model = User
         fields = ('email', 'password')
 
+
 class EditAccountForm(UserChangeForm):
 
     class Meta:
@@ -32,6 +39,8 @@ class EditAccountForm(UserChangeForm):
             'email',
             'first_name',
             'last_name',
+            'funds',
+            'base_currency',
             'password',
         )
 

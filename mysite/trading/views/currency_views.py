@@ -6,8 +6,10 @@ from ..models import Currency, FX
 
 
 class CurrencyListView(generic.ListView):
+    model = Currency
     template_name = 'currency/currency_list.html'
     context_object_name = 'currencies'
+    paginate_by = 50
 
     def get_queryset(self):
         return Currency.objects.all().order_by('-active')

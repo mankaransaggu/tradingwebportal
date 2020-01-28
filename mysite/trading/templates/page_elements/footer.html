@@ -2,11 +2,11 @@
 
 
         <div class="row">
-            <div class="col-3 align-middle">
+            <div class="col-5 align-middle">
                 <p class="ml-1 text-white text-left"><a href="{% url 'account'%}">{{ user.email }}</a></p>
             </div>
 
-            <div class="col-6 align-middle">
+            <div class="col-2 align-middle">
                 <h4 class="text-center">
                     <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
                         <i class="fas fa-arrows-alt-v text-center"></i>
@@ -14,8 +14,8 @@
                 </h4>
             </div>
 
-            <div class="col-3 align-middle">
-                <p class="ml-auto mr-1  text-white text-right">Live Result: £{{ user.get_live_result }} | Account Value: £{{ user.value }}</p>
+            <div class="col-5 align-middle">
+                <p class="ml-auto mr-1  text-white text-right">Currency: {{user.base_currency.code}} | Free Funds: {{user.funds}} | Live Result: {{ user.get_live_result }} | Account Value: {{ user.value }}</p>
             </div>
         </div>
 

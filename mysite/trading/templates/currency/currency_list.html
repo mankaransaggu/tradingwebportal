@@ -2,32 +2,33 @@
 {% block content %}
 
 <div class="container-fluid">
-      {% include "page_elements/paginator_nav.html" %}
+
+    {% include "page_elements/paginator_nav.html" %}
 
     <table class="table table-hover table-striped shadow-sm">
 
         <thead class="thead-dark">
-            <tr>
-                <th scope="col">Code</th>
-                <th scope="col">Symbol</th>
-                <th scope="col">Name</th>
-                <th scope="col">Active</th>
-            </tr>
+        <tr>
+            <th scope="col">Code</th>
+            <th scope="col">Symbol</th>
+            <th scope="col">Name</th>
+            <th scope="col">Active</th>
+        </tr>
         </thead>
 
         <tbody>
-            {% for currency in currencies %}
-                <tr>
-                    <td><a href="{% url 'currency' currency.id %}">{{currency.code}}</a></td>
-                    <td>{{currency.symbol}}</td>
-                    <td>{{currency.name}}</td>
-                    <td>{{currency.active}}</td>
-                </tr>
-            {% endfor %}
+        {% for currency in currencies %}
+        <tr>
+            <td><a href="{% url 'currency' currency.id %}">{{currency.code}}</a></td>
+            <td>{{currency.symbol}}</td>
+            <td>{{currency.name}}</td>
+            <td>{{currency.active}}</td>
+        </tr>
+        {% endfor %}
         </tbody>
 
     </table>
 
-      {% include "page_elements/paginator_nav.html" %}
+    {% include "page_elements/paginator_nav.html" %}
 </div>
 {% endblock %}
