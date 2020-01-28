@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
-from django.contrib.auth.models import User
 from . import models
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 class SignUpForm(UserCreationForm):
@@ -9,11 +10,25 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+        fields = ('first_name',
+                  'last_name',
+                  'email',
+                  'password1',
+                  'password2',
+                  'funds',
+                  'base_currency',)
     #
     # def save(self, commit=True):
     #     user = super(SignUpForm, self).save(commit=False)
     #     user
+
+
+class LoginForm(AuthenticationForm):
+    email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
+
+    class Meta:
+        Model = User
+        fields = ('email', 'password')
 
 
 class EditAccountForm(UserChangeForm):
@@ -24,8 +39,10 @@ class EditAccountForm(UserChangeForm):
             'email',
             'first_name',
             'last_name',
+            'funds',
+            'base_currency',
             'password',
-            )
+        )
 
 
 class CreatePositionForm(forms.ModelForm):

@@ -1,0 +1,33 @@
+{% extends "page_elements/header.html"  %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-10">
+            <span>
+                <strong>{{currency.code}} - {{currency.name}}</strong>
+            </span>
+        </div>
+
+        <div class="col-2">
+            <strong>Pairs</strong>
+            <div class="border shadow-sm">
+                {% for pair in currency.get_pairs %}
+                    <a href="{% url 'fx_pair' pair.id %}" class="btn btn-primary w-100 mb-1">
+                        {{pair.code}}
+                        {% if pair.get_current_data %}
+                        - {{pair.get_current_data.close}}
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}

@@ -1,6 +1,6 @@
 from ..change_calc import get_change_percent, get_change
 from ..stock.stock_dates import *
-from ..stock.stock_charts import create_stock_chart, create_intraday_chart, create_stock_change
+from ..stock.stock_charts import create_stock_chart, create_intraday_chart
 from ...models import Stock
 
 
@@ -33,8 +33,8 @@ def get_view_context(context):
 
 
 def create_detail_data(stock, context):
-    context['historic_graph'] = create_stock_chart(365, stock)
-    context['intraday_graph'] = create_intraday_chart(stock)
+    #context['historic_graph'] = create_stock_chart(365, stock)
+    #context['intraday_graph'] = create_intraday_chart(stock)
 
     context['latest'] = get_latest(stock)
     context['yesterday'] = get_yesterday(stock)
@@ -45,8 +45,6 @@ def create_detail_data(stock, context):
     context['earliest'] = get_earliest(stock)
 
     get_view_context(context)
-
-    context['summary'] = create_stock_change(stock)
 
 
 def get_latest_stock_details(context):

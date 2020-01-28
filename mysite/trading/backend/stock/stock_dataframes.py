@@ -1,16 +1,16 @@
 import MySQLdb
 import requests
 import sqlalchemy
-from django.contrib import messages
 from django.db import IntegrityError
 from alpha_vantage.timeseries import TimeSeries
 from ...models import StockPriceData, Stock
 import pandas as pd
 import datetime as dt
 from django_pandas.io import read_frame
+from ...models import DataType
 
 
-def stock_df(days, stock):
+def get_stock_df(days, stock):
     try:
         date = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(days), '%Y-%m-%d')
         qs = StockPriceData.objects.filter(stock_id=stock.pk, timestamp__gte=date)
@@ -23,12 +23,11 @@ def stock_df(days, stock):
         df.index = pd.to_datetime(df.index)
 
         return df
+    except TypeError:
+        return None
 
-    except:
-        return print('No stock with provided ticker')
 
-
-def real_time_df(stock):
+def get_real_time_df(stock):
 
     try:
         stock = Stock.objects.get(id=stock.pk)
@@ -39,6 +38,7 @@ def real_time_df(stock):
             columns={'2. high': 'high', '3. low': 'low', '1. open': 'open', '4. close': 'close',
                      '5. volume': 'volume'})
         df['stock'] = stock
+        df['data_type'] = DataType.objects.get(code='INTRADAY')
         df.rename_axis('timestamp', axis='index', inplace=True)
         df.index = pd.to_datetime(df.index)
 
@@ -53,20 +53,18 @@ def real_time_df(stock):
 
 def df_to_sql(df):
     # Flip the data in the df, so it goes from latest to earliest data
-    df = df.iloc[::-1]
+    df = df.iloc[:-1]
     for row in df.itertuples():
 
         try:
             print(row)
-            stock = getattr(row, 'stock')
-
             StockPriceData.objects.create(timestamp=getattr(row, 'Index'), high=getattr(row, 'high'),
                                           low=getattr(row, 'low'), open=getattr(row, 'open'),
                                           close=getattr(row, 'close'), volume=getattr(row, 'volume'),
-                                          stock=getattr(row, 'stock'))
+                                          stock=getattr(row, 'stock'), data_type=getattr(row, 'data_type'))
 
         except (IntegrityError, sqlalchemy.exc.IntegrityError, MySQLdb._exceptions.IntegrityError):
-            print('Data {} already exists'.format(stock))
+            print('Data {} already exists'.format(getattr(row, 'stock')))
             break
 
 

@@ -1,4 +1,4 @@
-<nav id="sidebar" class="active shadow-lg">
+<nav id="sidebar" class="active shadow sticky">
 
     <div class="sidebar-header">
         <h3>Baker Financial</h3>
@@ -6,12 +6,48 @@
     </div>
 
     <ul class="list-unstyled components">
-{% if user.is_authenticated %}
-        {% for fav in favourites %}
-        <div class="row justify-content-center" style="width:100%">
-            <a href="{% url 'equity' fav.id %}"><button class="btn btn-primary text-center" style="width:90%">{{ fav.ticker }}</button></a>
+        {% if user.is_authenticated %}
+
+        <div class="list-group">
+
+            {% for fav in favourites %}
+            <div class="list-group-item border-top border-bottom border-left-0 border-right-0 border-primary" style="background-color: #343a40">
+                <div class="m-1" id="favourite-container">
+
+                    <div class="row">
+                        <div class="col-10 text-left">
+                            <p class="text-white font-weight-bold">{{fav.ticker}} - {{fav.get_currency.code}}</p>
+                        </div>
+
+                        <div class="col-2">
+                            <a href="{% url 'favourite_stock' fav.id %}">
+                                <i class="fas fa-times-circle"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row pb-2">
+                        <div class="col-12">
+                            <div class="text-white text-left font-weight-bold">{{fav.get_current_data.close}} | {{fav.get_change}} <sup>{{fav.get_change_perc}}%</sup></div>
+                        </div>
+                    </div>
+
+                    <div class="row justify-content-between">
+                        <div class="col-5">
+                            <a class="btn btn-primary" href="{% url 'stock' fav.id %}">View</a>
+                        </div>
+
+                        <div class="col-5">
+                            <a class="btn btn-primary" href="{% url 'open_position' fav.id %}">Open</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-{% endif %}
+
+        {% endif %}
     </ul>
+
 </nav>

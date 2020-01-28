@@ -1,12 +1,15 @@
 from itertools import count
 
-from alpha_vantage.timeseries import TimeSeries
 from django.contrib import messages
 from django.views.generic import TemplateView
 
 from ..backend.account import account_bookmarks, account_positions
 from ..backend.exchange.exchange import NYSE, NASDAQ
 from ..models import Stock
+from ..backend.stock.stock_data import update_market_data
+from ..backend.fx.fx_data import save_pairs_and_data
+from ..backend.fx.currency import save_currencies
+from ..backend.fx.fx_data import get_fx_data
 
 
 class SearchView(TemplateView):
@@ -31,27 +34,47 @@ class Setting(TemplateView):
         request = self.request
         user = request.user
 
-        account_bookmarks.get_user_favourites(user, context)
-        account_positions.get_open_positions(user, context)
+        if user.is_authenticated:
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
-        if setting == 'download-nyse':
-            NYSE().save_stocks()
-            messages.success(request, "%s SQL statements were executed." % count)
+            if setting == 'download-nyse':
+                NYSE().save_stocks()
+                messages.success(request, "%s SQL statements were executed." % count)
 
-        if setting == 'download-nasdaq':
-            NASDAQ().save_stocks()
-            messages.success(request, "%s SQL statements were executed." % count)
+            if setting == 'download-nasdaq':
+                NASDAQ().save_stocks()
+                messages.success(request, "%s SQL statements were executed." % count)
 
-        if setting == 'update-nasdaq':
-            NASDAQ().update_market_data()
-            messages.success(request, "%s SQL statements were executed." % count)
+            if setting == 'download-stocks':
+                NYSE().save_stocks()
+                print('NYSE complete')
+                NASDAQ().save_stocks()
+                print('NASDAQ complete')
 
-        if setting == 'update-nyse':
-            NYSE().update_market_data()
-            messages.success(request, "Update success with new class")
+            if setting == 'update-stocks':
+                update_market_data()
 
-        if setting == 'yahoo':
-            ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
-            data, meta_data = ts.get_intraday(symbol='AAPL')
-            print(data)
+            if setting == 'fx-pairs':
+                save_pairs_and_data()
 
+            if setting == 'get-currency':
+                save_currencies()
+
+            if setting == 'get-fx':
+                get_fx_data()
+
+            if setting == 'te':
+                print()
+            # if setting == 'yahoo':
+            #     ts = TimeSeries(key='3GVY8HKU0D7L550R', output_format='pandas')
+            #     data, meta_data = ts.get_intraday(symbol='AAPL')
+            #     print(data)
+            #
+            # if setting == 'fx':
+            #     fx = ForeignExchange(key='3GVY8HKU0D7L550R', output_format='pandas')
+            #     data, meta_data = fx.get_currency_exchange_daily('USD', 'GBP')
+            #     print(data)
+
+
+        return context

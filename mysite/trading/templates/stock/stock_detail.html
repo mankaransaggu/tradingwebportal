@@ -3,30 +3,33 @@
 {% block content %}
 <div class="container-fluid">
 
-    <div class="row">
-        <div class="col-12">
+    <div class="row justify-content-between">
+        <div class="col-4 align-self-center">
+            <h4 class="align-text-top">
+                {{stock.ticker}} - {{stock.name}}
+                <small class="text-muted">{{stock.get_current_data.close}} | {{stock.get_change}} <sup>{{stock.get_change_perc}}%</sup></small>
+            </h4>
+        </div>
 
-            <span>
-                <strong>{{ stock.ticker }} / {{ stock.name }}</strong>
-                <a href="{% url 'open_position' id=stock.id %}"><button class="btn btn-primary">Open Position</button></a>
+        <div class="col-auto align-self-center">
+            <a class="align-middle" href="{% url 'open_position' id=stock.id %}"><button class="btn btn-primary shadow-sm">Open Position</button></a>
 
-                {% if is_favourite %}
-                <a href="{% url 'favourite_stock' id=stock.id %}"><button class="btn btn-primary"><i class="fas fa-bookmark"></i></button></a>
-                {% else %}
-                <a href="{% url 'favourite_stock' id=stock.id %}"><button class="btn btn-primary"><i class="far fa-bookmark"></i></button></a>
-                {% endif %}
-            </span>
-
+            {% if is_favourite %}
+            <a class="align-middle" href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x shadow-sm"></i></a>
+            {% else %}
+            <a class="align-middle" href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x shadow-sm"></i></a>
+            {% endif %}
         </div>
     </div>
 
-    <br>
-    {% include "stock/includes/stock_charts.html" %}
-    {% include "stock/includes/stock_change_summary.html" %}
-    {% include "stock/includes/stock_historic_data.html" %}
-    <br>
-    {% include "stock/includes/positions_box.html" %}
-
-
 </div>
+
+<br>
+{% include "stock/includes/stock_charts.html" %}
+{% include "stock/includes/stock_change_summary.html" %}
+{% include "stock/includes/stock_historic_data.html" %}
+<br>
+{% include "stock/includes/positions_box.html" %}
+
+
 {% endblock %}

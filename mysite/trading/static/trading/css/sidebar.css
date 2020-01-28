@@ -16,17 +16,6 @@
     color: #FFFFFF;
 }
 
-#sidebar ul.components {
-    padding: 10px;
-}
-
-#sidebar ul a {
-    margin: 10px;
-    font-size: 1.1em;
-    display: block;
-    width: 100% !important;
-}
-
 /*----------------------------------
     SIDEBAR BUTTON
 ----------------------------------*/

@@ -4,10 +4,12 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.views.generic import FormView
 
-from ..backend.stock.stock_dates import get_latest
+from ..backend.fx.fx_data import get_exchange_rate
 from ..backend.account import account_bookmarks, account_positions
 from ..forms import CreatePositionForm
-from ..models import Stock, Account, Position
+from ..models import Stock, User, Position
+from ..backend.stock.stock_dates import get_latest
+from django.utils import timezone
 
 
 class OpenPositionForm(FormView):
@@ -36,17 +38,39 @@ class OpenPositionForm(FormView):
     def form_valid(self, form):
         request = self.request
         user = request.user
-        account = Account.objects.get(id=user.id)
+        user = User.objects.get(id=user.id)
 
-        post = form.save(commit=False)
-        post.account_id = self.request.user.pk
-        post.position_state = 'Open'
-        post.save()
+        if not user.is_verified:
+            messages.info(request, 'Please verify your account before opening positions')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-        account.value = post.open_price * post.quantity
-        account.save()
+        elif form.is_valid:
+            user = self.request.user
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            post = form.save(commit=False)
+            post.user = user
+            post.value = post.open_price * post.quantity
+
+            stock = post.stock
+            stock_currency = stock.exchange.get_currency()
+
+            if stock_currency is not user.base_currency:
+                rate = get_exchange_rate(stock_currency, user.base_currency)
+                post.value = post.value * rate.close
+                print('rate {}'.format(rate.close))
+                print('value {}'.format(post.value))
+
+            if user.funds < post.value:
+                messages.warning(request, 'You do not have the required funds to open this position')
+            else:
+                post.position_state = 'Open'
+                post.save()
+
+                user.funds = user.funds - post.value
+                user.save()
+                user.get_account_value()
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
     def get_context_data(self, **kwargs):
         context = super(OpenPositionForm, self).get_context_data(**kwargs)
@@ -64,14 +88,14 @@ class OpenPositionForm(FormView):
 def close_position(request, id):
     position = Position.objects.get(id=id)
     user = request.user
-    account = Account.objects.get(id=user.id)
+    account = User.objects.get(id=user.id)
 
     stock = Stock.objects.get(ticker=position.instrument)
-    close = stock_data.get_latest(stock)
+    close = get_latest(stock)
     close_price = close.close
 
     position.close_price = close_price
-    position.close_date = datetime.now()
+    position.close_date = timezone.now()
     position.open = False
 
     if position.direction == 'BUY':
@@ -82,10 +106,10 @@ def close_position(request, id):
     position.result = result
     if result > 0:
         account.value = account.value + result
-        account.earned = account.earned + result
+        account.result = account.result  + result
     else:
         account.value = account.value - result
-        account.earned = account.earned - result
+        account.result = account.result - result
 
     position.save()
     account.save()

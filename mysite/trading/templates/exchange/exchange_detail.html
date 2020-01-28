@@ -1,0 +1,35 @@
+{% extends "page_elements/header.html"  %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-10">
+            <span>
+                <strong>{{exchange.code}} - {{exchange.name}}</strong>
+            </span>
+        </div>
+
+        <div class="col-2">
+            <strong>Stocks</strong>
+
+            <div class="border shadow-sm" id="exchange-stocks">
+                {% for stock in exchange.get_listed_stocks %}
+
+                    <a href="{% url 'stock' stock.id %}" class="btn btn-primary w-100 mb-1">
+                        <p class="text-center font-weight-bold m-0 p-0">{{stock.ticker}}</p>
+                        <p class="m-0 p-0">{{stock.get_currency.code}} {{stock.get_current_data.close}}</p>
+                        <p class="text-white font-weight-light m-0 p-0">{{stock.get_change}} | {{stock.get_change_perc}}%</p>
+                    </a>
+
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}
