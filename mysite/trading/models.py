@@ -336,7 +336,7 @@ class FXPriceData(models.Model):
     data_type = models.ForeignKey(DataType, default=1, null=False, blank=False, on_delete=models.CASCADE)
 
     def __str__(self):
-        string = self.currency_pair.code + ' ' + self.timestamp
+        string = self.currency_pair.code + ' ' + str(self.timestamp)
         return string
 
     class Meta:

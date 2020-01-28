@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.views.generic import FormView
 
-from ..backend.stock.stock_dates import get_latest
+from ..backend.fx.fx_data import get_exchange_rate
 from ..backend.account import account_bookmarks, account_positions
 from ..forms import CreatePositionForm
 from ..models import Stock, User, Position
@@ -51,13 +51,22 @@ class OpenPositionForm(FormView):
             post.user = user
             post.value = post.open_price * post.quantity
 
+            stock = post.stock
+            stock_currency = stock.exchange.get_currency()
+
+            if stock_currency is not user.base_currency:
+                rate = get_exchange_rate(stock_currency, user.base_currency)
+                post.value = post.value * rate.close
+                print('rate {}'.format(rate.close))
+                print('value {}'.format(post.value))
+
             if user.funds < post.value:
                 messages.warning(request, 'You do not have the required funds to open this position')
             else:
                 post.position_state = 'Open'
                 post.save()
 
-                user.funds - post.value
+                user.funds = user.funds - post.value
                 user.save()
                 user.get_account_value()
 
