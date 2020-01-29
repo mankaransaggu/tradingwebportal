@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.views import generic
 
 from ..backend.stock.stock_detail_data import create_detail_data
+from ..backend.stock.stock_data import get_stock_data
 from ..backend.account import account_bookmarks, account_positions
 from ..models import Stock
 
@@ -43,6 +44,7 @@ class StockDetailView(generic.DetailView):
         pk = self.kwargs['pk']
 
         stock = get_object_or_404(Stock, pk=pk)
+        get_stock_data(stock)
         # Creates the stock charts and the change summary
         create_detail_data(stock, context)
 

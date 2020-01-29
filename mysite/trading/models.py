@@ -108,11 +108,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         for pos in open_positions:
             currency = pos.instrument.exchange.get_currency()
-            fx = FX.objects.get(from_currency=currency, to_currency=self.base_currency)
-            rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
 
-            self.live_result += pos.get_current_data().result * rate.close
-            self.save()
+            if currency != self.base_currency:
+                fx = FX.objects.get(from_currency=currency, to_currency=self.base_currency)
+                rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
+                self.live_result += pos.get_current_data().result * rate.close
+                self.save()
 
         return round(self.live_result, 2)
 
@@ -121,14 +122,29 @@ class User(AbstractBaseUser, PermissionsMixin):
         account_value = 0
         for position in open_positions:
             currency = position.instrument.exchange.get_currency()
-            fx = FX.objects.get(from_currency=currency, to_currency=self.base_currency)
-            rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
-            account_value += position.value * rate.close
+
+            if currency == self.base_currency:
+                account_value += position.value
+            else:
+                fx = FX.objects.get(from_currency=currency, to_currency=self.base_currency)
+                rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
+                account_value += position.value * rate.close
 
         self.value = self.funds + account_value
         self.save()
 
         return round(self.value, 2)
+
+    def change_currency(self, prev_curr):
+        if prev_curr != self.base_currency:
+            fx = FX.objects.get(from_currency=prev_curr, to_currency=self.base_currency)
+            rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
+
+            self.result = self.result * rate.close
+            self.value = self.value * rate.close
+            self.funds = self.funds * rate.close
+            self.live_result = self.live_result * rate.close
+            self.save()
 
 
 def account_post_save(sender, instance, signal, *arg, **kwargs):
@@ -420,17 +436,21 @@ class Position(models.Model):
         user = User.objects.get(id=self.user.pk)
         user_currency = user.base_currency
         instrument_curreny = self.stock.get_currency()
-        fx = FX.objects.get(from_currency=instrument_curreny.pk, to_currency=user_currency.pk)
-        rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp')
-        rate = rate.first()
 
-        converted = Position
-        converted.value = round(self.value * rate.close, 2)
-        converted.open_price = round(self.open_price * rate.close, 2)
-        converted.close_price = round(self.close_price * rate.close, 2)
-        converted.current_price = round(self.stock.get_current_data().close * rate.close, 2)
-        converted.result = round(self.result * rate.close, 2)
-        return converted
+        if user_currency != instrument_curreny:
+            fx = FX.objects.get(from_currency=instrument_curreny.pk, to_currency=user_currency.pk)
+            rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp')
+            rate = rate.first()
+
+            converted = Position
+            converted.value = round(self.value * rate.close, 2)
+            converted.open_price = round(self.open_price * rate.close, 2)
+            converted.close_price = round(self.close_price * rate.close, 2)
+            converted.current_price = round(self.stock.get_current_data().close * rate.close, 2)
+            converted.result = round(self.result * rate.close, 2)
+            return converted
+        else:
+            return self
 
     class Meta:
         db_table = 'positions'

@@ -53,7 +53,7 @@ def get_stock_data(stock):
             columns={'1. open': 'open', '2. high': 'high', '3. low': 'low', '4. close': 'close',
                      '5. adjusted close': 'adj_close', '6. volume': 'volume', '7. dividend amount': 'dividend',
                      '8. split coefficient': 'split_coefficient'})
-        df['instrument_id'] = stock.pk
+        df['stock'] = stock
         df['data_type'] = DataType.objects.get(code='INTRADAY')
         df.rename_axis('timestamp', axis='index', inplace=True)
 

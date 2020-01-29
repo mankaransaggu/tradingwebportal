@@ -52,8 +52,10 @@ def save_pairs_and_data():
 
 
 def get_exchange_rate(from_currency, to_currency):
-    fx = FX.objects.get(from_currency=from_currency, to_currency=to_currency)
-    rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
-
-    return rate
+    if from_currency != to_currency:
+        fx = FX.objects.get(from_currency=from_currency, to_currency=to_currency)
+        rate = FXPriceData.objects.filter(currency_pair=fx).order_by('-timestamp').first()
+        return rate.close
+    else:
+        return 1
 
