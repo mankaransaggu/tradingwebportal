@@ -56,8 +56,8 @@ class OpenPositionForm(FormView):
 
             if stock_currency is not user.base_currency:
                 rate = get_exchange_rate(stock_currency, user.base_currency)
-                post.value = post.value * rate.close
-                print('rate {}'.format(rate.close))
+                post.value = post.value * rate
+                print('rate {}'.format(rate))
                 print('value {}'.format(post.value))
 
             if user.funds < post.value:
@@ -106,7 +106,7 @@ def close_position(request, id):
     position.result = result
     if result > 0:
         account.value = account.value + result
-        account.result = account.result  + result
+        account.result = account.result + result
     else:
         account.value = account.value - result
         account.result = account.result - result

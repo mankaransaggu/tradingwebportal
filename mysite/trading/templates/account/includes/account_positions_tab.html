@@ -13,6 +13,7 @@
                         <th scope="col">Open Date</th>
                         <th scope="col">Close Date</th>
                         <th scope="col">Instrument</th>
+                        <th scope="col">Currency</th>
                         <th scope="col">Direction</th>
                         <th scope="col">Quantity</th>
                         <th scope="col">Open Price</th>
@@ -30,10 +31,11 @@
                         <td>{{position.open_date}}</td>
                         <td>{{position.close_date}}</td>
                         <td> <a href="{% url 'stock' position.instrument.id %}">{{position.instrument}}</a></td>
+                        <td> <a href="{% url 'currency' position.instrument.get_currency.pk %}">{{position.instrument.get_currency.code}}</a></td>
                         <td>{{position.direction}}</td>
                         <td>{{position.quantity}}</td>
-                        <td>{{position.instrument.get_currency.get_identifier}}{{position.open_price}}</td>
-                        <td>{{position.instrument.get_currency.get_identifier}}{{position.close_price}}</td>
+                        <td>{{position.open_price}}</td>
+                        <td>{{position.close_price}}</td>
                         <td>
                             {% if position.open == True %}
                             Open
@@ -41,7 +43,7 @@
                             Closed
                             {% endif %}
                         </td>
-                        <td>{{position.instrument.get_currency.get_identifier}}{{position.result}}</td>
+                        <td>{{position.result}}</td>
 
                         <td class="text-center">
                             {% if position.open == True %}
@@ -66,6 +68,7 @@
                         <td>{{position.open_date}}</td>
                         <td>{{position.close_date}}</td>
                         <td> <a href="{% url 'stock' position.instrument.id %}">{{position.instrument}}</a></td>
+                        <td> <a href="{% url 'currency' position.instrument.get_currency.pk %}">{{position.instrument.get_currency.code}}</a></td>
                         <td>{{position.direction}}</td>
                         <td>{{position.quantity}}</td>
                         <td>{{position.instrument.get_currency.get_identifier}}{{position.open_price}}</td>

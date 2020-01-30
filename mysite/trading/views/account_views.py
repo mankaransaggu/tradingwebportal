@@ -122,8 +122,11 @@ def edit_account(request):
             form = EditAccountForm(request.POST, instance=request.user)
 
             if form.is_valid():
+                prev_currency = request.user.base_currency
                 user = form.save(commit=False)
-                request.user.get_account_value()
+                user.change_currency(prev_currency)
+                user.get_account_value()
+
                 return redirect('/account')
 
         else:
