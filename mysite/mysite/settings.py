@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'trading_test',
+        'NAME': 'trading_dev',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
