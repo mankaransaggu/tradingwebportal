@@ -4,14 +4,16 @@
 <div class="container-fluid">
 
     <div class="row justify-content-between">
-        <div class="col-4 align-self-center">
+        <div class="col-12 align-self-center">
+
             <h4 class="align-text-top">
                 {{stock.ticker}} - {{stock.name}}
-                <small class="text-muted">{{stock.get_current_data.close}} | {{stock.get_change}} <sup>{{stock.get_change_perc}}%</sup></small>
+                <small class="text-muted">{{stock.get_current_data.close}} | {{stock.get_change}}
+                    <sup>{{stock.get_change_perc}}%</sup>
+                    {{stock.get_current_data.timestamp}}
+                </small>
             </h4>
-        </div>
 
-        <div class="col-auto align-self-center">
             <a class="align-middle" href="{% url 'open_position' id=stock.id %}"><button class="btn btn-primary shadow-sm">Open Position</button></a>
 
             {% if is_favourite %}

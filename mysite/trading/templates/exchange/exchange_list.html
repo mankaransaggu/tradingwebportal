@@ -22,7 +22,7 @@
             <td><a href="{% url 'exchange' exchange.id %}">{{exchange.code}}</a></td>
             <td>{{exchange.name}}</td>
             <td>{{exchange.country}}</td>
-            <td>{{exchange.get_currency.code}} : {{exchange.get_currency.get_identifier}}</td>
+            <td><a href="{% url 'currency' exchange.get_currency.pk %}">{{exchange.get_currency.code}}</a></td>
             <td>{{exchange.get_stock_count}}</td>
         </tr>
         {% endfor %}

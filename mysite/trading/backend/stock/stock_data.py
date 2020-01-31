@@ -70,7 +70,7 @@ def update_market_data():
 
     for stock in Stock.objects.all():
 
-        latest = StockPriceData.objects.filter(instrument=stock).order_by('-timestamp')[:1]
+        latest = StockPriceData.objects.filter(stock=stock).order_by('-timestamp')[:1]
         if latest.exists():
             latest = latest.first()
             start = latest.timestamp.date() + dt.timedelta(1)
@@ -84,7 +84,7 @@ def update_market_data():
                     df = df.rename(
                         columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                                  'Volume': 'volume', 'Adj Close': 'adj_close'})
-                    df['instrument_id'] = stock.pk
+                    df['stock'] = stock
                     df['data_type'] = DataType.objects.get(code='DAILY')
                     df.index.names = ['timestamp']
 

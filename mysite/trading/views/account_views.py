@@ -12,7 +12,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth import get_user_model
 
 from ..backend.account import account_bookmarks, account_positions
-from ..forms import SignUpForm, EditAccountForm
+from ..forms import SignUpForm, EditAccountForm, AddFundsForm
 from ..models import User
 User = get_user_model()
 
@@ -129,14 +129,43 @@ def edit_account(request):
 
                 return redirect('/account')
 
-        else:
-            form = EditAccountForm(instance=request.user)
-            args = {'form': form}
-            return render(request,
-                          'account/edit_account.html',
-                          args)
+            else:
+                form = EditAccountForm(instance=request.user)
+                args = {'form': form}
+                return render(request,
+                              'account/edit_account.html',
+                              args)
     else:
         return redirect('login')
+
+
+def add_funds(request):
+    user = request.user
+    if user.is_authenticated:
+        if request.method == 'POST':
+            form = AddFundsForm(request.POST, instance=user)
+
+            if user.is_verified:
+                if form.is_valid():
+                    form = form.save(commit=False)
+                    user.funds += form.funds
+                    user.save()
+                    return redirect('account')
+                else:
+                    return redirect('add_funds')
+            else:
+                messages.info(request, 'Please verify your account before adding funds to your account')
+                redirect('account')
+
+        else:
+            form = AddFundsForm(request.POST, instance=user)
+            args = {'form': form}
+
+            return render(request,
+                          'account/add_funds.html',
+                          args)
+    else:
+        redirect('login')
 
 
 def change_password(request):
@@ -148,9 +177,9 @@ def change_password(request):
             if form.is_valid():
                 form.save()
                 update_session_auth_hash(request, form.user)
-                return redirect('/account')
+                return redirect('account')
             else:
-                return redirect('/account/change_password')
+                return redirect(' change_password')
 
         else:
             form = PasswordChangeForm(user=request.user)
@@ -172,3 +201,6 @@ def verify(request, uuid):
     user.save()
 
     return redirect('index')
+
+
+

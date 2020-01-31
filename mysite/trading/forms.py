@@ -55,3 +55,16 @@ class CreatePositionForm(forms.ModelForm):
                   'open_price',
                   'stock')
 
+
+class AddFundsForm(forms.ModelForm):
+    funds = forms.DecimalField(initial=0.00)
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super(AddFundsForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = models.User
+        fields = ('funds',
+                  'value')
+

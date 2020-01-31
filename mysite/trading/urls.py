@@ -20,8 +20,11 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('login/', views.login_request, name='login'),
     path('logout/', views.logout_request, name='logout'),
+
     path('account/', views.AccountView.as_view(), name='account'),
     path('account/edit/', views.edit_account, name='edit_account'),
+    path('account/add-funds/', views.add_funds, name='add_funds'),
+
     path('change-password/', views.change_password, name='change_password'),
     path('reset-password/', PasswordResetView.as_view(), name='reset_password'),
     path('reset-password/done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
