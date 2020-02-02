@@ -1,0 +1,36 @@
+<div class="row">
+
+            {% if user.is_authenticated %}
+            <div class="col-5 align-middle">
+                <p class="ml-1 text-white text-left"><a href="{% url 'account'%}">{{ user.email }}</a></p>
+            </div>
+
+            <div class="col-2 align-middle">
+                <h4 class="text-center">
+                    <a data-toggle="collapse" data-parent="#footerCollapse" href="#">
+                        <i class="fas fa-arrows-alt-v text-center"></i>
+                    </a>
+                </h4>
+            </div>
+
+            <div class="col-5 align-middle">
+                <p class="ml-auto mr-1 text-white text-right">Currency: {{user.base_currency.code}} | Free Funds: {{user.funds}} | Live Result: {{user.get_live_result}} | Account Value: {{user.get_account_value}}</p>
+            </div>
+
+            {% else %}
+            <div class="col-5"></div>
+
+            <div class="col-2 align-middle">
+                <h4 class="text-center">
+                    <a data-toggle="collapse" data-target="#footerCollapse" href="#">
+                        <i class="fas fa-arrows-alt-v text-center"></i>
+                    </a>
+                </h4>
+            </div>
+
+            <div class="col-5 align-middle">
+                <p class="ml-auto mr-2 text-white text-right"><a href="{% url 'login' %}">Login...</a> | <a href="{% url 'signup' %}">Signup...</a> </p>
+            </div>
+            {% endif %}
+
+        </div>

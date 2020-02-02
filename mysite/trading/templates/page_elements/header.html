@@ -9,34 +9,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
-    <link rel="stylesheet" href="{% static 'trading/css/navbar.css' %}">
-    <link rel="stylesheet" href="{% static 'trading/css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'trading/css/footer.css' %}">
-    <link rel="stylesheet" href="{% static 'trading/css/body.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/main/main.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/body/body.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/navbar/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/sidebar/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/footer/footer.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/row/row.css' %}">
+    <link rel="stylesheet" href="{% static 'trading/css/tables/position_table.css' %}">
 
     <!-- jQuery CDN - Slim version (=without AJAX) -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="{% static 'trading/js/sidebar.js' %}"></script>
-    <script src="{% static 'trading/js/footer.js' %}"></script>
+
 
 </head>
 <body>
 
-<div class="wrapper">
+{% include "page_elements/navbar/navbar.html" %}
+<div class="container-fluid">
+    <div class="row">
+        {% include "page_elements/sidebar/sidebar.html" %}
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
 
-    {% include "page_elements/sidebar.html" %}
-    {% include "page_elements/messaging.html" %}
+            {% block content %}
 
-    <div id="content">
+            {% endblock %}
 
-        {% include "page_elements/navbar.html" %}
+        </main>
+        {% include "page_elements/footer/footer.html" %}
 
-        {% block content %}
-
-        {% endblock %}
-
-        {% include "page_elements/footer.html" %}
     </div>
+
+
 </div>
 
 <!-- Popper.JS -->

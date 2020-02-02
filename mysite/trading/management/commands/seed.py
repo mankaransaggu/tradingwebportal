@@ -3,7 +3,8 @@ from django.db.backends.utils import logger
 from ...models import Instrument, DataType, Currency, Country, Exchange, Stock, StockPriceData, FX, FXPriceData, \
     Position
 from ...backend.fx.currency import save_currencies
-from ...backend.fx.fx_data import save_pairs_and_data
+from ...backend.fx.fx_data import save_pairs_and_data, save_currency_pairs, get_fx_data
+from ...backend.exchange.exchange import NASDAQ, NYSE
 
 # python manage.py seed --mode=refresh
 
@@ -44,7 +45,7 @@ def clear_data():
 
 def create_instrument():
     """Creates the needed Instrument objects"""
-    logger.info('Creating Instruments')
+    logger.info('Creating Instruments...')
     instrument_codes = ['STOCK', 'FX', 'BOND', 'INDICIE']
     instrument_names = ['Stocks', 'Foreign Exchange', 'Bonds', 'Indicies']
     instrument_descriptions = ['Company shares', 'Foreign exchange instruments', 'Treasuries/Corporate bonds',
@@ -59,14 +60,20 @@ def create_instrument():
 
 def create_currency():
     """Create the Currency and FX objects"""
-    logger.info('Creating Currencies')
+    logger.info('Creating Currencies..')
     save_currencies()
-    save_pairs_and_data()
+    logger.info('Created Currencies')
+    logger.info('Creating Currency Pairs..')
+    save_currency_pairs()
+    logger.info('Created Currency Pairs')
+    logger.info('Creating FX Data...')
+    get_fx_data()
+    logger.info('Created FX Data')
 
 
 def create_country():
     """Creates the Country objects"""
-    logger.info('Creating Countries')
+    logger.info('Creating Countries..')
 
     country_codes = ['USA', 'UK', 'CN', 'CAN', 'GER']
     country_names = ['United States of America', 'United Kingdom', 'China', 'Canada', 'Germany']
@@ -81,7 +88,7 @@ def create_country():
 
 def create_exchange():
     """Creates the Exchange objects"""
-    logger.info('Creating Exchanges')
+    logger.info('Creating Exchanges..')
 
     exchange_codes = ['NYSE', 'NASDAQ', 'LSE', 'SSE']
     exchange_names = ['New York Stock Exchange', 'NASDAQ Stock Market', 'London Stock Exchange',
@@ -97,7 +104,7 @@ def create_exchange():
 
 def create_data_type():
     """Creates the DataType objects"""
-    logger.info('Creating Data Types')
+    logger.info('Creating Data Types..')
 
     data_codes = ['DAILY', 'INTRADAY']
     data_description = ['Data for a 24 period', 'Data for a 1 minute perioo']
@@ -108,6 +115,17 @@ def create_data_type():
         logger.info('{} DataType created'.format(DataType.code))
 
 
+def create_stocks():
+    """Creates the Stock objects"""
+    logger.info('Creating Stocks and Stock Data...')
+    logger.info('Adding NYSE Stocks...')
+    NYSE().save_stocks()
+    logger.info('Added NYSE Stocks')
+    logger.info('Adding NASDAQ Stocks...')
+    NASDAQ().save_stocks()
+    logger.info('Added NASDAQ Stocks')
+
+
 def run_seed(self, mode):
     """ Seed the database based on mode
 
@@ -115,12 +133,14 @@ def run_seed(self, mode):
     :param mode: refresh / clear
     :return:
     """
-    clear_data()
+
     if mode == MODE_CLEAR:
+        clear_data()
         return
 
+    create_data_type()
     create_instrument()
     create_currency()
     create_country()
     create_exchange()
-    create_data_type()
+    create_stocks()

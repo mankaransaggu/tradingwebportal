@@ -3,14 +3,16 @@
 
 <div class="container-fluid">
 
-    {% include "page_elements/paginator_nav.html" %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h2 class="h2">Currencies</h2>
+        {% include "page_elements/paginator_nav.html" %}
+    </div>
 
     <table class="table table-hover table-striped shadow-sm">
 
         <thead class="thead-dark">
         <tr>
             <th scope="col">Code</th>
-            <th scope="col">Symbol</th>
             <th scope="col">Name</th>
             <th scope="col">Active</th>
         </tr>
@@ -19,8 +21,7 @@
         <tbody>
         {% for currency in currencies %}
         <tr>
-            <td><a href="{% url 'currency' currency.id %}">{{currency.code}}</a></td>
-            <td>{{currency.symbol}}</td>
+            <td><a href="{% url 'currency' currency.id %}" data-toggle="tooltip" data-placement="bottom" title="View Currency">{{currency.code}}</a></td>
             <td>{{currency.name}}</td>
             <td>{{currency.active}}</td>
         </tr>

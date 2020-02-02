@@ -1,7 +1,6 @@
 import bs4 as bs
 import requests
-from django.db import IntegrityError
-from ...models import Stock, Exchange, StockPriceData
+from ...models import Stock, Exchange, StockPriceData, Instrument
 from ..stock.stock_data import get_yahoo_data
 
 
@@ -15,6 +14,7 @@ class StockExchange:
 
     def save_stocks(self):
         tickers = []
+        instrument = Instrument.objects.get(code='STOCK')
 
         for link in self.links:
             resp = requests.get(link)
@@ -29,16 +29,12 @@ class StockExchange:
                 name = row.findAll('td')[0].text
                 exchange = Exchange.objects.get(code=self.code)
 
-                try:
-                    stock = Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
-                    success = True
-                    stock = Stock.objects.get(ticker=ticker, exchange=exchange)
-                    print('SUCCESS: Added {} to stock table'.format(ticker))
-                except IntegrityError:
-                    print('ERROR - IntegrityError: {} already exists in Stock table'.format(ticker))
-                    success = True
+                Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange, instrument=instrument)
+                success = True
+                print('SUCCESS: Added {} to stock table'.format(ticker))
 
                 if success:
+                    stock = Stock.objects.get(ticker=ticker, name=name)
                     get_yahoo_data(stock)
 
         return tickers
@@ -112,6 +108,7 @@ class NASDAQ(StockExchange):
     # Currently have to override parent due to different elements, looking to solve
     def save_stocks(self):
         tickers = []
+        instrument = Instrument.objects.get(code='STOCK')
 
         for link in self.links:
             resp = requests.get(link)
@@ -125,18 +122,12 @@ class NASDAQ(StockExchange):
                 name = row.findAll('td')[0].text
                 exchange = Exchange.objects.get(code='NASDAQ')
 
-                try:
-                    Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange)
-                    print('Added {} to stock table'.format(ticker))
-                    success = True
-                except IntegrityError:
-                    print('{} already exists in Stock table'.format(ticker))
-                    success = True
+                Stock.objects.update_or_create(ticker=ticker, name=name, exchange=exchange, instrument=instrument)
+                print('SUCCESS: Added {} to stock table'.format(ticker))
+                success = True
 
                 if success:
-                    stock = Stock.objects.get(ticker=ticker, exchange=exchange)
-                    if stock.ticker == 'AAPL':
-                        print('THIS IS APPLE WORK BUM')
+                    stock = Stock.objects.get(ticker=ticker, name=name)
                     get_yahoo_data(stock)
 
         return tickers

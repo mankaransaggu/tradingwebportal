@@ -14,9 +14,9 @@
     <tbody>
     {% for stock in stocks %}
     <tr>
-        <td><a href="{% url 'stock' stock.id %}">{{stock.ticker}}</a></td>
+        <td><a href="{% url 'stock' stock.id %}" data-toggle="tooltip" data-placement="bottom" title="View Stock">{{stock.ticker}}</a></td>
         <td>{{stock.name}}</td>
-        <td><a href="{% url 'exchange' stock.exchange.id %}">{{stock.exchange}}</a></td>
+        <td><a href="{% url 'exchange' stock.exchange.id %}" data-toggle="tooltip" data-placement="bottom" title="View Exchange">{{stock.exchange}}</a></td>
 
         <td>
             {% if stock.get_current_data %}
@@ -30,14 +30,14 @@
         <td>{{stock.get_change_perc}}</td>
 
         <td class="text-center">
-            <a href="{% url 'open_position' stock.pk %}"><i class="fas fa-plus-circle fa-2x"></i></a>
+            <a href="{% url 'open_position' stock.pk %}" data-toggle="tooltip" data-placement="bottom" title="New Position"><i class="fas fa-plus-circle fa-2x"></i></a>
         </td>
 
         <td class="text-center">
             {% if stock in favourite_list %}
-            <a href="{% url 'favourite_stock' stock.id %}"><i class="fas fa-bookmark fa-2x"></i></a>
+            <a href="{% url 'favourite_stock' stock.id %}" data-toggle="tooltip" data-placement="bottom" title="Bookmark Stock"><i class="fas fa-bookmark fa-2x"></i></a>
             {% else %}
-            <a href="{% url 'favourite_stock' stock.id %}"><i class="far fa-bookmark fa-2x"></i></a>
+            <a href="{% url 'favourite_stock' stock.id %}" data-toggle="tooltip" data-placement="bottom" title="Bookmark Stock"><i class="far fa-bookmark fa-2x"></i></a>
             {% endif %}
         </td>
 

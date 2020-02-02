@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
@@ -8,6 +9,8 @@ from ..models import Stock, Exchange
 class ExchangeListView(generic.ListView):
     template_name = 'exchange/exchange_list.html'
     context_object_name = 'exchanges'
+    model = Exchange
+    paginate_by = 50
 
     def get_queryset(self):
         return Exchange.objects.all().order_by('country')
@@ -26,19 +29,25 @@ class ExchangeListView(generic.ListView):
         return context
 
 
-class ExchangeDetailView(generic.DetailView):
+class ExchangeDetailView(generic.ListView):
     model = Exchange
     template_name = 'exchange/exchange_detail.html'
+    context_object_name = 'listed_stocks'
+    paginate_by = 50
+
+    def get_queryset(self):
+        exchange = get_object_or_404(Exchange, pk=self.kwargs['pk'])
+        return exchange.get_listed_stocks()
 
     def get_context_data(self, **kwargs):
         context = super(ExchangeDetailView, self).get_context_data(**kwargs)
         request = self.request
         user = request.user
-        pk = self.kwargs['pk']
+        context['exchange'] = get_object_or_404(Exchange, id=self.kwargs['pk'])
 
-        exchange = get_object_or_404(Exchange, pk=pk)
-        account_bookmarks.get_user_favourites(user, context)
-        account_positions.get_open_positions(user, context)
+        if user.is_authenticated:
+            account_bookmarks.get_user_favourites(user, context)
+            account_positions.get_open_positions(user, context)
 
         return context
 

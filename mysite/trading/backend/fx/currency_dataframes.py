@@ -12,11 +12,11 @@ def format_df(df):
 
 
 def df_to_sql(df):
+    active_currencys = ['USD', 'GBP', 'CNY', 'CAD', 'EUR', ]
     for row in df.itertuples():
+        print(row)
 
-        try:
-            print(row)
-            Currency.objects.create(code=getattr(row, 'code'), name=getattr(row, 'name'))
-
-        except IntegrityError:
-            print('Currency {} already exists'.format(getattr(row, 'code')))
+        if getattr(row, 'code') in active_currencys:
+            Currency.objects.update_or_create(code=getattr(row, 'code'), name=getattr(row, 'name'), active=True)
+        else:
+            Currency.objects.update_or_create(code=getattr(row, 'code'), name=getattr(row, 'name'))

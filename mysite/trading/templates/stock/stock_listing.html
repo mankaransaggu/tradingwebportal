@@ -1,16 +1,20 @@
 {% extends "page_elements/header.html" %}
 {% block content %}
 
-<div class="container-fluid">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h2 class="h2">Stocks</h2>
 
     {% if stocks %}
-
     {% include "page_elements/paginator_nav.html" %}
-    {% include "stock/includes/stock_list.html" %}
-    {% include "page_elements/paginator_nav.html" %}
-
     {% endif %}
-
 </div>
+
+{% if stocks %}
+
+{% include "stock/includes/stock_list.html" %}
+{% include "page_elements/paginator_nav.html" %}
+
+{% endif %}
+
 
 {% endblock %}

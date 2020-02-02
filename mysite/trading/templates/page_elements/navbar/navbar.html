@@ -1,0 +1,24 @@
+<nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{% url 'index' %}">Baker Fin</a>
+    <input class="form-control form-control-dark w-100 rounded mx-2" type="text" placeholder="Search..." aria-label="Search">
+
+    <ul class="navbar-nav px-3">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-cog"></i>
+            </a>
+
+            <div class="dropdown-menu shadow-lg" aria-labelledby="navbarDropdownMenuLink">
+                <a class="dropdown-item" href="/settings">Settings</a>
+                {% if user.is_authenticated %}
+                <a class="dropdown-item" href="/account">{{user.email}}</a>
+                <a class="dropdown-item" href="/logout">Logout</a>
+                {% else %}
+                <a class="dropdown-item" href="/login">Login</a>
+                <a class="dropdown-item" href="/signup">Signup</a>
+                {% endif %}
+            </div>
+        </li>
+    </ul>
+</nav>

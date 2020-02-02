@@ -3,24 +3,23 @@ import sqlalchemy
 from alpha_vantage.timeseries import TimeSeries
 from django.db import IntegrityError
 from pandas_datareader._utils import RemoteDataError
-from ...models import Stock, StockPriceData, DataType
+from ...models import Stock, StockPriceData, DataType, Instrument
 from .stock_dataframes import df_to_sql
 import datetime as dt
 import pandas_datareader.data as web
 
 
 def get_yahoo_data(stock):
+
     try:
         start = dt.datetime(2017, 1, 1)
         end = dt.datetime.strftime(dt.datetime.now() - dt.timedelta(1), '%Y-%m-%d')
-
         df = web.DataReader(stock.ticker, 'yahoo', start, end)
 
         df = df.rename(
             columns={'High': 'high', 'Low': 'low', 'Open': 'open', 'Close': 'close',
                      'Volume': 'volume', 'Adj Close': 'adj_close'})
         df['stock'] = stock
-
         df['data_type'] = DataType.objects.get(code='DAILY')
 
         df.rename_axis('timestamp', axis='index', inplace=True)

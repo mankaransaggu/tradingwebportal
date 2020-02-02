@@ -32,7 +32,7 @@ def get_fx_data():
                 # Check if I have hit alphas api limit, if so wait 1 min
                 count += 1
                 if count == 6:
-                    time.sleep(70)
+                    time.sleep(75)
                     count = 0
 
                 exchange = ForeignExchange(key='3GVY8HKU0D7L550R', output_format='pandas')

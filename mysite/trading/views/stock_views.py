@@ -60,16 +60,19 @@ class StockDetailView(generic.DetailView):
 
 def favourite_stock(request, id):
     user = request.user
-
-    if not user.is_verified:
-        messages.info(request, 'Please verify your account before bookmarking instruments')
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-    else:
-        stock = get_object_or_404(Stock, id=id)
-
-        if stock.favourite.filter(id=request.user.id).exists():
-            stock.favourite.remove(request.user)
+    if user.is_authenticated:
+        if not user.is_verified:
+            messages.info(request, 'Please verify your account before bookmarking instruments')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         else:
-            stock.favourite.add(request.user)
+            stock = get_object_or_404(Stock, id=id)
 
+            if stock.favourite.filter(id=request.user.id).exists():
+                stock.favourite.remove(request.user)
+            else:
+                stock.favourite.add(request.user)
+
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    else:
+        messages.info(request, 'Please login before bookmarking stocks')
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

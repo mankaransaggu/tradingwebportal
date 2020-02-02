@@ -11,6 +11,7 @@ urlpatterns = [
 
     path('exchange-list/', views.ExchangeListView.as_view(), name='exchange_list'),
     path('exchange/<int:pk>/', views.ExchangeDetailView.as_view(), name='exchange'),
+    path('exchange-stocks/<int:pk>', views.ExchangeStocksListView.as_view(), name='exchange_stocks'),
 
     path('currency-list/', views.CurrencyListView.as_view(), name='currency_list'),
     path('currency/<int:pk>/', views.CurrencyDetailView.as_view(), name='currency'),
